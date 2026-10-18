@@ -13,9 +13,14 @@
 </head>
 <body class="bg-gray-50 min-h-screen flex flex-col">
 
+    <!-- নেভিগেশন বার -->
     <nav class="bg-white shadow-sm sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
-            <a href="/" class="text-2xl font-bold text-blue-600 tracking-tight">Boi Chokro</a>
+            <!-- ডাইনামিক কোম্পানির নাম এবং লোগো -->
+            <a href="/" class="flex items-center gap-2">
+                <img id="web_header_logo" src="" class="hidden h-10 w-10 object-contain">
+                <span id="web_header_name" class="text-2xl font-bold text-blue-600 tracking-tight">Boi Chokro</span>
+            </a>
             
             <div class="flex items-center gap-4 sm:gap-6">
                 <a href="/cart.html" class="relative text-gray-600 hover:text-blue-600 transition">
@@ -36,8 +41,10 @@
         <p class="text-lg md:text-xl text-blue-100 max-w-2xl mx-auto">সেরা লেখকদের বইয়ের বিশাল সংগ্রহ।</p>
     </header>
 
+    <!-- মেইন কন্টেন্ট -->
     <main class="flex-grow max-w-7xl mx-auto w-full px-4 py-8">
         
+        <!-- ১. বেস্ট সেলার সেকশন -->
         <section class="mb-10">
             <div class="flex items-center gap-2 mb-6">
                 <span class="text-3xl">🔥</span>
@@ -50,24 +57,30 @@
 
         <hr class="border-gray-300 mb-8">
 
+        <!-- ২. ডাইনামিক ক্যাটাগরি সেকশন -->
         <div id="dynamicCategorySections">
             <p class="text-gray-500 text-center py-10">ক্যাটাগরি লোড হচ্ছে...</p>
         </div>
 
         <hr class="border-gray-300 mb-8">
 
+        <!-- ৩. সব ক্যাটাগরি ফিল্টার ও সব বই -->
         <section>
             <h2 class="text-2xl font-bold text-gray-800 mb-4">সব ক্যাটাগরি</h2>
+            
             <div class="flex flex-wrap gap-2 mb-6" id="categoryButtons">
                 <button onclick="filterCategory('all')" class="category-btn bg-blue-600 text-white px-4 py-2 rounded-full text-sm font-semibold transition">সব বই</button>
             </div>
 
-            <div id="bookGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
+            <div id="bookGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                <!-- সব বই লোড হবে -->
+            </div>
         </section>
     </main>
 
+    <!-- ফুটার -->
     <footer class="bg-gray-800 text-gray-300 py-6 text-center mt-auto">
-        <p>&copy; 2024 Boi Chokro. All rights reserved.</p>
+        <p id="web_footer_text">&copy; 2024 Boi Chokro. All rights reserved.</p>
     </footer>
 
     <script>
@@ -78,24 +91,53 @@
         let currentUser = null;
         let allBooksData = []; 
 
+        // কার্ট কাউন্ট আপডেট
         function updateCartCount() {
             const cart = JSON.parse(localStorage.getItem('boiChokroCart')) || [];
             document.getElementById('cartCount').innerText = cart.length;
         }
 
+        // ইউজার লগইন চেক
         async function checkAuth() {
             const { data: { session } } = await supabaseClient.auth.getSession();
             const authButtons = document.getElementById('authButtons');
+
             if (session) {
                 currentUser = session.user;
-                authButtons.innerHTML = `<button onclick="handleLogout()" class="bg-red-50 text-red-600 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-red-100 border border-red-200">লগআউট</button>`;
+                authButtons.innerHTML = `
+                    <button onclick="handleLogout()" class="bg-red-50 text-red-600 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-red-100 border border-red-200">লগআউট</button>
+                `;
             } else {
                 currentUser = null;
-                authButtons.innerHTML = `<a href="/login.html" class="text-blue-600 text-sm font-semibold hover:underline">লগইন</a>`;
+                authButtons.innerHTML = `
+                    <a href="/login.html" class="text-blue-600 text-sm font-semibold hover:underline">লগইন</a>
+                `;
             }
         }
 
-        // কার্ড তৈরির ফাংশন (পার্সেন্টেজ ক্যালকুলেশনসহ)
+        // সাইট সেটিংস (লোগো, নাম, ফুটার) ডাটাবেস থেকে লোড করা
+        async function fetchSiteSettings() {
+            const { data, error } = await supabaseClient.from('site_settings').select('*').limit(1).maybeSingle();
+            
+            if (!error && data) {
+                // কোম্পানির নাম আপডেট
+                document.getElementById('web_header_name').innerText = data.company_name || 'Boi Chokro';
+                
+                // ফুটার টেক্সট আপডেট
+                if(data.footer_text) {
+                    document.getElementById('web_footer_text').innerText = data.footer_text;
+                }
+
+                // লোগো আপডেট
+                if (data.logo_url) {
+                    const logo = document.getElementById('web_header_logo');
+                    logo.src = data.logo_url;
+                    logo.classList.remove('hidden');
+                }
+            }
+        }
+
+        // বইয়ের কার্ড তৈরির ফাংশন
         function createBookCard(book, isSlider = false) {
             const currentPrice = book.discount_price || book.original_price || 0;
             const hasDiscount = book.original_price && book.discount_price && book.original_price > book.discount_price;
@@ -137,7 +179,9 @@
             `;
         }
 
+        // মূল ফাংশন যা ডাটা লোড করবে
         async function loadHomePage() {
+            // ১. সব বই ডাটাবেস থেকে নিয়ে আসা
             const { data: books, error: bookError } = await supabaseClient.from('books').select('*').order('created_at', { ascending: false });
             
             if (bookError || !books) {
@@ -146,9 +190,11 @@
             }
             allBooksData = books;
 
+            // ২. বেস্ট সেলার রেন্ডার
             const bestSellers = [...books].sort((a, b) => (b.sales_count || 0) - (a.sales_count || 0)).slice(0, 4);
             document.getElementById('bestSellerGrid').innerHTML = bestSellers.map(book => createBookCard(book)).join('');
 
+            // ৩. সব ক্যাটাগরি ডাটাবেস থেকে নিয়ে আসা
             const { data: categories, error: catError } = await supabaseClient.from('categories').select('*').order('name');
             
             const dynamicContainer = document.getElementById('dynamicCategorySections');
@@ -157,6 +203,7 @@
             if (!catError && categories && categories.length > 0) {
                 dynamicContainer.innerHTML = ''; 
                 
+                // প্রতিটি ক্যাটাগরির জন্য লুপ চালানো
                 categories.forEach(cat => {
                     const catBooks = books.filter(b => b.category === cat.name).slice(0, 10);
                     if (catBooks.length === 0) return;
@@ -191,6 +238,7 @@
             renderFilteredBooks('all');
         }
 
+        // ক্যাটাগরি ফিল্টার
         window.filterCategory = (category) => {
             const buttons = document.querySelectorAll('.category-btn');
             buttons.forEach(btn => {
@@ -219,6 +267,7 @@
             grid.innerHTML = filtered.map(book => createBookCard(book)).join('');
         }
 
+        // কার্টে যোগ
         window.addToCart = (id, title, price, image) => {
             if (!currentUser) {
                 alert('কার্টে যোগ করতে অনুগ্রহ করে প্রথমে লগইন করুন!');
@@ -233,14 +282,23 @@
             updateCartCount(); alert('সফলভাবে কার্টে যোগ হয়েছে!');
         }
 
+        // অ্যাফিলিয়েট লিংকে যাওয়া
         window.handleAffiliateBuy = (link) => {
             if (!currentUser) { alert('লিংকে যেতে প্রথমে লগইন করুন!'); window.location.href = '/login.html'; return; }
             if(link) window.open(link, '_blank');
         }
 
-        window.handleLogout = async () => { await supabaseClient.auth.signOut(); checkAuth(); }
+        // লগআউট
+        window.handleLogout = async () => { 
+            await supabaseClient.auth.signOut(); 
+            checkAuth(); 
+        }
 
-        checkAuth(); loadHomePage(); updateCartCount();
+        // শুরু
+        checkAuth(); 
+        fetchSiteSettings(); // সেটিংস লোড করো
+        loadHomePage(); 
+        updateCartCount();
     </script>
 </body>
 </html>
