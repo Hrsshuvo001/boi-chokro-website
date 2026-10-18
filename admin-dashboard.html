@@ -92,7 +92,7 @@
         async function handleLogout() {
             logoutBtn.innerText = 'অপেক্ষা করুন...';
             await supabaseClient.auth.signOut();
-            window.location.href = '/login.html';
+            window.location.href = '/admin-login.html';
         }
 
         logoutBtn.addEventListener('click', handleLogout);
