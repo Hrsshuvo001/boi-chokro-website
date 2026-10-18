@@ -41,14 +41,24 @@
                     </div>
                 </div>
 
-                <!-- অ্যাফিলিয়েট / বাই লিংক -->
-                <div class="p-3 bg-blue-50 border border-blue-200 rounded-md">
-                    <label class="block text-sm font-medium text-blue-800 mb-1">বই কেনার লিংক (নিজের বা অ্যাফিলিয়েট)</label>
+                <!-- নতুন লিংক অপশন -->
+                <div class="p-4 bg-blue-50 border border-blue-200 rounded-md">
+                    <label class="block text-sm font-bold text-blue-800 mb-2">বিক্রয়ের ধরন (Link Type)</label>
+                    
+                    <!-- রেডিও বাটন -->
+                    <div class="flex flex-col gap-2 mb-3">
+                        <label class="flex items-center space-x-2 text-sm text-blue-900 cursor-pointer">
+                            <input type="radio" name="link_type" id="type_affiliate" value="affiliate" checked onchange="toggleLinkType()">
+                            <span>অ্যাফিলিয়েট লিংক (অন্য সাইট থেকে কিনবে)</span>
+                        </label>
+                        <label class="flex items-center space-x-2 text-sm text-blue-900 cursor-pointer">
+                            <input type="radio" name="link_type" id="type_payment" value="payment" onchange="toggleLinkType()">
+                            <span>পেমেন্ট গেটওয়ে (নিজের সাইটে পেমেন্ট)</span>
+                        </label>
+                    </div>
+
                     <input type="url" id="purchase_link" placeholder="https://..." class="w-full px-3 py-2 border rounded-md mb-2">
-                    <label class="flex items-center space-x-2 text-sm text-blue-800">
-                        <input type="checkbox" id="is_affiliate" class="rounded text-blue-600">
-                        <span>এটি একটি অ্যাফিলিয়েট লিংক</span>
-                    </label>
+                    <p class="text-xs text-gray-600" id="link_hint">এখানে অ্যাফিলিয়েট লিংক দিন। কাস্টমার 'কিনুন' বাটনে চাপ দিলে নতুন ট্যাবে ওই লিংকে চলে যাবে।</p>
                 </div>
 
                 <div>
@@ -89,6 +99,21 @@
         const addBookForm = document.getElementById('addBookForm');
         const messageDiv = document.getElementById('message');
 
+        // লিংকের ধরন পরিবর্তন হলে হিন্ট টেক্সট পরিবর্তন হবে
+        window.toggleLinkType = () => {
+            const isAffiliate = document.getElementById('type_affiliate').checked;
+            const input = document.getElementById('purchase_link');
+            const hint = document.getElementById('link_hint');
+            
+            if (isAffiliate) {
+                input.placeholder = "https://amazon.com/... (Affiliate Link)";
+                hint.innerText = "এখানে অ্যাফিলিয়েট লিংক দিন। কাস্টমার 'কিনুন' বাটনে চাপ দিলে নতুন ট্যাবে ওই লিংকে চলে যাবে।";
+            } else {
+                input.placeholder = "https://your-payment-gateway.com/...";
+                hint.innerText = "এখানে আপনার পেমেন্ট পেজের লিংক দিন (যেমন: SSLCommerz বা আপনার চেকআউট পেজ)। কাস্টমারকে সরাসরি ওই পেজে পাঠানো হবে।";
+            }
+        };
+
         async function initDashboard() {
             const { data: { session } } = await supabaseClient.auth.getSession();
             if (!session) window.location.href = '/admin-login.html';
@@ -103,7 +128,6 @@
             bookListDiv.innerHTML = books.map(book => `
                 <div class="bg-white p-4 rounded-lg shadow relative flex flex-col justify-between">
                     <div>
-                        <!-- ডিসকাউন্ট ব্যাজ -->
                         ${book.original_price && book.original_price > book.discount_price ? 
                             `<span class="absolute top-2 right-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded">ডিসকাউন্ট!</span>` : ''}
                         
@@ -117,7 +141,7 @@
                         </div>
                         
                         ${book.payment_info ? `<p class="text-xs text-gray-500 mt-1">💳 ${book.payment_info}</p>` : ''}
-                        ${book.is_affiliate ? `<span class="inline-block mt-2 bg-purple-100 text-purple-700 text-xs px-2 py-1 rounded">Affiliate Link</span>` : ''}
+                        ${book.is_affiliate ? `<span class="inline-block mt-2 bg-purple-100 text-purple-700 text-xs px-2 py-1 rounded">Affiliate Link</span>` : `<span class="inline-block mt-2 bg-green-100 text-green-700 text-xs px-2 py-1 rounded">Direct Payment</span>`}
                     </div>
                     <button onclick="deleteBook('${book.id}')" class="mt-4 w-full bg-red-50 text-red-600 py-1 rounded text-sm hover:bg-red-100 border border-red-200">ডিলিট করুন</button>
                 </div>
@@ -134,7 +158,6 @@
                 const files = document.getElementById('cover_files').files;
                 let uploadedUrls = [];
 
-                // ১. একাধিক ছবি আপলোড করা
                 if (files.length > 0) {
                     for (let i = 0; i < files.length; i++) {
                         const file = files[i];
@@ -149,26 +172,29 @@
                     }
                 }
 
-                // ২. ডাটাবেসে সেভ করা
+                // রেডিও বাটন থেকে চেক করা হচ্ছে অ্যাফিলিয়েট নাকি পেমেন্ট
+                const isAffiliate = document.getElementById('type_affiliate').checked;
+
                 const newBook = {
                     title: document.getElementById('title').value,
                     author: document.getElementById('author').value,
                     original_price: parseFloat(document.getElementById('original_price').value) || null,
                     discount_price: parseFloat(document.getElementById('discount_price').value),
                     purchase_link: document.getElementById('purchase_link').value,
-                    is_affiliate: document.getElementById('is_affiliate').checked,
+                    is_affiliate: isAffiliate,
                     payment_info: document.getElementById('payment_info').value,
                     description: document.getElementById('description').value,
-                    cover_url: uploadedUrls[0] || '', // প্রথম ছবিটি কভার হিসেবে থাকবে
-                    gallery_images: uploadedUrls // সব ছবি অ্যারে হিসেবে সেভ হবে
+                    cover_url: uploadedUrls[0] || '',
+                    gallery_images: uploadedUrls
                 };
 
                 const { error: insertError } = await supabaseClient.from('books').insert([newBook]);
                 if (insertError) throw insertError;
 
                 messageDiv.className = 'mt-3 text-sm text-center text-green-600 block';
-                messageDiv.innerText = 'সফলভাবে বই যোগ হয়েছে! এখন পরের বইটি যোগ করতে পারেন।';
-                addBookForm.reset(); // ফর্ম খালি হয়ে যাবে যাতে পরের বই দেওয়া যায়
+                messageDiv.innerText = 'সফলভাবে বই যোগ হয়েছে!';
+                addBookForm.reset();
+                toggleLinkType(); // রিসেট করার পর হিন্ট আবার আগের অবস্থায় আনবে
                 loadBooks();
 
             } catch (error) {
