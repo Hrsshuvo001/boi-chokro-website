@@ -14,24 +14,26 @@
         .section-content.active { display: block; }
     </style>
 </head>
-<body class="bg-gray-100 h-screen overflow-hidden flex">
+<body class="bg-gray-100 h-screen overflow-hidden flex flex-col md:flex-row">
 
-    <!-- সাইডবার নেভিগেশন (ডিফল্টভাবে বন্ধ থাকবে, মোবাইলে ফিক্সড) -->
-    <aside id="sidebar" class="bg-slate-800 text-slate-300 w-64 flex-shrink-0 flex flex-col shadow-lg z-20 absolute md:relative h-full transition-transform duration-300 transform -translate-x-full md:translate-x-0 hidden md:flex">
+    <!-- সাইডবার নেভিগেশন -->
+    <aside id="sidebar" class="fixed md:sticky top-0 left-0 z-50 h-screen w-64 bg-slate-800 text-slate-300 flex flex-col shadow-lg transition-transform duration-300 transform -translate-x-full md:translate-x-0 flex-shrink-0">
         <div class="p-4 text-2xl font-bold text-white border-b border-slate-700 flex justify-between items-center">
             <span id="sidebar-company-name">Boi Chokro</span>
-            <button onclick="toggleSidebar()" class="md:hidden text-red-600 bg-red-100 px-2 py-1 rounded text-sm">বন্ধ</button>
+            <!-- মোবাইলে সাইডবার বন্ধ করার বাটন -->
+            <button onclick="toggleSidebar()" class="md:hidden text-red-400 hover:text-red-300 bg-slate-700 px-2 py-1 rounded text-sm">✕</button>
         </div>
+        
         <nav class="flex-grow flex flex-col gap-1 p-2 overflow-y-auto">
-            <!-- মেনু অর্ডার পরিবর্তন করা হয়েছে -->
-            <button onclick="showSection('add-book')" class="nav-item text-left px-4 py-3 rounded-md hover:bg-slate-700 transition flex items-center gap-3">📚 অ্যাড নিউ বুক</button>
+            <!-- নতুন মেনু অর্ডার -->
             <button onclick="showSection('home')" class="nav-item active text-left px-4 py-3 rounded-md hover:bg-slate-700 transition flex items-center gap-3">📊 হোম (ড্যাশবোর্ড)</button>
+            <button onclick="showSection('add-book')" class="nav-item text-left px-4 py-3 rounded-md hover:bg-slate-700 transition flex items-center gap-3">📚 অ্যাড নিউ বুক</button>
             <button onclick="showSection('confirm-booking')" class="nav-item text-left px-4 py-3 rounded-md hover:bg-slate-700 transition flex items-center gap-3">✅ কনফার্ম বুকিং</button>
             <button onclick="showSection('add-category')" class="nav-item text-left px-4 py-3 rounded-md hover:bg-slate-700 transition flex items-center gap-3">🏷️ অ্যাড ক্যাটাগরি</button>
             <button onclick="showSection('add-author')" class="nav-item text-left px-4 py-3 rounded-md hover:bg-slate-700 transition flex items-center gap-3">✍️ অ্যাড অথর</button>
             <button onclick="showSection('report')" class="nav-item text-left px-4 py-3 rounded-md hover:bg-slate-700 transition flex items-center gap-3">📄 রিপোর্ট</button>
             
-            <!-- সাইট সেটিংস সবার নিচে -->
+            <!-- সাইট সেটিংস ও লগআউট সবার নিচে -->
             <div class="mt-auto border-t border-slate-700 pt-2">
                 <button onclick="showSection('settings')" class="nav-item text-left px-4 py-3 rounded-md hover:bg-slate-700 transition flex items-center gap-3 w-full">⚙️ সাইট সেটিংস</button>
                 <button onclick="handleLogout()" class="w-full mt-1 text-left px-4 py-3 rounded-md hover:bg-red-600 text-red-400 transition flex items-center gap-3">🚪 লগআউট</button>
@@ -40,9 +42,9 @@
     </aside>
 
     <!-- মেইন কন্টেন্ট এরিয়া -->
-    <div class="flex-1 flex flex-col h-full overflow-hidden relative">
+    <div class="flex-1 flex flex-col h-full overflow-hidden w-full relative">
         
-        <!-- মোবাইল টপবার (মেনু টগল বাটন) -->
+        <!-- মোবাইল টপবার (হ্যামবার্গার মেনু) -->
         <header class="bg-white shadow-sm p-4 flex justify-between items-center md:hidden z-10">
             <h1 class="text-xl font-bold text-blue-600" id="mobile-header-title">Boi Chokro</h1>
             <button onclick="toggleSidebar()" class="text-gray-600 text-2xl focus:outline-none">☰</button>
@@ -50,18 +52,45 @@
 
         <main class="flex-grow p-4 md:p-8 overflow-y-auto">
 
-            <!-- ১. অ্যাড নিউ বুক -->
+            <!-- ১. হোম (KPI ড্যাশবোর্ড) -->
+            <section id="section-home" class="section-content active">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">ড্যাশবোর্ড ওভারভিউ</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                    <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-blue-500">
+                        <p class="text-gray-500 text-sm font-semibold">আজকের সেলস</p>
+                        <h3 class="text-3xl font-bold text-gray-800 mt-2">৳ <span id="kpi-today-sales">0</span></h3>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-green-500">
+                        <p class="text-gray-500 text-sm font-semibold">এই মাসের সেলস</p>
+                        <h3 class="text-3xl font-bold text-gray-800 mt-2">৳ <span id="kpi-month-sales">0</span></h3>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-purple-500">
+                        <p class="text-gray-500 text-sm font-semibold">মোট সেলস</p>
+                        <h3 class="text-3xl font-bold text-gray-800 mt-2">৳ <span id="kpi-total-sales">0</span></h3>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-orange-500">
+                        <p class="text-gray-500 text-sm font-semibold">পেন্ডিং অর্ডার</p>
+                        <h3 class="text-3xl font-bold text-gray-800 mt-2"><span id="kpi-pending-orders">0</span> টি</h3>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-sm">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">সাপ্তাহিক বিক্রির চার্ট</h3>
+                    <canvas id="salesChart" height="100"></canvas>
+                </div>
+            </section>
+
+            <!-- ২. অ্যাড নিউ বুক -->
             <section id="section-add-book" class="section-content">
                 <h2 class="text-2xl font-bold text-gray-800 mb-6">নতুন বই যোগ করুন</h2>
                 <div class="bg-white p-6 rounded-xl shadow-sm max-w-2xl">
                     <form id="addBookForm" class="space-y-4">
-                        <div class="grid grid-cols-2 gap-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <input type="text" id="title" required placeholder="বইয়ের নাম" class="w-full px-4 py-2 border rounded-md">
                             <select id="author" required class="w-full px-4 py-2 border rounded-md bg-white">
                                 <option value="" disabled selected>লেখক সিলেক্ট করুন</option>
                             </select>
                         </div>
-                        <div class="grid grid-cols-2 gap-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <select id="category" required class="w-full px-4 py-2 border rounded-md bg-white">
                                 <option value="" disabled selected>ক্যাটাগরি সিলেক্ট করুন</option>
                             </select>
@@ -87,33 +116,6 @@
                         <button type="submit" id="addBookBtn" class="w-full bg-blue-600 text-white font-bold py-3 rounded-md hover:bg-blue-700">বই যোগ করুন</button>
                     </form>
                     <div id="bookMessage" class="mt-4 text-center font-bold hidden"></div>
-                </div>
-            </section>
-
-            <!-- ২. হোম (KPI ড্যাশবোর্ড) -->
-            <section id="section-home" class="section-content active">
-                <h2 class="text-2xl font-bold text-gray-800 mb-6">ড্যাশবোর্ড ওভারভিউ</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                    <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-blue-500">
-                        <p class="text-gray-500 text-sm font-semibold">আজকের সেলস</p>
-                        <h3 class="text-3xl font-bold text-gray-800 mt-2">৳ <span id="kpi-today-sales">0</span></h3>
-                    </div>
-                    <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-green-500">
-                        <p class="text-gray-500 text-sm font-semibold">এই মাসের সেলস</p>
-                        <h3 class="text-3xl font-bold text-gray-800 mt-2">৳ <span id="kpi-month-sales">0</span></h3>
-                    </div>
-                    <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-purple-500">
-                        <p class="text-gray-500 text-sm font-semibold">মোট সেলস</p>
-                        <h3 class="text-3xl font-bold text-gray-800 mt-2">৳ <span id="kpi-total-sales">0</span></h3>
-                    </div>
-                    <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-orange-500">
-                        <p class="text-gray-500 text-sm font-semibold">পেন্ডিং অর্ডার</p>
-                        <h3 class="text-3xl font-bold text-gray-800 mt-2"><span id="kpi-pending-orders">0</span> টি</h3>
-                    </div>
-                </div>
-                <div class="bg-white p-6 rounded-xl shadow-sm">
-                    <h3 class="text-lg font-bold text-gray-800 mb-4">সাপ্তাহিক বিক্রির চার্ট</h3>
-                    <canvas id="salesChart" height="100"></canvas>
                 </div>
             </section>
 
@@ -163,8 +165,9 @@
 
             <!-- ৬. রিপোর্ট -->
             <section id="section-report" class="section-content">
+                <!-- রিপোর্ট পেজের টাইটেল -->
                 <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-bold text-gray-800">রিপোর্ট জেনারেটর</h2>
+                    <h2 class="text-2xl font-bold text-gray-800">সেলস রিপোর্ট</h2>
                     <button onclick="generatePDF()" class="bg-red-600 text-white px-6 py-2 rounded-md hover:bg-red-700 flex items-center gap-2 shadow-lg">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
                         PDF ডাউনলোড
@@ -232,7 +235,7 @@
                             <input type="text" id="set_company_name" required class="mt-1 w-full px-3 py-2 border rounded-md">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">কোম্পানির টাইটেল / স্লোগান (হোম পেজের উপরে দেখাবে)</label>
+                            <label class="block text-sm font-medium text-gray-700">কোম্পানির টাইটেল / স্লোগান</label>
                             <input type="text" id="set_tagline" required class="mt-1 w-full px-3 py-2 border rounded-md">
                         </div>
                         <div>
@@ -273,17 +276,10 @@
         let myChart = null;
         let siteSettings = null; 
 
-        // সাইডবার টগল ফাংশন
+        // সাইডবার টগল ফাংশন (স্লাইড এনিমেশন)
         window.toggleSidebar = () => {
             const sidebar = document.getElementById('sidebar');
-            if (sidebar.classList.contains('hidden')) {
-                sidebar.classList.remove('hidden');
-                // স্লাইড অ্যানিমেশনের জন্য
-                setTimeout(() => sidebar.classList.remove('-translate-x-full'), 10);
-            } else {
-                sidebar.classList.add('-translate-x-full');
-                setTimeout(() => sidebar.classList.add('hidden'), 300);
-            }
+            sidebar.classList.toggle('-translate-x-full');
         };
 
         window.showSection = (sectionId) => {
@@ -292,7 +288,7 @@
             
             document.getElementById(`section-${sectionId}`).classList.add('active');
             
-            // অ্যাক্টিভ বাটন হাইলাইট (ইভেন্ট টার্গেট বা ম্যানুয়াল)
+            // অ্যাক্টিভ বাটন হাইলাইট
             const buttons = document.querySelectorAll('.nav-item');
             buttons.forEach(btn => {
                 if(btn.getAttribute('onclick').includes(sectionId)) {
@@ -302,7 +298,10 @@
 
             // মোবাইলে সেকশন চেঞ্জ হলে সাইডবার বন্ধ হয়ে যাবে
             if(window.innerWidth < 768) {
-                toggleSidebar();
+                const sidebar = document.getElementById('sidebar');
+                if(!sidebar.classList.contains('-translate-x-full')){
+                    sidebar.classList.add('-translate-x-full');
+                }
             }
 
             if(sectionId === 'home') loadDashboardData();
@@ -569,4 +568,4 @@
         init();
     </script>
 </body>
-                            </html>
+    </html>
