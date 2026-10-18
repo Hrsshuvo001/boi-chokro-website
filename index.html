@@ -8,13 +8,8 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         /* স্লাইডারের স্ক্রলবার লুকানোর জন্য */
-        .hide-scrollbar::-webkit-scrollbar {
-            display: none;
-        }
-        .hide-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
 <body class="bg-gray-50 min-h-screen flex flex-col">
@@ -47,7 +42,7 @@
     <main class="flex-grow max-w-7xl mx-auto w-full px-4 py-8">
         
         <!-- ১. বেস্ট সেলার সেকশন -->
-        <section class="mb-12">
+        <section class="mb-10">
             <div class="flex items-center gap-2 mb-6">
                 <span class="text-3xl">🔥</span>
                 <h2 class="text-2xl font-bold text-gray-800">বেস্ট সেলার</h2>
@@ -59,42 +54,25 @@
 
         <hr class="border-gray-300 mb-8">
 
-        <!-- ২. ইসলামিক বই স্লাইডার সেকশন -->
-        <section class="mb-12">
-            <div class="flex justify-between items-end mb-6">
-                <div class="flex items-center gap-2">
-                    <span class="text-3xl">🕌</span>
-                    <h2 class="text-2xl font-bold text-gray-800">ইসলামিক বই</h2>
-                </div>
-                <!-- সব বই দেখুন বাটন -->
-                <a href="/category.html?cat=ইসলামিক" class="text-blue-600 font-semibold hover:underline text-sm md:text-base flex items-center gap-1">
-                    সব বই দেখুন 
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
-                </a>
-            </div>
-            
-            <!-- স্লাইডার কন্টেইনার -->
-            <div id="islamicBookSlider" class="flex overflow-x-auto gap-4 snap-x pb-4 hide-scrollbar">
-                <p class="text-gray-500">লোড হচ্ছে...</p>
-            </div>
-        </section>
+        <!-- ২. ডাইনামিক ক্যাটাগরি সেকশন (এখানে সব ক্যাটাগরি অটোমেটিক আসবে) -->
+        <div id="dynamicCategorySections">
+            <p class="text-gray-500 text-center py-10">ক্যাটাগরি লোড হচ্ছে...</p>
+        </div>
 
         <hr class="border-gray-300 mb-8">
 
-        <!-- ৩. সব ক্যাটাগরি ও বই -->
+        <!-- ৩. সব ক্যাটাগরি ও বই (ফিল্টার বাটনসহ) -->
         <section>
             <h2 class="text-2xl font-bold text-gray-800 mb-4">সব ক্যাটাগরি</h2>
             
+            <!-- ডাইনামিক ফিল্টার বাটন -->
             <div class="flex flex-wrap gap-2 mb-6" id="categoryButtons">
                 <button onclick="filterCategory('all')" class="category-btn bg-blue-600 text-white px-4 py-2 rounded-full text-sm font-semibold transition">সব বই</button>
-                <!-- ক্যাটাগরি বাটনগুলো ডাইনামিকভাবে লোড হবে, আপাতত হার্ডকোড করা হলো -->
-                <button onclick="filterCategory('গল্পের বই')" class="category-btn bg-white text-gray-700 border border-gray-300 px-4 py-2 rounded-full text-sm font-semibold hover:bg-blue-50 transition">গল্পের বই</button>
-                <button onclick="filterCategory('উপন্যাস')" class="category-btn bg-white text-gray-700 border border-gray-300 px-4 py-2 rounded-full text-sm font-semibold hover:bg-blue-50 transition">উপন্যাস</button>
-                <button onclick="filterCategory('ইসলামিক')" class="category-btn bg-white text-gray-700 border border-gray-300 px-4 py-2 rounded-full text-sm font-semibold hover:bg-blue-50 transition">ইসলামিক</button>
+                <!-- বাকি বাটনগুলো জাভাস্ক্রিপ্ট দিয়ে লোড হবে -->
             </div>
 
             <div id="bookGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                <!-- বই লোড হবে -->
+                <!-- সব বই লোড হবে -->
             </div>
         </section>
     </main>
@@ -133,12 +111,12 @@
             }
         }
 
-        // বইয়ের কার্ড তৈরির ফাংশন (স্লাইডার ও গ্রিড দুই জায়গায় ব্যবহারের জন্য)
+        // বইয়ের কার্ড তৈরির ফাংশন
         function createBookCard(book, isSlider = false) {
             const currentPrice = book.discount_price || book.original_price || 0;
             const hasDiscount = book.original_price && book.discount_price && book.original_price > book.discount_price;
             
-            // স্লাইডারের জন্য নির্দিষ্ট প্রস্থ (Width) সেট করা
+            // স্লাইডারের জন্য নির্দিষ্ট প্রস্থ (Width)
             const widthClass = isSlider ? "min-w-[220px] max-w-[220px] snap-start" : "w-full";
 
             return `
@@ -170,31 +148,68 @@
             `;
         }
 
-        async function loadBooks() {
-            const { data: books, error } = await supabaseClient.from('books').select('*').order('created_at', { ascending: false });
+        // মূল ফাংশন যা ডাটা লোড করবে
+        async function loadHomePage() {
+            // ১. সব বই ডাটাবেস থেকে নিয়ে আসা
+            const { data: books, error: bookError } = await supabaseClient.from('books').select('*').order('created_at', { ascending: false });
             
-            if (error || !books) {
+            if (bookError || !books) {
                 document.getElementById('bookGrid').innerHTML = `<p class="text-gray-500 col-span-full text-center">বই লোড করতে সমস্যা হয়েছে।</p>`;
                 return;
             }
-
             allBooksData = books;
 
-            // ১. বেস্ট সেলার
+            // ২. বেস্ট সেলার রেন্ডার
             const bestSellers = [...books].sort((a, b) => (b.sales_count || 0) - (a.sales_count || 0)).slice(0, 4);
             document.getElementById('bestSellerGrid').innerHTML = bestSellers.map(book => createBookCard(book)).join('');
 
-            // ২. ইসলামিক স্লাইডার (সর্বোচ্চ ৫টি বই)
-            const islamicBooks = books.filter(book => book.category === 'ইসলামিক').slice(0, 5);
-            const sliderDiv = document.getElementById('islamicBookSlider');
+            // ৩. সব ক্যাটাগরি ডাটাবেস থেকে নিয়ে আসা
+            const { data: categories, error: catError } = await supabaseClient.from('categories').select('*').order('name');
             
-            if (islamicBooks.length > 0) {
-                sliderDiv.innerHTML = islamicBooks.map(book => createBookCard(book, true)).join('');
+            const dynamicContainer = document.getElementById('dynamicCategorySections');
+            const categoryButtons = document.getElementById('categoryButtons');
+
+            if (!catError && categories && categories.length > 0) {
+                dynamicContainer.innerHTML = ''; // লোডিং টেক্সট মুছে ফেলা
+                
+                // প্রতিটি ক্যাটাগরির জন্য লুপ চালানো
+                categories.forEach(cat => {
+                    // এই নির্দিষ্ট ক্যাটাগরির বই খুঁজে বের করা (সর্বোচ্চ ১০টি)
+                    const catBooks = books.filter(b => b.category === cat.name).slice(0, 10);
+
+                    // যদি এই ক্যাটাগরিতে কোনো বই না থাকে, তবে সেকশনটি স্কিপ করবে
+                    if (catBooks.length === 0) return;
+
+                    // ১. ডাইনামিক স্লাইডার সেকশন তৈরি
+                    const sectionHTML = `
+                        <section class="mb-10">
+                            <div class="flex justify-between items-end mb-6">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-3xl">📚</span>
+                                    <h2 class="text-2xl font-bold text-gray-800">${cat.name}</h2>
+                                </div>
+                                <a href="/category.html?cat=${encodeURIComponent(cat.name)}" class="text-blue-600 font-semibold hover:underline text-sm md:text-base flex items-center gap-1">
+                                    সব বই দেখুন 
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+                                </a>
+                            </div>
+                            <div class="flex overflow-x-auto gap-4 snap-x pb-4 hide-scrollbar">
+                                ${catBooks.map(book => createBookCard(book, true)).join('')}
+                            </div>
+                        </section>
+                        <hr class="border-gray-300 mb-8">
+                    `;
+                    dynamicContainer.insertAdjacentHTML('beforeend', sectionHTML);
+
+                    // ২. নিচের ফিল্টার বাটনেও ক্যাটাগরিটি যোগ করা
+                    const btnHTML = `<button onclick="filterCategory('${cat.name}')" class="category-btn bg-white text-gray-700 border border-gray-300 px-4 py-2 rounded-full text-sm font-semibold hover:bg-blue-50 transition">${cat.name}</button>`;
+                    categoryButtons.insertAdjacentHTML('beforeend', btnHTML);
+                });
             } else {
-                sliderDiv.innerHTML = `<p class="text-gray-500">এই ক্যাটাগরিতে এখনো কোনো বই যোগ করা হয়নি।</p>`;
+                dynamicContainer.innerHTML = `<p class="text-gray-500 text-center">কোনো ক্যাটাগরি পাওয়া যায়নি।</p>`;
             }
 
-            // ৩. সাধারণ গ্রিড
+            // ৪. নিচের সব বই গ্রিড রেন্ডার
             renderFilteredBooks('all');
         }
 
@@ -261,8 +276,9 @@
             checkAuth(); 
         }
 
+        // শুরু
         checkAuth();
-        loadBooks();
+        loadHomePage(); // নতুন ফাংশন কল
         updateCartCount();
     </script>
 </body>
