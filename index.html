@@ -14,9 +14,7 @@
         <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
             <a href="/" class="text-2xl font-bold text-blue-600 tracking-tight">Boi Chokro</a>
             
-            <!-- লগইন অবস্থার ওপর ভিত্তি করে বাটন পরিবর্তন হবে -->
             <div id="authButtons" class="flex items-center gap-4">
-                <!-- জাভাস্ক্রিপ্ট দিয়ে এখানে বাটন লোড হবে -->
                 <div class="animate-pulse bg-gray-200 h-8 w-20 rounded"></div>
             </div>
         </div>
@@ -34,7 +32,6 @@
     <main class="flex-grow max-w-7xl mx-auto w-full px-4 py-10">
         <h2 class="text-2xl font-bold text-gray-800 mb-6 border-b pb-2">সব বই</h2>
         <div id="bookGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            <!-- লোডিং ইন্ডিকেটর -->
             <p class="text-gray-500 col-span-full text-center py-10">বই লোড হচ্ছে, অপেক্ষা করুন...</p>
         </div>
     </main>
@@ -51,7 +48,6 @@
 
         let currentUser = null;
 
-        // ১. ইউজার লগইন আছে কি না চেক করা এবং নেভবার আপডেট করা
         async function checkAuth() {
             const { data: { session } } = await supabaseClient.auth.getSession();
             const authButtons = document.getElementById('authButtons');
@@ -71,7 +67,6 @@
             }
         }
 
-        // ২. ডাটাবেস থেকে বই লোড করা (সবার জন্য উন্মুক্ত)
         async function loadBooks() {
             const { data: books, error } = await supabaseClient
                 .from('books')
@@ -91,7 +86,6 @@
             }
 
             bookGrid.innerHTML = books.map(book => {
-                // দাম নাল (null) হলে যেন সুন্দরভাবে দেখায়
                 const currentPrice = book.discount_price || book.original_price || 'N/A';
                 const hasDiscount = book.original_price && book.discount_price && book.original_price > book.discount_price;
 
@@ -116,8 +110,8 @@
 
                         ${book.payment_info ? `<div class="bg-gray-50 p-2 rounded text-xs text-gray-600 mb-4 border border-gray-200">💳 পেমেন্ট: ${book.payment_info}</div>` : ''}
 
-                        <!-- বাই বাটন (এখানে লগইন চেক হবে) -->
-                        <button onclick="handleBuy('${book.purchase_link}')" class="w-full block text-center ${book.is_affiliate ? 'bg-purple-600 hover:bg-purple-700' : 'bg-green-600 hover:bg-green-700'} text-white font-bold py-2 rounded-lg transition">
+                        <!-- বাই বাটন (লিংকের ধরন অনুযায়ী টেক্সট ও কালার পরিবর্তন হবে) -->
+                        <button onclick="handleBuy('${book.purchase_link}', ${book.is_affiliate})" class="w-full block text-center ${book.is_affiliate ? 'bg-purple-600 hover:bg-purple-700' : 'bg-green-600 hover:bg-green-700'} text-white font-bold py-2 rounded-lg transition">
                             ${book.is_affiliate ? 'অন্য সাইট থেকে কিনুন' : 'এখনই কিনুন'}
                         </button>
                     </div>
@@ -125,31 +119,34 @@
             `}).join('');
         }
 
-        // ৩. কেনার সময় লগইন চেক
-        window.handleBuy = (link) => {
+        // ৩. কেনার সময় লজিক
+        window.handleBuy = (link, isAffiliate) => {
             if (!currentUser) {
-                // লগইন না থাকলে অ্যালার্ট দিয়ে লগইন পেজে পাঠাবে
                 alert('বইটি কিনতে অনুগ্রহ করে প্রথমে লগইন করুন!');
                 window.location.href = '/login.html';
                 return;
             }
             
-            // লগইন থাকলে লিংকে পাঠাবে
-            if(link) {
+            if(!link) {
+                alert('এই বইয়ের জন্য কোনো লিংক দেওয়া নেই।');
+                return;
+            }
+
+            if (isAffiliate) {
+                // যদি অ্যাফিলিয়েট হয়, নতুন ট্যাবে ওই সাইটে পাঠাবে
                 window.open(link, '_blank');
             } else {
-                alert('এই বইয়ের জন্য কোনো পেমেন্ট লিংক দেওয়া নেই।');
+                // যদি পেমেন্ট লিংক হয়, তবে সরাসরি পেমেন্ট পেজে নিয়ে যাবে (বর্তমান ট্যাবেই)
+                window.location.href = link; 
             }
         }
 
-        // ৪. লগআউট
         window.handleLogout = async () => {
             await supabaseClient.auth.signOut();
-            checkAuth(); // নেভবার আপডেট
+            checkAuth(); 
             alert('সফলভাবে লগআউট হয়েছেন।');
         }
 
-        // শুরুতে রান হবে
         checkAuth();
         loadBooks();
     </script>
