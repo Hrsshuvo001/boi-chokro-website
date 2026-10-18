@@ -18,7 +18,7 @@
 
     <!-- সাইডবার নেভিগেশন -->
     <aside id="sidebar" class="fixed md:sticky top-0 left-0 z-50 h-screen w-64 bg-slate-800 text-slate-300 flex flex-col shadow-lg transition-transform duration-300 transform -translate-x-full md:translate-x-0 flex-shrink-0">
-        <!-- সাইডবার হেডার (লোগো ও নাম) -->
+        <!-- সাইডবার হেডার -->
         <div class="p-4 border-b border-slate-700 flex justify-between items-center flex-shrink-0">
             <div class="flex items-center gap-2">
                 <img id="sidebar_logo" src="" class="hidden h-8 w-auto max-w-[40px] object-contain">
@@ -37,12 +37,14 @@
                 <button onclick="showSection('add-category')" class="nav-item text-left px-4 py-3 rounded-md hover:bg-slate-700 transition flex items-center gap-3">🏷️ অ্যাড ক্যাটাগরি</button>
                 <button onclick="showSection('add-author')" class="nav-item text-left px-4 py-3 rounded-md hover:bg-slate-700 transition flex items-center gap-3">✍️ অ্যাড অথর</button>
                 <button onclick="showSection('report')" class="nav-item text-left px-4 py-3 rounded-md hover:bg-slate-700 transition flex items-center gap-3">📄 রিপোর্ট</button>
+                
+                <!-- লগআউট বাটন রিপোর্টের ঠিক নিচে -->
+                <button onclick="handleLogout()" class="mt-2 w-full text-left px-4 py-3 rounded-md hover:bg-red-600 text-red-400 hover:text-white transition flex items-center gap-3 border border-red-900/50">🚪 লগআউট</button>
             </div>
             
-            <!-- নিচের মেনু (সেটিংস ও লগআউট) -->
-            <div class="mt-auto border-t border-slate-700 pt-2 flex flex-col gap-1 flex-shrink-0">
+            <!-- নিচের মেনু (সেটিংস) -->
+            <div class="mt-auto border-t border-slate-700 pt-2 flex-shrink-0">
                 <button onclick="showSection('settings')" class="nav-item text-left px-4 py-3 rounded-md hover:bg-slate-700 transition flex items-center gap-3 w-full">⚙️ সাইট সেটিংস</button>
-                <button onclick="handleLogout()" class="w-full text-left px-4 py-3 rounded-md hover:bg-red-600 text-red-400 hover:text-white transition flex items-center gap-3 border border-transparent hover:border-red-500">🚪 লগআউট</button>
             </div>
         </nav>
     </aside>
@@ -179,19 +181,20 @@
                     </button>
                 </div>
                 
-                <!-- PDF এরিয়া -->
-                <div class="bg-white p-4 md:p-10 rounded-xl shadow-sm max-w-4xl mx-auto overflow-x-auto">
-                    <div id="report-container" class="text-gray-800 bg-white" style="width: 100%; max-width: 800px; margin: 0 auto; padding: 20px; font-family: sans-serif;">
+                <!-- PDF এরিয়া (লোগো এবং লেখা বাম দিকে আনা হয়েছে) -->
+                <div class="bg-white p-4 md:p-8 rounded-xl shadow-sm max-w-4xl mx-auto overflow-x-auto">
+                    <div id="report-container" class="text-gray-800 bg-white mx-auto" style="width: 100%; max-width: 800px; padding: 10px; font-family: sans-serif;">
                         
-                        <!-- হেডার (লোগো ও লেখার গ্যাপ কমানো হয়েছে) -->
-                        <div class="flex flex-row justify-between items-start border-b-2 border-gray-800 pb-6 mb-6">
-                            <div class="flex items-center gap-2 text-left">
-                                <img id="rep_logo" src="" class="h-16 w-auto max-w-[120px] object-contain hidden mt-1">
+                        <!-- হেডার -->
+                        <div class="flex flex-row justify-between items-start border-b-2 border-gray-800 pb-4 mb-6">
+                            <!-- বাম দিকের লোগো ও লেখা (প্যাডিং ও গ্যাপ কমিয়ে বাম দিকে আনা হয়েছে) -->
+                            <div class="flex items-center gap-2 text-left pl-0">
+                                <img id="rep_logo" src="" class="h-14 w-auto max-w-[100px] object-contain hidden">
                                 <div>
-                                    <h1 id="rep_company_name" class="text-2xl font-bold text-blue-800 m-0">Boi Chokro</h1>
-                                    <p id="rep_tagline" class="text-sm text-gray-600 font-semibold m-0 mt-1"></p>
-                                    <p id="rep_address" class="text-sm text-gray-500 m-0 mt-1">ঢাকা, বাংলাদেশ</p>
-                                    <p id="rep_phone" class="text-sm text-gray-500 m-0">ফোন: 017xxxxxxxx</p>
+                                    <h1 id="rep_company_name" class="text-2xl font-bold text-blue-800 m-0 leading-tight">Boi Chokro</h1>
+                                    <p id="rep_tagline" class="text-xs text-gray-600 font-semibold m-0"></p>
+                                    <p id="rep_address" class="text-xs text-gray-500 m-0">ঢাকা, বাংলাদেশ</p>
+                                    <p id="rep_phone" class="text-xs text-gray-500 m-0">ফোন: 017xxxxxxxx</p>
                                 </div>
                             </div>
                             <div class="text-right">
@@ -591,4 +594,4 @@
         init();
     </script>
 </body>
-    </html>
+                                                                  </html>
