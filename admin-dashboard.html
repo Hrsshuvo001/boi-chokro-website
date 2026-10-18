@@ -4,101 +4,151 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>অ্যাডমিন ড্যাশবোর্ড - Boi Chokro</title>
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Supabase JS CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="bg-gray-100 min-h-screen">
 
     <!-- নেভিগেশন বার -->
     <nav class="bg-slate-800 text-white shadow-md p-4 flex justify-between items-center">
-        <h1 class="text-xl font-bold">Boi Chokro - Admin Panel</h1>
-        <button id="logoutBtn" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition">
-            লগআউট
-        </button>
+        <h1 class="text-xl font-bold">Boi Chokro - Admin</h1>
+        <button id="logoutBtn" class="bg-red-500 px-4 py-2 rounded hover:bg-red-600">লগআউট</button>
     </nav>
 
-    <!-- মেইন কন্টেন্ট -->
-    <div class="max-w-4xl mx-auto mt-10 p-4">
-        <div class="bg-white p-8 rounded-lg shadow-md border-t-4 border-blue-600">
-            <h2 class="text-2xl font-bold mb-4 text-gray-800">স্বাগতম, অ্যাডমিন!</h2>
-            <p class="text-gray-600 mb-6">
-                আপনার অ্যাকাউন্ট: <strong id="userEmail" class="text-blue-600">লোড হচ্ছে...</strong>
-            </p>
-            
-            <div class="border-t pt-6">
-                <h3 class="text-lg font-semibold mb-2">অ্যাডমিন কন্ট্রোল:</h3>
-                <p class="text-sm text-gray-500 mb-4">এখান থেকে আপনি বই যোগ করা, ইউজার ম্যানেজ করা বা অন্যান্য অ্যাডমিন কাজ করতে পারবেন।</p>
-                
-                <!-- উদাহরণস্বরূপ কয়েকটি বাটন -->
-                <div class="flex gap-4">
-                    <button class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">নতুন বই যোগ করুন</button>
-                    <button class="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600">ইউজার লিস্ট</button>
+    <div class="max-w-5xl mx-auto mt-8 p-4 grid grid-cols-1 md:grid-cols-3 gap-8">
+        
+        <!-- বাম দিক: নতুন বই যোগ করার ফর্ম -->
+        <div class="bg-white p-6 rounded-lg shadow-md md:col-span-1 h-fit">
+            <h2 class="text-xl font-bold mb-4 text-gray-800">নতুন বই যোগ করুন</h2>
+            <form id="addBookForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">বইয়ের নাম</label>
+                    <input type="text" id="title" required class="mt-1 w-full px-3 py-2 border rounded-md">
                 </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">লেখকের নাম</label>
+                    <input type="text" id="author" required class="mt-1 w-full px-3 py-2 border rounded-md">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">দাম (টাকা)</label>
+                    <input type="number" id="price" required class="mt-1 w-full px-3 py-2 border rounded-md">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">বইয়ের ছবির লিংক (URL)</label>
+                    <input type="url" id="cover_url" class="mt-1 w-full px-3 py-2 border rounded-md" placeholder="https://...">
+                </div>
+                <button type="submit" id="addBtn" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">বই যোগ করুন</button>
+            </form>
+            <div id="message" class="mt-3 text-sm text-center hidden"></div>
+        </div>
+
+        <!-- ডান দিক: বইয়ের লিস্ট -->
+        <div class="md:col-span-2">
+            <h2 class="text-xl font-bold mb-4 text-gray-800">সব বই</h2>
+            <div id="bookList" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <!-- এখানে JS দিয়ে বই লোড হবে -->
+                <p class="text-gray-500">বই লোড হচ্ছে...</p>
             </div>
         </div>
     </div>
 
     <script>
-        // ১. Supabase কনফিগারেশন
         const SUPABASE_URL = 'https://jhbpaezbpkfwjfmazdcn.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_oBzutzPKvIvujmSG7icXug_SwwveL5g';
-
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        const userEmailElement = document.getElementById('userEmail');
-        const logoutBtn = document.getElementById('logoutBtn');
+        const bookListDiv = document.getElementById('bookList');
+        const addBookForm = document.getElementById('addBookForm');
+        const messageDiv = document.getElementById('message');
 
-        // ২. অ্যাডমিন সেশন এবং রোল চেক
-        async function checkAdminAccess() {
-            // প্রথমে চেক করি ইউজার লগইন আছে কি না
-            const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
-
-            if (sessionError || !session) {
-                // লগইন না থাকলে লগইন পেজে পাঠাবে
-                window.location.href = '/login.html';
+        // ১. অ্যাডমিন চেক এবং বই লোড করা
+        async function initDashboard() {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (!session) {
+                window.location.href = '/admin-login.html';
                 return;
             }
-
-            const user = session.user;
-            userEmailElement.innerText = user.email;
-
-            // এবার ডাটাবেসের 'profiles' টেবিল থেকে ইউজারের role চেক করি
-            const { data: profile, error: profileError } = await supabaseClient
-                .from('profiles')
-                .select('role')
-                .eq('id', user.id)
-                .single();
-
-            if (profileError) {
-                console.error("Error fetching profile:", profileError);
-                alert("প্রোফাইল যাচাই করতে সমস্যা হয়েছে!");
-                await supabaseClient.auth.signOut();
-                window.location.href = '/login.html';
-                return;
-            }
-
-            // যদি ইউজারের রোল 'admin' না হয়
-            if (profile.role !== 'admin') {
-                alert("দুঃখিত! আপনি অ্যাডমিন নন। এই পেজে আপনার প্রবেশাধিকার নেই।");
-                // তাকে সাধারণ ড্যাশবোর্ডে বা হোম পেজে পাঠিয়ে দিন
-                window.location.href = '/dashboard.html'; 
-            }
-            // যদি অ্যাডমিন হয়, তাহলে তাকে পেজে থাকতে দেবে (কিছু করার দরকার নেই)
+            loadBooks(); // বই লোড করা
         }
 
-        // ৩. লগআউট ফাংশন
-        async function handleLogout() {
-            logoutBtn.innerText = 'অপেক্ষা করুন...';
+        // ২. ডাটাবেস থেকে বই নিয়ে আসা
+        async function loadBooks() {
+            const { data: books, error } = await supabaseClient
+                .from('books')
+                .select('*')
+                .order('created_at', { ascending: false }); // নতুন বই আগে দেখাবে
+
+            if (error) {
+                bookListDiv.innerHTML = `<p class="text-red-500">বই লোড করতে সমস্যা হয়েছে!</p>`;
+                return;
+            }
+
+            if (books.length === 0) {
+                bookListDiv.innerHTML = `<p class="text-gray-500">এখনো কোনো বই যোগ করা হয়নি।</p>`;
+                return;
+            }
+
+            // UI তে বইগুলো দেখানো
+            bookListDiv.innerHTML = books.map(book => `
+                <div class="bg-white p-4 rounded-lg shadow border-t-4 border-blue-500 flex flex-col justify-between">
+                    <div>
+                        <img src="${book.cover_url || 'https://via.placeholder.com/150'}" alt="${book.title}" class="w-full h-40 object-cover rounded mb-3">
+                        <h3 class="font-bold text-lg">${book.title}</h3>
+                        <p class="text-sm text-gray-600">লেখক: ${book.author}</p>
+                        <p class="text-blue-600 font-bold mt-2">৳ ${book.price}</p>
+                    </div>
+                    <button onclick="deleteBook('${book.id}')" class="mt-3 w-full bg-red-100 text-red-600 py-1 rounded text-sm hover:bg-red-200">ডিলিট করুন</button>
+                </div>
+            `).join('');
+        }
+
+        // ৩. নতুন বই যোগ করা
+        addBookForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('addBtn');
+            btn.innerText = 'যোগ হচ্ছে...';
+            btn.disabled = true;
+
+            const newBook = {
+                title: document.getElementById('title').value,
+                author: document.getElementById('author').value,
+                price: parseFloat(document.getElementById('price').value),
+                cover_url: document.getElementById('cover_url').value
+            };
+
+            const { error } = await supabaseClient.from('books').insert([newBook]);
+
+            if (error) {
+                messageDiv.className = 'mt-3 text-sm text-center text-red-600 block';
+                messageDiv.innerText = 'বই যোগ করা যায়নি! ' + error.message;
+            } else {
+                messageDiv.className = 'mt-3 text-sm text-center text-green-600 block';
+                messageDiv.innerText = 'সফলভাবে বই যোগ হয়েছে!';
+                addBookForm.reset();
+                loadBooks(); // লিস্ট রিফ্রেশ করা
+            }
+
+            btn.innerText = 'বই যোগ করুন';
+            btn.disabled = false;
+        });
+
+        // ৪. বই ডিলিট করা (গ্লোবাল ফাংশন)
+        window.deleteBook = async (id) => {
+            if(!confirm("আপনি কি নিশ্চিত এই বইটি ডিলিট করতে চান?")) return;
+            
+            const { error } = await supabaseClient.from('books').delete().eq('id', id);
+            if(error) alert("ডিলিট করা যায়নি: " + error.message);
+            else loadBooks();
+        };
+
+        // ৫. লগআউট
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
             await supabaseClient.auth.signOut();
             window.location.href = '/admin-login.html';
-        }
+        });
 
-        logoutBtn.addEventListener('click', handleLogout);
-
-        // পেজ লোড হলেই চেক করবে
-        checkAdminAccess();
+        // শুরু করা
+        initDashboard();
     </script>
 </body>
 </html>
