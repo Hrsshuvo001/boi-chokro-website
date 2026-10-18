@@ -115,10 +115,9 @@
                 const file = document.getElementById('cover_file').files[0];
                 let cover_url = '';
 
-                // ১. যদি ছবি সিলেক্ট করা থাকে, তবে সেটি Supabase Storage-এ আপলোড করব
                 if (file) {
                     const fileExt = file.name.split('.').pop();
-                    const fileName = `${Date.now()}.${fileExt}`; // ইউনিক ফাইল নাম
+                    const fileName = `${Date.now()}.${fileExt}`;
                     
                     const { data: uploadData, error: uploadError } = await supabaseClient
                         .storage
@@ -127,7 +126,6 @@
 
                     if (uploadError) throw new Error("ছবি আপলোড ব্যর্থ হয়েছে: " + uploadError.message);
 
-                    // আপলোড হওয়া ছবির পাবলিক লিংক বের করা
                     const { data: publicUrlData } = supabaseClient
                         .storage
                         .from('book-covers')
@@ -136,13 +134,12 @@
                     cover_url = publicUrlData.publicUrl;
                 }
 
-                // ২. ডাটাবেসে বইয়ের তথ্য সেভ করা
                 const newBook = {
                     title: document.getElementById('title').value,
                     author: document.getElementById('author').value,
                     price: parseFloat(document.getElementById('price').value),
                     description: document.getElementById('description').value,
-                    cover_url: cover_url // আপলোড করা ছবির লিংক
+                    cover_url: cover_url
                 };
 
                 const { error: insertError } = await supabaseClient.from('books').insert([newBook]);
@@ -151,7 +148,7 @@
                 messageDiv.className = 'mt-3 text-sm text-center text-green-600 block';
                 messageDiv.innerText = 'সফলভাবে বই যোগ হয়েছে!';
                 addBookForm.reset();
-                loadBooks(); // লিস্ট রিফ্রেশ
+                loadBooks();
 
             } catch (error) {
                 messageDiv.className = 'mt-3 text-sm text-center text-red-600 block';
@@ -162,7 +159,6 @@
             }
         });
 
-        // বই ডিলিট
         window.deleteBook = async (id) => {
             if(!confirm("আপনি কি নিশ্চিত এই বইটি ডিলিট করতে চান?")) return;
             const { error } = await supabaseClient.from('books').delete().eq('id', id);
@@ -170,7 +166,6 @@
             else loadBooks();
         };
 
-        // লগআউট
         document.getElementById('logoutBtn').addEventListener('click', async () => {
             await supabaseClient.auth.signOut();
             window.location.href = '/admin-login.html';
