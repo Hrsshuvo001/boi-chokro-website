@@ -319,23 +319,13 @@
         let myChart = null;
         let siteSettings = null; 
 
-        // --- কাস্টম টোস্ট নোটিফিকেশন ফাংশন ---
+        // টোস্ট নোটিফিকেশন ফাংশন
         window.showToast = (message, isError = false) => {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
-            
-            // টোস্টের ডিজাইন
             toast.className = `toast-animate px-6 py-4 rounded-lg shadow-2xl text-white font-bold flex items-center gap-3 ${isError ? 'bg-red-600 border-l-4 border-red-800' : 'bg-green-600 border-l-4 border-green-800'}`;
-            
-            // আইকন ও মেসেজ
-            toast.innerHTML = `
-                <span class="text-2xl">${isError ? '⚠️' : '✅'}</span>
-                <span>${message}</span>
-            `;
-            
+            toast.innerHTML = `<span class="text-2xl">${isError ? '⚠️' : '✅'}</span><span>${message}</span>`;
             container.appendChild(toast);
-
-            // ৪ সেকেন্ড পর টোস্টটি মুছে ফেলা
             setTimeout(() => {
                 toast.style.opacity = '0';
                 toast.style.transform = 'translateX(100%)';
@@ -594,7 +584,23 @@
         async function loadPendingBookings() {
             const { data: orders } = await supabaseClient.from('orders').select('*').eq('status', 'pending').order('created_at', { ascending: false });
             const tbody = document.getElementById('bookingTableBody');
-            if(!orders || orders.length === 0) { tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-gray-500">কোনো পেন্ডিং অর্ডার নেই।</td></tr>`; return; }
+            
+            // পেন্ডিং অর্ডার না থাকলে সুন্দর মেসেজ
+            if(!orders || orders.length === 0) { 
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="py-8 text-center bg-gray-50 rounded-lg">
+                            <div class="flex flex-col items-center justify-center text-gray-500">
+                                <svg class="w-12 h-12 mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                <p class="text-lg font-bold text-gray-700">কোনো পেন্ডিং অর্ডার নেই!</p>
+                                <p class="text-sm">এই মুহূর্তে কনফার্ম করার জন্য কোনো বুকিং পাওয়া যায়নি।</p>
+                            </div>
+                        </td>
+                    </tr>
+                `; 
+                return; 
+            }
+            
             tbody.innerHTML = orders.map(o => `
                 <tr class="border-b hover:bg-gray-50">
                     <td class="p-4 text-xs text-gray-500">${o.id.split('-')[0]}</td>
@@ -703,4 +709,4 @@
         init();
     </script>
 </body>
-                                                                      </html>
+    </html>
