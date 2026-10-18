@@ -29,6 +29,20 @@
                     <input type="text" id="author" required class="mt-1 w-full px-3 py-2 border rounded-md">
                 </div>
                 
+                <!-- নতুন ক্যাটাগরি ড্রপডাউন -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">বইয়ের ক্যাটাগরি *</label>
+                    <select id="category" required class="mt-1 w-full px-3 py-2 border rounded-md bg-white">
+                        <option value="" disabled selected>ক্যাটাগরি সিলেক্ট করুন</option>
+                        <option value="গল্পের বই">গল্পের বই</option>
+                        <option value="উপন্যাস">উপন্যাস</option>
+                        <option value="কবিতা">কবিতা</option>
+                        <option value="ছড়া">ছড়া</option>
+                        <option value="বাচ্চাদের বই">বাচ্চাদের বই</option>
+                        <option value="ইতিহাস">ইতিহাস</option>
+                    </select>
+                </div>
+
                 <div class="grid grid-cols-2 gap-2">
                     <div>
                         <label class="block text-sm font-medium text-gray-700">আসল দাম (৳)</label>
@@ -40,10 +54,8 @@
                     </div>
                 </div>
 
-                <!-- লিংক অপশন -->
                 <div class="p-4 bg-blue-50 border border-blue-200 rounded-md">
                     <label class="block text-sm font-bold text-blue-800 mb-2">বিক্রয়ের ধরন</label>
-                    
                     <div class="flex flex-col gap-2 mb-3">
                         <label class="flex items-center space-x-2 text-sm text-blue-900 cursor-pointer">
                             <input type="radio" name="link_type" id="type_affiliate" value="affiliate" checked onchange="toggleLinkType()">
@@ -54,7 +66,6 @@
                             <span>নিজের সাইটে বিক্রি (কার্ট ও পেমেন্ট গেটওয়ে)</span>
                         </label>
                     </div>
-
                     <input type="url" id="purchase_link" placeholder="https://..." class="w-full px-3 py-2 border rounded-md mb-2">
                     <p class="text-xs text-gray-600" id="link_hint">এখানে অ্যাফিলিয়েট লিংক দিন।</p>
                 </div>
@@ -65,7 +76,7 @@
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">বইয়ের ছবি</label>
+                    <label class="block text-sm font-medium text-gray-700">বইয়ের ছবি (একাধিক)</label>
                     <input type="file" id="cover_files" accept="image/*" multiple required class="mt-1 w-full px-3 py-2 border rounded-md bg-gray-50 text-sm">
                 </div>
                 
@@ -101,7 +112,7 @@
                 input.required = true;
             } else {
                 input.placeholder = "লিংকের প্রয়োজন নেই (কার্টে যাবে)";
-                hint.innerText = "কাস্টমার এই বইটি কার্টে যোগ করতে পারবে এবং চেকআউটে গিয়ে পেমেন্ট করবে।";
+                hint.innerText = "কাস্টমার এই বইটি কার্টে যোগ করতে পারবে।";
                 input.required = false;
                 input.value = ""; 
             }
@@ -121,19 +132,15 @@
             bookListDiv.innerHTML = books.map(book => `
                 <div class="bg-white p-4 rounded-lg shadow relative flex flex-col justify-between">
                     <div>
-                        ${book.original_price && book.original_price > book.discount_price ? 
-                            `<span class="absolute top-2 right-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded">ডিসকাউন্ট!</span>` : ''}
-                        
-                        <img src="${book.cover_url || 'https://via.placeholder.com/150'}" class="w-full h-40 object-cover rounded mb-3">
+                        <span class="absolute top-2 right-2 bg-blue-500 text-white text-xs font-bold px-2 py-1 rounded">${book.category || 'N/A'}</span>
+                        <img src="${book.cover_url || 'https://via.placeholder.com/150'}" class="w-full h-40 object-cover rounded mb-3 mt-4">
                         <h3 class="font-bold text-lg leading-tight">${book.title}</h3>
                         <p class="text-sm text-gray-600 mb-2">${book.author}</p>
                         
                         <div class="flex items-center gap-2">
                             <span class="text-green-600 font-bold text-lg">৳ ${book.discount_price}</span>
-                            ${book.original_price ? `<span class="text-gray-400 line-through text-sm">৳ ${book.original_price}</span>` : ''}
                         </div>
-                        
-                        ${book.is_affiliate ? `<span class="inline-block mt-2 bg-purple-100 text-purple-700 text-xs px-2 py-1 rounded">Affiliate</span>` : `<span class="inline-block mt-2 bg-green-100 text-green-700 text-xs px-2 py-1 rounded">Direct Sale</span>`}
+                        <p class="text-xs text-gray-500 mt-2">সেলস: ${book.sales_count || 0} কপি</p>
                     </div>
                     <button onclick="deleteBook('${book.id}')" class="mt-4 w-full bg-red-50 text-red-600 py-1 rounded text-sm hover:bg-red-100 border border-red-200">ডিলিট করুন</button>
                 </div>
@@ -169,13 +176,15 @@
                 const newBook = {
                     title: document.getElementById('title').value,
                     author: document.getElementById('author').value,
+                    category: document.getElementById('category').value, // নতুন ক্যাটাগরি
                     original_price: parseFloat(document.getElementById('original_price').value) || null,
                     discount_price: parseFloat(document.getElementById('discount_price').value),
                     purchase_link: document.getElementById('purchase_link').value || null,
                     is_affiliate: isAffiliate,
                     description: document.getElementById('description').value,
                     cover_url: uploadedUrls[0] || '',
-                    gallery_images: uploadedUrls
+                    gallery_images: uploadedUrls,
+                    sales_count: 0 // শুরুতে ০ থাকবে
                 };
 
                 const { error: insertError } = await supabaseClient.from('books').insert([newBook]);
