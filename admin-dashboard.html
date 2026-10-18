@@ -14,42 +14,68 @@
         <button id="logoutBtn" class="bg-red-500 px-4 py-2 rounded hover:bg-red-600">লগআউট</button>
     </nav>
 
-    <div class="max-w-6xl mx-auto mt-8 p-4 grid grid-cols-1 md:grid-cols-3 gap-8">
+    <div class="max-w-7xl mx-auto mt-8 p-4 grid grid-cols-1 lg:grid-cols-3 gap-8">
         
-        <!-- নতুন বই যোগ করার ফর্ম -->
-        <div class="bg-white p-6 rounded-lg shadow-md md:col-span-1 h-fit">
+        <!-- ফর্ম -->
+        <div class="bg-white p-6 rounded-lg shadow-md lg:col-span-1 h-fit">
             <h2 class="text-xl font-bold mb-4 text-gray-800">নতুন বই যোগ করুন</h2>
             <form id="addBookForm" class="space-y-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">বইয়ের নাম</label>
+                    <label class="block text-sm font-medium text-gray-700">বইয়ের নাম *</label>
                     <input type="text" id="title" required class="mt-1 w-full px-3 py-2 border rounded-md">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">লেখকের নাম</label>
+                    <label class="block text-sm font-medium text-gray-700">লেখকের নাম *</label>
                     <input type="text" id="author" required class="mt-1 w-full px-3 py-2 border rounded-md">
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">দাম (টাকা)</label>
-                    <input type="number" id="price" required class="mt-1 w-full px-3 py-2 border rounded-md">
+                
+                <!-- ডিসকাউন্ট অপশন -->
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">আসল দাম (৳)</label>
+                        <input type="number" id="original_price" class="mt-1 w-full px-3 py-2 border rounded-md">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">ডিসকাউন্ট দাম (৳) *</label>
+                        <input type="number" id="discount_price" required class="mt-1 w-full px-3 py-2 border rounded-md">
+                    </div>
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">বইয়ের বিবরণ (Description)</label>
-                    <textarea id="description" rows="3" class="mt-1 w-full px-3 py-2 border rounded-md"></textarea>
+
+                <!-- অ্যাফিলিয়েট / বাই লিংক -->
+                <div class="p-3 bg-blue-50 border border-blue-200 rounded-md">
+                    <label class="block text-sm font-medium text-blue-800 mb-1">বই কেনার লিংক (নিজের বা অ্যাফিলিয়েট)</label>
+                    <input type="url" id="purchase_link" placeholder="https://..." class="w-full px-3 py-2 border rounded-md mb-2">
+                    <label class="flex items-center space-x-2 text-sm text-blue-800">
+                        <input type="checkbox" id="is_affiliate" class="rounded text-blue-600">
+                        <span>এটি একটি অ্যাফিলিয়েট লিংক</span>
+                    </label>
                 </div>
+
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">বইয়ের ছবি আপলোড করুন</label>
-                    <input type="file" id="cover_file" accept="image/*" class="mt-1 w-full px-3 py-2 border rounded-md bg-gray-50">
+                    <label class="block text-sm font-medium text-gray-700">বিকাশ/নগদ নাম্বার (পেমেন্টের জন্য)</label>
+                    <input type="text" id="payment_info" placeholder="বিকাশ: 017xxxx, নগদ: 017xxxx" class="mt-1 w-full px-3 py-2 border rounded-md">
                 </div>
-                <button type="submit" id="addBtn" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">বই যোগ করুন</button>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">বইয়ের বিবরণ</label>
+                    <textarea id="description" rows="2" class="mt-1 w-full px-3 py-2 border rounded-md"></textarea>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">বইয়ের ছবি (একাধিক সিলেক্ট করতে পারবেন)</label>
+                    <input type="file" id="cover_files" accept="image/*" multiple required class="mt-1 w-full px-3 py-2 border rounded-md bg-gray-50 text-sm">
+                </div>
+                
+                <button type="submit" id="addBtn" class="w-full bg-blue-600 text-white font-bold py-2 rounded hover:bg-blue-700 transition">বই যোগ করুন</button>
             </form>
-            <div id="message" class="mt-3 text-sm text-center hidden"></div>
+            <div id="message" class="mt-3 text-sm text-center hidden font-bold"></div>
         </div>
 
-        <!-- বইয়ের লিস্ট -->
-        <div class="md:col-span-2">
+        <!-- লিস্ট -->
+        <div class="lg:col-span-2">
             <h2 class="text-xl font-bold mb-4 text-gray-800">সব বই</h2>
-            <div id="bookList" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <p class="text-gray-500">বই লোড হচ্ছে...</p>
+            <div id="bookList" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                <!-- লোডিং -->
             </div>
         </div>
     </div>
@@ -63,91 +89,86 @@
         const addBookForm = document.getElementById('addBookForm');
         const messageDiv = document.getElementById('message');
 
-        // অ্যাডমিন চেক এবং বই লোড
         async function initDashboard() {
             const { data: { session } } = await supabaseClient.auth.getSession();
-            if (!session) {
-                window.location.href = '/admin-login.html';
-                return;
-            }
-            loadBooks();
+            if (!session) window.location.href = '/admin-login.html';
+            else loadBooks();
         }
 
-        // বই লোড করা
         async function loadBooks() {
-            const { data: books, error } = await supabaseClient
-                .from('books')
-                .select('*')
-                .order('created_at', { ascending: false });
-
-            if (error) {
-                bookListDiv.innerHTML = `<p class="text-red-500">বই লোড করতে সমস্যা হয়েছে!</p>`;
-                return;
-            }
-
-            if (books.length === 0) {
-                bookListDiv.innerHTML = `<p class="text-gray-500">এখনো কোনো বই যোগ করা হয়নি।</p>`;
-                return;
-            }
+            const { data: books, error } = await supabaseClient.from('books').select('*').order('created_at', { ascending: false });
+            if (error) return bookListDiv.innerHTML = `<p class="text-red-500">বই লোড ব্যর্থ!</p>`;
+            if (books.length === 0) return bookListDiv.innerHTML = `<p class="text-gray-500">কোনো বই নেই।</p>`;
 
             bookListDiv.innerHTML = books.map(book => `
-                <div class="bg-white p-4 rounded-lg shadow border-t-4 border-blue-500 flex flex-col justify-between">
+                <div class="bg-white p-4 rounded-lg shadow relative flex flex-col justify-between">
                     <div>
-                        <img src="${book.cover_url || 'https://via.placeholder.com/150'}" alt="${book.title}" class="w-full h-40 object-cover rounded mb-3">
-                        <h3 class="font-bold text-lg">${book.title}</h3>
-                        <p class="text-sm text-gray-600">লেখক: ${book.author}</p>
-                        <p class="text-blue-600 font-bold mt-2">৳ ${book.price}</p>
-                        <p class="text-sm text-gray-500 mt-1 truncate">${book.description || 'কোনো বিবরণ নেই'}</p>
+                        <!-- ডিসকাউন্ট ব্যাজ -->
+                        ${book.original_price && book.original_price > book.discount_price ? 
+                            `<span class="absolute top-2 right-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded">ডিসকাউন্ট!</span>` : ''}
+                        
+                        <img src="${book.cover_url || 'https://via.placeholder.com/150'}" class="w-full h-40 object-cover rounded mb-3">
+                        <h3 class="font-bold text-lg leading-tight">${book.title}</h3>
+                        <p class="text-sm text-gray-600 mb-2">${book.author}</p>
+                        
+                        <div class="flex items-center gap-2">
+                            <span class="text-green-600 font-bold text-lg">৳ ${book.discount_price}</span>
+                            ${book.original_price ? `<span class="text-gray-400 line-through text-sm">৳ ${book.original_price}</span>` : ''}
+                        </div>
+                        
+                        ${book.payment_info ? `<p class="text-xs text-gray-500 mt-1">💳 ${book.payment_info}</p>` : ''}
+                        ${book.is_affiliate ? `<span class="inline-block mt-2 bg-purple-100 text-purple-700 text-xs px-2 py-1 rounded">Affiliate Link</span>` : ''}
                     </div>
-                    <button onclick="deleteBook('${book.id}')" class="mt-3 w-full bg-red-100 text-red-600 py-1 rounded text-sm hover:bg-red-200">ডিলিট করুন</button>
+                    <button onclick="deleteBook('${book.id}')" class="mt-4 w-full bg-red-50 text-red-600 py-1 rounded text-sm hover:bg-red-100 border border-red-200">ডিলিট করুন</button>
                 </div>
             `).join('');
         }
 
-        // নতুন বই যোগ করা (ছবি আপলোড সহ)
         addBookForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('addBtn');
-            btn.innerText = 'যোগ হচ্ছে...';
+            btn.innerText = 'ছবি আপলোড হচ্ছে...';
             btn.disabled = true;
 
             try {
-                const file = document.getElementById('cover_file').files[0];
-                let cover_url = '';
+                const files = document.getElementById('cover_files').files;
+                let uploadedUrls = [];
 
-                if (file) {
-                    const fileExt = file.name.split('.').pop();
-                    const fileName = `${Date.now()}.${fileExt}`;
-                    
-                    const { data: uploadData, error: uploadError } = await supabaseClient
-                        .storage
-                        .from('book-covers')
-                        .upload(fileName, file);
+                // ১. একাধিক ছবি আপলোড করা
+                if (files.length > 0) {
+                    for (let i = 0; i < files.length; i++) {
+                        const file = files[i];
+                        const fileExt = file.name.split('.').pop();
+                        const fileName = `${Date.now()}_${i}.${fileExt}`;
+                        
+                        const { error: uploadError } = await supabaseClient.storage.from('book-covers').upload(fileName, file);
+                        if (uploadError) throw new Error("ছবি আপলোড ব্যর্থ: " + uploadError.message);
 
-                    if (uploadError) throw new Error("ছবি আপলোড ব্যর্থ হয়েছে: " + uploadError.message);
-
-                    const { data: publicUrlData } = supabaseClient
-                        .storage
-                        .from('book-covers')
-                        .getPublicUrl(fileName);
-                    
-                    cover_url = publicUrlData.publicUrl;
+                        const { data: publicUrlData } = supabaseClient.storage.from('book-covers').getPublicUrl(fileName);
+                        uploadedUrls.push(publicUrlData.publicUrl);
+                    }
                 }
 
+                // ২. ডাটাবেসে সেভ করা
                 const newBook = {
                     title: document.getElementById('title').value,
                     author: document.getElementById('author').value,
-                    price: parseFloat(document.getElementById('price').value),
+                    original_price: parseFloat(document.getElementById('original_price').value) || null,
+                    discount_price: parseFloat(document.getElementById('discount_price').value),
+                    purchase_link: document.getElementById('purchase_link').value,
+                    is_affiliate: document.getElementById('is_affiliate').checked,
+                    payment_info: document.getElementById('payment_info').value,
                     description: document.getElementById('description').value,
-                    cover_url: cover_url
+                    cover_url: uploadedUrls[0] || '', // প্রথম ছবিটি কভার হিসেবে থাকবে
+                    gallery_images: uploadedUrls // সব ছবি অ্যারে হিসেবে সেভ হবে
                 };
 
                 const { error: insertError } = await supabaseClient.from('books').insert([newBook]);
                 if (insertError) throw insertError;
 
                 messageDiv.className = 'mt-3 text-sm text-center text-green-600 block';
-                messageDiv.innerText = 'সফলভাবে বই যোগ হয়েছে!';
-                addBookForm.reset();
+                messageDiv.innerText = 'সফলভাবে বই যোগ হয়েছে! এখন পরের বইটি যোগ করতে পারেন।';
+                addBookForm.reset(); // ফর্ম খালি হয়ে যাবে যাতে পরের বই দেওয়া যায়
                 loadBooks();
 
             } catch (error) {
@@ -160,10 +181,9 @@
         });
 
         window.deleteBook = async (id) => {
-            if(!confirm("আপনি কি নিশ্চিত এই বইটি ডিলিট করতে চান?")) return;
-            const { error } = await supabaseClient.from('books').delete().eq('id', id);
-            if(error) alert("ডিলিট করা যায়নি: " + error.message);
-            else loadBooks();
+            if(!confirm("বইটি ডিলিট করবেন?")) return;
+            await supabaseClient.from('books').delete().eq('id', id);
+            loadBooks();
         };
 
         document.getElementById('logoutBtn').addEventListener('click', async () => {
