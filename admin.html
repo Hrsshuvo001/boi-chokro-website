@@ -24,46 +24,72 @@
             </div>
             
             <button type="submit" id="loginBtn" class="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition">লগইন করুন</button>
-            <p id="message" class="text-center text-red-500 text-sm mt-2 hidden"></p>
+            
+            <!-- মেসেজ দেখানোর জায়গা -->
+            <p id="message" class="text-center font-semibold text-sm mt-3 hidden"></p>
         </form>
     </div>
 
     <!-- Supabase JS Library -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
     <script>
         // ⚠️ এখানে আপনার Supabase Project URL এবং Anon Key বসান
         const SUPABASE_URL = 'https://jhbpaezbpkfwjfmazdcn.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_oBzutzPKvIvujmSG7icXug_SwwveL5g';
 
+        // Supabase ক্লায়েন্ট তৈরি
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         const loginForm = document.getElementById('loginForm');
         const messageEl = document.getElementById('message');
+        const btn = document.getElementById('loginBtn');
 
         loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
+            e.preventDefault(); // পেজ রিফ্রেশ হওয়া আটকায়
+            
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
-            const btn = document.getElementById('loginBtn');
 
+            // বাটন ডিজেবল করা এবং লোডিং টেক্সট দেখানো
             btn.innerText = 'লগইন হচ্ছে...';
             btn.disabled = true;
+            messageEl.classList.add('hidden');
 
-            const { data, error } = await supabase.auth.signInWithPassword({
-                email: email,
-                password: password,
-            });
+            try {
+                // Supabase-এ লগইন রিকোয়েস্ট পাঠানো
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email: email,
+                    password: password,
+                });
 
-            if (error) {
-                messageEl.innerText = "ভুল ইমেইল বা পাসওয়ার্ড!";
+                if (error) {
+                    // লগইন ব্যর্থ হলে
+                    messageEl.innerText = "ভুল ইমেইল বা পাসওয়ার্ড! আবার চেষ্টা করুন।";
+                    messageEl.className = "text-center font-semibold text-sm mt-3 text-red-500";
+                    messageEl.classList.remove('hidden');
+                    btn.innerText = 'লগইন করুন';
+                    btn.disabled = false;
+                } else {
+                    // লগইন সফল হলে
+                    messageEl.innerText = "সফলভাবে লগইন হয়েছে! ড্যাশবোর্ডে নিয়ে যাচ্ছে...";
+                    messageEl.className = "text-center font-semibold text-sm mt-3 text-green-600";
+                    messageEl.classList.remove('hidden');
+                    
+                    // ২ সেকেন্ড পর ড্যাশবোর্ডে রিডাইরেক্ট করবে
+                    setTimeout(() => {
+                        window.location.href = '/admin-dashboard.html';
+                    }, 2000);
+                }
+            } catch (err) {
+                // কোনো নেটওয়ার্ক সমস্যা হলে
+                messageEl.innerText = "কিছু একটা ভুল হয়েছে! ইন্টারনেট চেক করুন।";
+                messageEl.className = "text-center font-semibold text-sm mt-3 text-red-500";
                 messageEl.classList.remove('hidden');
                 btn.innerText = 'লগইন করুন';
                 btn.disabled = false;
-            } else {
-                // লগইন সফল হলে ড্যাশবোর্ডে নিয়ে যাবে
-                window.location.href = '/admin-dashboard.html'; 
             }
         });
     </script>
 </body>
-  </html>
+</html>
