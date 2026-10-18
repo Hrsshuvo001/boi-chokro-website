@@ -14,13 +14,10 @@
         .section-content.active { display: block; }
     </style>
 </head>
-<body class="bg-gray-100 h-screen overflow-hidden flex flex-col md:flex-row">
-
-    <!-- মোবাইলের জন্য ডার্ক ব্যাকড্রপ (মেনু খোলা থাকলে বাইরে ক্লিক করলে বন্ধ হবে) -->
-    <div id="mobile-backdrop" class="fixed inset-0 bg-black/60 z-40 hidden md:hidden transition-opacity duration-300 opacity-0" onclick="toggleSidebar()"></div>
+<body class="bg-gray-100 h-[100dvh] overflow-hidden flex flex-col md:flex-row">
 
     <!-- সাইডবার নেভিগেশন -->
-    <aside id="sidebar" class="fixed md:sticky top-0 left-0 z-50 h-screen w-64 bg-slate-800 text-slate-300 flex flex-col shadow-2xl transition-transform duration-300 transform -translate-x-full md:translate-x-0 flex-shrink-0">
+    <aside id="sidebar" class="fixed md:sticky top-0 left-0 z-50 h-[100dvh] w-64 bg-slate-800 text-slate-300 flex flex-col shadow-xl transition-transform duration-300 transform -translate-x-full md:translate-x-0 flex-shrink-0">
         <!-- সাইডবার হেডার -->
         <div class="p-4 border-b border-slate-700 flex justify-between items-center flex-shrink-0">
             <div class="flex items-center gap-2">
@@ -30,8 +27,8 @@
             <button onclick="toggleSidebar()" class="md:hidden text-red-400 hover:text-red-300 bg-slate-700 px-2 py-1 rounded text-sm">✕</button>
         </div>
         
-        <!-- মেনু এরিয়া -->
-        <nav class="flex-grow flex flex-col p-2 overflow-y-auto pb-4">
+        <!-- মেনু এরিয়া (সব বাটন এখানে একসাথে থাকবে) -->
+        <nav class="flex-grow flex flex-col p-2 overflow-y-auto">
             <div class="flex flex-col gap-1">
                 <button onclick="showSection('home')" class="nav-item active text-left px-4 py-3 rounded-md hover:bg-slate-700 transition flex items-center gap-3 w-full">📊 হোম (ড্যাশবোর্ড)</button>
                 <button onclick="showSection('add-book')" class="nav-item text-left px-4 py-3 rounded-md hover:bg-slate-700 transition flex items-center gap-3 w-full">📚 অ্যাড নিউ বুক</button>
@@ -42,17 +39,17 @@
                 
                 <!-- সাইট সেটিংস রিপোর্টের ঠিক নিচে -->
                 <button onclick="showSection('settings')" class="nav-item text-left px-4 py-3 rounded-md hover:bg-slate-700 transition flex items-center gap-3 w-full">⚙️ সাইট সেটিংস</button>
-            </div>
-            
-            <!-- লগআউট বাটন সবার নিচে (mt-auto দিয়ে ফিক্সড) -->
-            <div class="mt-auto pt-4 border-t border-slate-700">
-                <button onclick="handleLogout()" class="w-full text-left px-4 py-3 rounded-md bg-red-900/30 hover:bg-red-600 text-red-400 hover:text-white transition flex items-center gap-3 border border-red-900/50">🚪 লগআউট</button>
+                
+                <!-- লগআউট বাটন ঠিক সেটিংসের নিচেই (কোনো mt-auto নেই) -->
+                <div class="border-t border-slate-700 mt-2 pt-2">
+                    <button onclick="handleLogout()" class="w-full text-left px-4 py-3 rounded-md bg-red-900/30 hover:bg-red-600 text-red-400 hover:text-white transition flex items-center gap-3 border border-red-900/50">🚪 লগআউট</button>
+                </div>
             </div>
         </nav>
     </aside>
 
     <!-- মেইন কন্টেন্ট এরিয়া -->
-    <div class="flex-1 flex flex-col h-full overflow-hidden w-full relative">
+    <div class="flex-1 flex flex-col h-[100dvh] overflow-hidden w-full relative">
         
         <!-- মোবাইল টপবার -->
         <header class="bg-white shadow-sm p-4 flex justify-between items-center md:hidden z-30 flex-shrink-0">
@@ -295,22 +292,10 @@
         let myChart = null;
         let siteSettings = null; 
 
-        // সাইডবার টগল লজিক আপডেট করা হয়েছে (ব্যাকড্রপ সহ)
+        // সাইডবার টগল (ব্যাকড্রপ ছাড়া, যাতে ক্লিকে সমস্যা না হয়)
         window.toggleSidebar = () => {
             const sidebar = document.getElementById('sidebar');
-            const backdrop = document.getElementById('mobile-backdrop');
-            const isClosed = sidebar.classList.contains('-translate-x-full');
-
-            if (isClosed) {
-                sidebar.classList.remove('-translate-x-full');
-                backdrop.classList.remove('hidden');
-                // অ্যানিমেশনের জন্য ছোট ডিলে
-                setTimeout(() => backdrop.classList.remove('opacity-0'), 10);
-            } else {
-                sidebar.classList.add('-translate-x-full');
-                backdrop.classList.add('opacity-0');
-                setTimeout(() => backdrop.classList.add('hidden'), 300);
-            }
+            sidebar.classList.toggle('-translate-x-full');
         };
 
         window.showSection = (sectionId) => {
@@ -609,4 +594,4 @@
         init();
     </script>
 </body>
-    </html>
+                            </html>
