@@ -90,10 +90,15 @@
                 return;
             }
 
-            bookGrid.innerHTML = books.map(book => `
+            bookGrid.innerHTML = books.map(book => {
+                // দাম নাল (null) হলে যেন সুন্দরভাবে দেখায়
+                const currentPrice = book.discount_price || book.original_price || 'N/A';
+                const hasDiscount = book.original_price && book.discount_price && book.original_price > book.discount_price;
+
+                return `
                 <div class="bg-white rounded-xl shadow-sm hover:shadow-xl transition duration-300 overflow-hidden flex flex-col border border-gray-100 relative group">
                     
-                    ${book.original_price && book.original_price > book.discount_price ? 
+                    ${hasDiscount ? 
                         `<div class="absolute top-3 left-3 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded shadow z-10">ডিসকাউন্ট</div>` : ''}
 
                     <div class="overflow-hidden h-64 bg-gray-100">
@@ -105,8 +110,8 @@
                         <p class="text-sm text-gray-500 mb-3">লেখক: ${book.author}</p>
                         
                         <div class="flex items-end gap-2 mb-4 mt-auto">
-                            <span class="text-2xl font-bold text-blue-600">৳ ${book.discount_price}</span>
-                            ${book.original_price ? `<span class="text-gray-400 line-through text-sm mb-1">৳ ${book.original_price}</span>` : ''}
+                            <span class="text-2xl font-bold text-blue-600">৳ ${currentPrice}</span>
+                            ${hasDiscount ? `<span class="text-gray-400 line-through text-sm mb-1">৳ ${book.original_price}</span>` : ''}
                         </div>
 
                         ${book.payment_info ? `<div class="bg-gray-50 p-2 rounded text-xs text-gray-600 mb-4 border border-gray-200">💳 পেমেন্ট: ${book.payment_info}</div>` : ''}
@@ -117,7 +122,7 @@
                         </button>
                     </div>
                 </div>
-            `).join('');
+            `}).join('');
         }
 
         // ৩. কেনার সময় লগইন চেক
