@@ -3,92 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Supabase Login</title>
-    <!-- Supabase JS CDN -->
+    <title>লগইন - Boi Chokro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
-        body { font-family: sans-serif; display: flex; justify-content: center; padding-top: 50px; }
-        form { display: flex; flex-direction: column; width: 300px; gap: 15px; }
-        input, button { padding: 10px; font-size: 16px; }
-        #error-box { 
-            display: none; 
-            background-color: #ffebee; 
-            color: #c62828; 
-            padding: 10px; 
-            border-radius: 5px; 
-            margin-top: 15px; 
-            font-weight: bold;
-        }
-    </style>
 </head>
-<body>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
 
-    <div>
-        <h2>লগইন করুন</h2>
-        <form id="login-form">
-            <input type="email" id="email" placeholder="ইমেইল দিন" required>
-            <input type="password" id="password" placeholder="পাসওয়ার্ড দিন" required>
-            <button type="submit" id="login-btn">লগইন</button>
-        </form>
+    <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md border-t-4 border-blue-600">
+        <div class="text-center mb-8">
+            <h2 class="text-3xl font-bold text-gray-800">স্বাগতম!</h2>
+            <p class="text-gray-500 mt-2">আপনার অ্যাকাউন্টে লগইন করুন</p>
+        </div>
         
-        <!-- এরর মেসেজ দেখানোর জন্য ডিভ -->
-        <div id="error-box"></div>
+        <form id="loginForm" class="space-y-5">
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-1">ইমেইল</label>
+                <input type="email" id="email" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-1">পাসওয়ার্ড</label>
+                <input type="password" id="password" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            
+            <button type="submit" id="loginBtn" class="w-full bg-blue-600 text-white font-bold py-2.5 rounded-lg hover:bg-blue-700 transition">
+                লগইন
+            </button>
+        </form>
+
+        <div id="message" class="text-center text-sm mt-4 hidden font-semibold"></div>
+
+        <p class="text-center text-gray-600 mt-6 text-sm">
+            অ্যাকাউন্ট নেই? <a href="/signup.html" class="text-blue-600 font-bold hover:underline">সাইন আপ করুন</a>
+        </p>
     </div>
 
     <script>
-        // ⚠️ এখানে আপনার নিজের URL এবং Anon Key বসান
-        const supabaseUrl = 'https://YOUR_PROJECT_ID.supabase.co';
-        const supabaseAnonKey = 'YOUR_SUPABASE_ANON_KEY';
-        
-        // Supabase ক্লায়েন্ট তৈরি
-        const { createClient } = supabase;
-        const supabaseClient = createClient(supabaseUrl, supabaseAnonKey);
+        const SUPABASE_URL = 'https://jhbpaezbpkfwjfmazdcn.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_oBzutzPKvIvujmSG7icXug_SwwveL5g';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        const form = document.getElementById('login-form');
-        const errorBox = document.getElementById('error-box');
-        const loginBtn = document.getElementById('login-btn');
+        const loginForm = document.getElementById('loginForm');
+        const messageDiv = document.getElementById('message');
 
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault(); // পেজ রিলোড হওয়া বন্ধ
-            
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('loginBtn');
+            btn.innerText = 'অপেক্ষা করুন...';
+            btn.disabled = true;
+            messageDiv.classList.add('hidden');
+
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
 
-            // লোডিং শুরু
-            errorBox.style.display = 'none';
-            loginBtn.innerText = 'অপেক্ষা করুন...';
-            loginBtn.disabled = true;
-
-            // Supabase লগইন কল
-            const { data, error } = await supabaseClient.auth.signInWithPassword({
-                email: email,
-                password: password
-            });
-
-            loginBtn.innerText = 'লগইন';
-            loginBtn.disabled = false;
+            const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
 
             if (error) {
-                // ⚠️ লগইন ফেইল করলে এখানে আসবে
-                errorBox.style.display = 'block';
-                
-                if (error.message === 'Invalid login credentials') {
-                    errorBox.innerText = '⚠️ ভুল ইমেইল বা পাসওয়ার্ড! আবার চেষ্টা করুন।';
-                } else if (error.message === 'Email not confirmed') {
-                    errorBox.innerText = '⚠️ আপনার ইমেইল ভেরিফাই করা হয়নি। ইনবক্স চেক করুন।';
-                } else {
-                    errorBox.innerText = '⚠️ ' + error.message;
-                }
-                
-                // return করায় নিচের রিডাইরেক্ট কোড রান হবে না
-                return; 
-            }
-
-            // লগইন সফল হলে 
-            if (data.user) {
-                alert('সফলভাবে লগইন হয়েছে!');
-                // এখানে আপনার ড্যাশবোর্ড বা হোম পেজের লিংক দিন
-                window.location.href = '/dashboard.html'; 
+                messageDiv.classList.remove('hidden', 'text-green-600');
+                messageDiv.classList.add('text-red-600');
+                messageDiv.innerText = '⚠️ ' + (error.message === 'Invalid login credentials' ? 'ভুল ইমেইল বা পাসওয়ার্ড!' : error.message);
+                btn.innerText = 'লগইন';
+                btn.disabled = false;
+            } else {
+                messageDiv.classList.remove('hidden', 'text-red-600');
+                messageDiv.classList.add('text-green-600');
+                messageDiv.innerText = '✅ সফলভাবে লগইন হয়েছে! হোম পেজে যাচ্ছেন...';
+                setTimeout(() => {
+                    window.location.href = '/index.html'; // সফল হলে হোম পেজে যাবে
+                }, 1000);
             }
         });
     </script>
