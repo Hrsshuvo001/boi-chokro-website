@@ -20,21 +20,22 @@
     <aside id="sidebar" class="fixed md:sticky top-0 left-0 z-50 h-screen w-64 bg-slate-800 text-slate-300 flex flex-col shadow-lg transition-transform duration-300 transform -translate-x-full md:translate-x-0 flex-shrink-0">
         <div class="p-4 text-2xl font-bold text-white border-b border-slate-700 flex justify-between items-center">
             <span id="sidebar-company-name">Boi Chokro</span>
-            <!-- মোবাইলে সাইডবার বন্ধ করার বাটন -->
             <button onclick="toggleSidebar()" class="md:hidden text-red-400 hover:text-red-300 bg-slate-700 px-2 py-1 rounded text-sm">✕</button>
         </div>
         
-        <nav class="flex-grow flex flex-col gap-1 p-2 overflow-y-auto">
-            <!-- নতুন মেনু অর্ডার -->
-            <button onclick="showSection('home')" class="nav-item active text-left px-4 py-3 rounded-md hover:bg-slate-700 transition flex items-center gap-3">📊 হোম (ড্যাশবোর্ড)</button>
-            <button onclick="showSection('add-book')" class="nav-item text-left px-4 py-3 rounded-md hover:bg-slate-700 transition flex items-center gap-3">📚 অ্যাড নিউ বুক</button>
-            <button onclick="showSection('confirm-booking')" class="nav-item text-left px-4 py-3 rounded-md hover:bg-slate-700 transition flex items-center gap-3">✅ কনফার্ম বুকিং</button>
-            <button onclick="showSection('add-category')" class="nav-item text-left px-4 py-3 rounded-md hover:bg-slate-700 transition flex items-center gap-3">🏷️ অ্যাড ক্যাটাগরি</button>
-            <button onclick="showSection('add-author')" class="nav-item text-left px-4 py-3 rounded-md hover:bg-slate-700 transition flex items-center gap-3">✍️ অ্যাড অথর</button>
-            <button onclick="showSection('report')" class="nav-item text-left px-4 py-3 rounded-md hover:bg-slate-700 transition flex items-center gap-3">📄 রিপোর্ট</button>
+        <nav class="flex-grow flex flex-col justify-between p-2 overflow-y-auto">
+            <!-- উপরের মেনুগুলো -->
+            <div class="flex flex-col gap-1">
+                <button onclick="showSection('home')" class="nav-item active text-left px-4 py-3 rounded-md hover:bg-slate-700 transition flex items-center gap-3">📊 হোম (ড্যাশবোর্ড)</button>
+                <button onclick="showSection('add-book')" class="nav-item text-left px-4 py-3 rounded-md hover:bg-slate-700 transition flex items-center gap-3">📚 অ্যাড নিউ বুক</button>
+                <button onclick="showSection('confirm-booking')" class="nav-item text-left px-4 py-3 rounded-md hover:bg-slate-700 transition flex items-center gap-3">✅ কনফার্ম বুকিং</button>
+                <button onclick="showSection('add-category')" class="nav-item text-left px-4 py-3 rounded-md hover:bg-slate-700 transition flex items-center gap-3">🏷️ অ্যাড ক্যাটাগরি</button>
+                <button onclick="showSection('add-author')" class="nav-item text-left px-4 py-3 rounded-md hover:bg-slate-700 transition flex items-center gap-3">✍️ অ্যাড অথর</button>
+                <button onclick="showSection('report')" class="nav-item text-left px-4 py-3 rounded-md hover:bg-slate-700 transition flex items-center gap-3">📄 রিপোর্ট</button>
+            </div>
             
-            <!-- সাইট সেটিংস ও লগআউট সবার নিচে -->
-            <div class="mt-auto border-t border-slate-700 pt-2">
+            <!-- নিচের মেনু (সেটিংস ও লগআউট) -->
+            <div class="border-t border-slate-700 pt-2 mt-4">
                 <button onclick="showSection('settings')" class="nav-item text-left px-4 py-3 rounded-md hover:bg-slate-700 transition flex items-center gap-3 w-full">⚙️ সাইট সেটিংস</button>
                 <button onclick="handleLogout()" class="w-full mt-1 text-left px-4 py-3 rounded-md hover:bg-red-600 text-red-400 transition flex items-center gap-3">🚪 লগআউট</button>
             </div>
@@ -44,7 +45,7 @@
     <!-- মেইন কন্টেন্ট এরিয়া -->
     <div class="flex-1 flex flex-col h-full overflow-hidden w-full relative">
         
-        <!-- মোবাইল টপবার (হ্যামবার্গার মেনু) -->
+        <!-- মোবাইল টপবার -->
         <header class="bg-white shadow-sm p-4 flex justify-between items-center md:hidden z-10">
             <h1 class="text-xl font-bold text-blue-600" id="mobile-header-title">Boi Chokro</h1>
             <button onclick="toggleSidebar()" class="text-gray-600 text-2xl focus:outline-none">☰</button>
@@ -165,7 +166,6 @@
 
             <!-- ৬. রিপোর্ট -->
             <section id="section-report" class="section-content">
-                <!-- রিপোর্ট পেজের টাইটেল -->
                 <div class="flex justify-between items-center mb-6">
                     <h2 class="text-2xl font-bold text-gray-800">সেলস রিপোর্ট</h2>
                     <button onclick="generatePDF()" class="bg-red-600 text-white px-6 py-2 rounded-md hover:bg-red-700 flex items-center gap-2 shadow-lg">
@@ -181,6 +181,8 @@
                             <img id="rep_logo" src="" class="h-16 w-16 object-contain hidden">
                             <div>
                                 <h1 id="rep_company_name" class="text-3xl font-extrabold text-blue-800">Boi Chokro</h1>
+                                <!-- এখানে টাইটেল যুক্ত করা হলো -->
+                                <p id="rep_tagline" class="text-sm text-gray-600 font-semibold mt-1"></p>
                                 <p id="rep_address" class="text-sm text-gray-500 mt-1">ঢাকা, বাংলাদেশ</p>
                                 <p id="rep_phone" class="text-sm text-gray-500">ফোন: 017xxxxxxxx</p>
                             </div>
@@ -276,7 +278,7 @@
         let myChart = null;
         let siteSettings = null; 
 
-        // সাইডবার টগল ফাংশন (স্লাইড এনিমেশন)
+        // সাইডবার টগল ফাংশন
         window.toggleSidebar = () => {
             const sidebar = document.getElementById('sidebar');
             sidebar.classList.toggle('-translate-x-full');
@@ -288,15 +290,13 @@
             
             document.getElementById(`section-${sectionId}`).classList.add('active');
             
-            // অ্যাক্টিভ বাটন হাইলাইট
             const buttons = document.querySelectorAll('.nav-item');
             buttons.forEach(btn => {
-                if(btn.getAttribute('onclick').includes(sectionId)) {
+                if(btn.getAttribute('onclick') && btn.getAttribute('onclick').includes(sectionId)) {
                     btn.classList.add('active');
                 }
             });
 
-            // মোবাইলে সেকশন চেঞ্জ হলে সাইডবার বন্ধ হয়ে যাবে
             if(window.innerWidth < 768) {
                 const sidebar = document.getElementById('sidebar');
                 if(!sidebar.classList.contains('-translate-x-full')){
@@ -327,6 +327,8 @@
                 document.getElementById('mobile-header-title').innerText = data.company_name || 'Boi Chokro';
                 
                 document.getElementById('rep_company_name').innerText = data.company_name || 'Boi Chokro';
+                // টাইটেল রিপোর্টে সেট করা হলো
+                document.getElementById('rep_tagline').innerText = data.tagline || '';
                 document.getElementById('rep_address').innerText = data.address || 'ঢাকা, বাংলাদেশ';
                 document.getElementById('rep_phone').innerText = 'ফোন: ' + (data.phone || '017xxxxxxxx');
                 document.getElementById('rep_footer_text').innerText = data.footer_text || '© 2024 Boi Chokro';
@@ -568,4 +570,4 @@
         init();
     </script>
 </body>
-                                    </html>
+                            </html>
