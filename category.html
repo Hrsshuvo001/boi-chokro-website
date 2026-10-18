@@ -84,14 +84,20 @@
 
             return `
             <div class="bg-white rounded-xl shadow-sm hover:shadow-xl transition duration-300 overflow-hidden flex flex-col border border-gray-100 relative">
-                ${hasDiscount ? `<div class="absolute top-3 left-3 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded shadow z-10">ডিসকাউন্ট</div>` : ''}
-                <div class="h-56 bg-gray-100">
-                    <img src="${book.cover_url || 'https://via.placeholder.com/150'}" class="w-full h-full object-cover">
-                </div>
+                
+                <!-- ছবিতে ক্লিক -->
+                <a href="/book-details.html?id=${book.id}" class="block h-56 bg-gray-100 overflow-hidden relative">
+                    ${hasDiscount ? `<div class="absolute top-3 left-3 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded shadow z-10">ডিসকাউন্ট</div>` : ''}
+                    <img src="${book.cover_url || 'https://via.placeholder.com/150'}" class="w-full h-full object-cover hover:scale-105 transition duration-500">
+                </a>
                 
                 <div class="p-4 flex flex-col flex-grow">
                     <span class="text-xs text-blue-600 font-semibold mb-1">${book.category || 'সাধারণ'}</span>
-                    <h3 class="font-bold text-md text-gray-800 leading-tight mb-1 line-clamp-2">${book.title}</h3>
+                    
+                    <!-- নামে ক্লিক -->
+                    <a href="/book-details.html?id=${book.id}">
+                        <h3 class="font-bold text-md text-gray-800 leading-tight mb-1 line-clamp-2 hover:text-blue-600 transition">${book.title}</h3>
+                    </a>
                     <p class="text-xs text-gray-500 mb-3">লেখক: ${book.author}</p>
                     
                     <div class="flex items-end gap-2 mb-3 mt-auto">
@@ -99,10 +105,11 @@
                         ${hasDiscount ? `<span class="text-gray-400 line-through text-xs mb-1">৳ ${book.original_price}</span>` : ''}
                     </div>
 
+                    <!-- বাটনে ক্লিক করলে পেজ চেঞ্জ হবে না -->
                     ${book.is_affiliate ? `
-                        <button onclick="handleAffiliateBuy('${book.purchase_link}')" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-1.5 rounded-lg transition text-sm">অন্য সাইট থেকে কিনুন</button>
+                        <button onclick="event.preventDefault(); handleAffiliateBuy('${book.purchase_link}')" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-1.5 rounded-lg transition text-sm z-10 relative">অন্য সাইট থেকে কিনুন</button>
                     ` : `
-                        <button onclick="addToCart('${book.id}', '${book.title}', ${currentPrice}, '${book.cover_url}')" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-1.5 rounded-lg transition flex justify-center items-center gap-1 text-sm">
+                        <button onclick="event.preventDefault(); addToCart('${book.id}', '${book.title}', ${currentPrice}, '${book.cover_url}')" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-1.5 rounded-lg transition flex justify-center items-center gap-1 text-sm z-10 relative">
                             কার্টে যোগ করুন
                         </button>
                     `}
