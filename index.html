@@ -6,6 +6,16 @@
     <title>Boi Chokro - অনলাইন বইঘর</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        /* স্লাইডারের স্ক্রলবার লুকানোর জন্য */
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
 </head>
 <body class="bg-gray-50 min-h-screen flex flex-col">
 
@@ -36,36 +46,53 @@
     <!-- মেইন কন্টেন্ট -->
     <main class="flex-grow max-w-7xl mx-auto w-full px-4 py-8">
         
-        <!-- ১. বেস্ট সেলার সেকশন (অটোমেটিক) -->
+        <!-- ১. বেস্ট সেলার সেকশন -->
         <section class="mb-12">
             <div class="flex items-center gap-2 mb-6">
                 <span class="text-3xl">🔥</span>
-                <h2 class="text-2xl font-bold text-gray-800">বেস্ট সেলার (সবচেয়ে বেশি বিক্রিত)</h2>
+                <h2 class="text-2xl font-bold text-gray-800">বেস্ট সেলার</h2>
             </div>
             <div id="bestSellerGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                <!-- বেস্ট সেলার বই লোড হবে -->
                 <p class="text-gray-500 col-span-full">লোড হচ্ছে...</p>
             </div>
         </section>
 
         <hr class="border-gray-300 mb-8">
 
-        <!-- ২. ক্যাটাগরি অনুযায়ী বই -->
-        <section>
-            <h2 class="text-2xl font-bold text-gray-800 mb-4">ক্যাটাগরি অনুযায়ী বই</h2>
+        <!-- ২. ইসলামিক বই স্লাইডার সেকশন -->
+        <section class="mb-12">
+            <div class="flex justify-between items-end mb-6">
+                <div class="flex items-center gap-2">
+                    <span class="text-3xl">🕌</span>
+                    <h2 class="text-2xl font-bold text-gray-800">ইসলামিক বই</h2>
+                </div>
+                <!-- সব বই দেখুন বাটন -->
+                <a href="/category.html?cat=ইসলামিক" class="text-blue-600 font-semibold hover:underline text-sm md:text-base flex items-center gap-1">
+                    সব বই দেখুন 
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+                </a>
+            </div>
             
-            <!-- ক্যাটাগরি ফিল্টার বাটন -->
+            <!-- স্লাইডার কন্টেইনার -->
+            <div id="islamicBookSlider" class="flex overflow-x-auto gap-4 snap-x pb-4 hide-scrollbar">
+                <p class="text-gray-500">লোড হচ্ছে...</p>
+            </div>
+        </section>
+
+        <hr class="border-gray-300 mb-8">
+
+        <!-- ৩. সব ক্যাটাগরি ও বই -->
+        <section>
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">সব ক্যাটাগরি</h2>
+            
             <div class="flex flex-wrap gap-2 mb-6" id="categoryButtons">
                 <button onclick="filterCategory('all')" class="category-btn bg-blue-600 text-white px-4 py-2 rounded-full text-sm font-semibold transition">সব বই</button>
+                <!-- ক্যাটাগরি বাটনগুলো ডাইনামিকভাবে লোড হবে, আপাতত হার্ডকোড করা হলো -->
                 <button onclick="filterCategory('গল্পের বই')" class="category-btn bg-white text-gray-700 border border-gray-300 px-4 py-2 rounded-full text-sm font-semibold hover:bg-blue-50 transition">গল্পের বই</button>
                 <button onclick="filterCategory('উপন্যাস')" class="category-btn bg-white text-gray-700 border border-gray-300 px-4 py-2 rounded-full text-sm font-semibold hover:bg-blue-50 transition">উপন্যাস</button>
-                <button onclick="filterCategory('কবিতা')" class="category-btn bg-white text-gray-700 border border-gray-300 px-4 py-2 rounded-full text-sm font-semibold hover:bg-blue-50 transition">কবিতা</button>
-                <button onclick="filterCategory('ছড়া')" class="category-btn bg-white text-gray-700 border border-gray-300 px-4 py-2 rounded-full text-sm font-semibold hover:bg-blue-50 transition">ছড়া</button>
-                <button onclick="filterCategory('বাচ্চাদের বই')" class="category-btn bg-white text-gray-700 border border-gray-300 px-4 py-2 rounded-full text-sm font-semibold hover:bg-blue-50 transition">বাচ্চাদের বই</button>
-                <button onclick="filterCategory('ইতিহাস')" class="category-btn bg-white text-gray-700 border border-gray-300 px-4 py-2 rounded-full text-sm font-semibold hover:bg-blue-50 transition">ইতিহাস</button>
+                <button onclick="filterCategory('ইসলামিক')" class="category-btn bg-white text-gray-700 border border-gray-300 px-4 py-2 rounded-full text-sm font-semibold hover:bg-blue-50 transition">ইসলামিক</button>
             </div>
 
-            <!-- সব/ফিল্টার করা বইয়ের গ্রিড -->
             <div id="bookGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                 <!-- বই লোড হবে -->
             </div>
@@ -82,7 +109,7 @@
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let currentUser = null;
-        let allBooksData = []; // সব ডাটা মেমোরিতে রাখার জন্য
+        let allBooksData = []; 
 
         function updateCartCount() {
             const cart = JSON.parse(localStorage.getItem('boiChokroCart')) || [];
@@ -106,33 +133,35 @@
             }
         }
 
-        // বইয়ের কার্ড তৈরির কমন ফাংশন
-        function createBookCard(book) {
+        // বইয়ের কার্ড তৈরির ফাংশন (স্লাইডার ও গ্রিড দুই জায়গায় ব্যবহারের জন্য)
+        function createBookCard(book, isSlider = false) {
             const currentPrice = book.discount_price || book.original_price || 0;
             const hasDiscount = book.original_price && book.discount_price && book.original_price > book.discount_price;
+            
+            // স্লাইডারের জন্য নির্দিষ্ট প্রস্থ (Width) সেট করা
+            const widthClass = isSlider ? "min-w-[220px] max-w-[220px] snap-start" : "w-full";
 
             return `
-            <div class="bg-white rounded-xl shadow-sm hover:shadow-xl transition duration-300 overflow-hidden flex flex-col border border-gray-100 relative">
+            <div class="bg-white rounded-xl shadow-sm hover:shadow-xl transition duration-300 overflow-hidden flex flex-col border border-gray-100 relative ${widthClass}">
                 ${hasDiscount ? `<div class="absolute top-3 left-3 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded shadow z-10">ডিসকাউন্ট</div>` : ''}
-                <div class="h-64 bg-gray-100">
+                <div class="h-56 bg-gray-100">
                     <img src="${book.cover_url || 'https://via.placeholder.com/150'}" class="w-full h-full object-cover">
                 </div>
                 
-                <div class="p-5 flex flex-col flex-grow">
+                <div class="p-4 flex flex-col flex-grow">
                     <span class="text-xs text-blue-600 font-semibold mb-1">${book.category || 'সাধারণ'}</span>
-                    <h3 class="font-bold text-lg text-gray-800 leading-tight mb-1 line-clamp-2">${book.title}</h3>
-                    <p class="text-sm text-gray-500 mb-3">লেখক: ${book.author}</p>
+                    <h3 class="font-bold text-md text-gray-800 leading-tight mb-1 line-clamp-2">${book.title}</h3>
+                    <p class="text-xs text-gray-500 mb-3">লেখক: ${book.author}</p>
                     
-                    <div class="flex items-end gap-2 mb-4 mt-auto">
-                        <span class="text-2xl font-bold text-blue-600">৳ ${currentPrice}</span>
-                        ${hasDiscount ? `<span class="text-gray-400 line-through text-sm mb-1">৳ ${book.original_price}</span>` : ''}
+                    <div class="flex items-end gap-2 mb-3 mt-auto">
+                        <span class="text-xl font-bold text-blue-600">৳ ${currentPrice}</span>
+                        ${hasDiscount ? `<span class="text-gray-400 line-through text-xs mb-1">৳ ${book.original_price}</span>` : ''}
                     </div>
 
                     ${book.is_affiliate ? `
-                        <button onclick="handleAffiliateBuy('${book.purchase_link}')" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 rounded-lg transition">অন্য সাইট থেকে কিনুন</button>
+                        <button onclick="handleAffiliateBuy('${book.purchase_link}')" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-1.5 rounded-lg transition text-sm">অন্য সাইট থেকে কিনুন</button>
                     ` : `
-                        <button onclick="addToCart('${book.id}', '${book.title}', ${currentPrice}, '${book.cover_url}')" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 rounded-lg transition flex justify-center items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" /></svg>
+                        <button onclick="addToCart('${book.id}', '${book.title}', ${currentPrice}, '${book.cover_url}')" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-1.5 rounded-lg transition flex justify-center items-center gap-1 text-sm">
                             কার্টে যোগ করুন
                         </button>
                     `}
@@ -151,30 +180,31 @@
 
             allBooksData = books;
 
-            // ১. বেস্ট সেলার রেন্ডার (সর্বোচ্চ sales_count সম্পন্ন ৪টি বই)
+            // ১. বেস্ট সেলার
             const bestSellers = [...books].sort((a, b) => (b.sales_count || 0) - (a.sales_count || 0)).slice(0, 4);
-            const bestSellerGrid = document.getElementById('bestSellerGrid');
+            document.getElementById('bestSellerGrid').innerHTML = bestSellers.map(book => createBookCard(book)).join('');
+
+            // ২. ইসলামিক স্লাইডার (সর্বোচ্চ ৫টি বই)
+            const islamicBooks = books.filter(book => book.category === 'ইসলামিক').slice(0, 5);
+            const sliderDiv = document.getElementById('islamicBookSlider');
             
-            if (bestSellers.length > 0) {
-                bestSellerGrid.innerHTML = bestSellers.map(book => createBookCard(book)).join('');
+            if (islamicBooks.length > 0) {
+                sliderDiv.innerHTML = islamicBooks.map(book => createBookCard(book, true)).join('');
             } else {
-                bestSellerGrid.innerHTML = `<p class="text-gray-500 col-span-full">এখনো কোনো বেস্ট সেলার নেই।</p>`;
+                sliderDiv.innerHTML = `<p class="text-gray-500">এই ক্যাটাগরিতে এখনো কোনো বই যোগ করা হয়নি।</p>`;
             }
 
-            // ২. সব বই রেন্ডার
+            // ৩. সাধারণ গ্রিড
             renderFilteredBooks('all');
         }
 
-        // ক্যাটাগরি ফিল্টার
         window.filterCategory = (category) => {
-            // বাটনের রঙ পরিবর্তন
             const buttons = document.querySelectorAll('.category-btn');
             buttons.forEach(btn => {
                 btn.classList.remove('bg-blue-600', 'text-white');
                 btn.classList.add('bg-white', 'text-gray-700', 'border-gray-300');
             });
             
-            // ক্লিক করা বাটন হাইলাইট
             const clickedBtn = Array.from(buttons).find(btn => btn.innerText.trim() === (category === 'all' ? 'সব বই' : category));
             if (clickedBtn) {
                 clickedBtn.classList.remove('bg-white', 'text-gray-700', 'border-gray-300');
@@ -206,15 +236,11 @@
                 window.location.href = '/login.html';
                 return;
             }
-            
             let cart = JSON.parse(localStorage.getItem('boiChokroCart')) || [];
-            const existingItem = cart.find(item => item.id === id);
-            
-            if (existingItem) {
+            if (cart.find(item => item.id === id)) {
                 alert('বইটি ইতিমধ্যে আপনার কার্টে আছে!');
                 return;
             }
-
             cart.push({ id, title, price, image });
             localStorage.setItem('boiChokroCart', JSON.stringify(cart));
             updateCartCount();
@@ -235,10 +261,9 @@
             checkAuth(); 
         }
 
-        // শুরু
         checkAuth();
         loadBooks();
         updateCartCount();
     </script>
 </body>
-                    </html>
+</html>
