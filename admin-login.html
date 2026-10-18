@@ -11,7 +11,7 @@
 </head>
 <body class="bg-gray-900 min-h-screen flex items-center justify-center p-4">
 
-    <!-- অ্যাডমিন লগইন ফর্ম (ডার্ক থিম) -->
+    <!-- অ্যাডমিন লগইন ফর্ম -->
     <div class="bg-gray-800 p-8 rounded-lg shadow-2xl w-full max-w-md border border-gray-700">
         <h2 class="text-2xl font-bold mb-6 text-center text-white">Admin Portal</h2>
         
@@ -36,7 +36,7 @@
     </div>
 
     <script>
-        // আপনার Supabase URL এবং Key
+        // ⚠️ আপনার Supabase URL এবং Key
         const SUPABASE_URL = 'https://jhbpaezbpkfwjfmazdcn.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_oBzutzPKvIvujmSG7icXug_SwwveL5g';
 
@@ -57,7 +57,7 @@
             messageDiv.classList.add('hidden');
 
             try {
-                // ১. প্রথমে Supabase Auth দিয়ে লগইন করা
+                // ১. Supabase Auth দিয়ে লগইন করা
                 const { data, error } = await supabaseClient.auth.signInWithPassword({
                     email: email,
                     password: password,
@@ -70,21 +70,30 @@
                     return;
                 }
 
-                // ২. লগইন সফল হলে, এখন চেক করব সে অ্যাডমিন কি না
+                // ২. লগইন সফল হলে, 'profiles' টেবিল থেকে role চেক করা
                 if (data.user) {
                     const { data: profile, error: profileError } = await supabaseClient
                         .from('profiles')
                         .select('role')
                         .eq('id', data.user.id)
-                        .single();
+                        .maybeSingle(); // ⚠️ .single() এর বদলে .maybeSingle() ব্যবহার করা হয়েছে
 
                     if (profileError) {
-                        throw new Error("প্রোফাইল চেক করতে সমস্যা হয়েছে!");
+                        throw new Error("ডাটাবেস থেকে প্রোফাইল চেক করতে সমস্যা হয়েছে!");
+                    }
+
+                    // যদি ডাটাবেসে ইউজারের কোনো প্রোফাইল রো-ই না থাকে
+                    if (!profile) {
+                        await supabaseClient.auth.signOut();
+                        messageDiv.classList.remove('hidden', 'text-green-500');
+                        messageDiv.classList.add('text-red-500');
+                        messageDiv.innerText = '❌ আপনার কোনো প্রোফাইল পাওয়া যায়নি। আগে সাধারণ ইউজার হিসেবে সাইন-আপ করুন।';
+                        return;
                     }
 
                     // ৩. রোল চেক
                     if (profile.role === 'admin') {
-                        // সে অ্যাডমিন, তাকে ঢুকতে দাও
+                        // ইউজার অ্যাডমিন, তাকে ঢুকতে দাও
                         messageDiv.classList.remove('hidden', 'text-red-500');
                         messageDiv.classList.add('text-green-500');
                         messageDiv.innerText = '✅ সফল! অ্যাডমিন ড্যাশবোর্ডে যাচ্ছেন...';
@@ -93,7 +102,7 @@
                             window.location.href = '/admin-dashboard.html';
                         }, 1000);
                     } else {
-                        // সে অ্যাডমিন নয়! সাথে সাথে লগআউট করে দাও
+                        // ইউজার অ্যাডমিন নয়! সাথে সাথে লগআউট করে দাও
                         await supabaseClient.auth.signOut();
                         messageDiv.classList.remove('hidden', 'text-green-500');
                         messageDiv.classList.add('text-red-500');
