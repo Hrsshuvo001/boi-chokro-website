@@ -12,9 +12,21 @@
         .nav-item.active { background-color: #1e293b; color: white; border-left: 4px solid #3b82f6; }
         .section-content { display: none; }
         .section-content.active { display: block; }
+        
+        /* Toast Animation */
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .toast-animate {
+            animation: slideInRight 0.3s ease-out forwards;
+        }
     </style>
 </head>
 <body class="bg-gray-100 h-[100dvh] overflow-hidden flex flex-col md:flex-row">
+
+    <!-- টোস্ট নোটিফিকেশন কন্টেইনার -->
+    <div id="toast-container" class="fixed top-5 right-5 z-[100] flex flex-col gap-3 pointer-events-none"></div>
 
     <!-- সাইডবার নেভিগেশন -->
     <aside id="sidebar" class="fixed md:sticky top-0 left-0 z-50 h-[100dvh] w-64 bg-slate-800 text-slate-300 flex flex-col shadow-xl transition-transform duration-300 transform -translate-x-full md:translate-x-0 flex-shrink-0">
@@ -307,6 +319,31 @@
         let myChart = null;
         let siteSettings = null; 
 
+        // --- কাস্টম টোস্ট নোটিফিকেশন ফাংশন ---
+        window.showToast = (message, isError = false) => {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            
+            // টোস্টের ডিজাইন
+            toast.className = `toast-animate px-6 py-4 rounded-lg shadow-2xl text-white font-bold flex items-center gap-3 ${isError ? 'bg-red-600 border-l-4 border-red-800' : 'bg-green-600 border-l-4 border-green-800'}`;
+            
+            // আইকন ও মেসেজ
+            toast.innerHTML = `
+                <span class="text-2xl">${isError ? '⚠️' : '✅'}</span>
+                <span>${message}</span>
+            `;
+            
+            container.appendChild(toast);
+
+            // ৪ সেকেন্ড পর টোস্টটি মুছে ফেলা
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(100%)';
+                toast.style.transition = 'all 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        };
+
         window.toggleSidebar = () => {
             const sidebar = document.getElementById('sidebar');
             sidebar.classList.toggle('-translate-x-full');
@@ -422,7 +459,7 @@
                 await fetchGlobalSettings(); 
 
             } catch (err) {
-                alert(err.message);
+                showToast(err.message, true);
             } finally {
                 btn.innerText = 'সেটিংস সেভ করুন'; btn.disabled = false;
             }
@@ -489,7 +526,8 @@
             e.preventDefault();
             await supabaseClient.from('categories').insert([{ name: document.getElementById('categoryName').value }]);
             document.getElementById('categoryName').value = '';
-            alert('ক্যাটাগরি যোগ হয়েছে!'); loadDropdowns();
+            showToast('ক্যাটাগরি যোগ হয়েছে!'); 
+            loadDropdowns();
         });
 
         document.getElementById('addAuthorForm').addEventListener('submit', async (e) => {
@@ -506,7 +544,8 @@
             }
             await supabaseClient.from('authors').insert([{ name, bio, image_url }]);
             document.getElementById('addAuthorForm').reset();
-            alert('লেখক যোগ হয়েছে!'); loadDropdowns();
+            showToast('লেখক যোগ হয়েছে!'); 
+            loadDropdowns();
         });
 
         window.toggleLinkType = () => {
@@ -519,7 +558,10 @@
             btn.innerText = 'সেভ হচ্ছে...'; btn.disabled = true;
             const orig = parseFloat(document.getElementById('original_price').value);
             const disc = parseFloat(document.getElementById('discount_price').value);
-            if(orig && disc > orig) { alert('ডিসকাউন্ট দাম আসল দামের বেশি হতে পারে না!'); btn.innerText = 'বই যোগ করুন'; btn.disabled = false; return; }
+            if(orig && disc > orig) { 
+                showToast('ডিসকাউন্ট দাম আসল দামের বেশি হতে পারে না!', true); 
+                btn.innerText = 'বই যোগ করুন'; btn.disabled = false; return; 
+            }
 
             try {
                 const files = document.getElementById('cover_files').files;
@@ -544,10 +586,9 @@
                     cover_url: urls[0] || '',
                     gallery_images: urls
                 }]);
-                document.getElementById('bookMessage').innerText = 'বই যোগ হয়েছে!';
-                document.getElementById('bookMessage').className = 'mt-4 text-center font-bold text-green-600';
+                showToast('বই সফলভাবে যোগ হয়েছে!');
                 document.getElementById('addBookForm').reset();
-            } catch (err) { alert(err.message); } finally { btn.innerText = 'বই যোগ করুন'; btn.disabled = false; }
+            } catch (err) { showToast(err.message, true); } finally { btn.innerText = 'বই যোগ করুন'; btn.disabled = false; }
         });
 
         async function loadPendingBookings() {
@@ -569,18 +610,19 @@
         window.confirmOrder = async (id) => {
             if(!confirm('অর্ডারটি কনফার্ম করবেন?')) return;
             await supabaseClient.from('orders').update({ status: 'completed' }).eq('id', id);
+            showToast('অর্ডার সফলভাবে কনফার্ম হয়েছে!');
             loadPendingBookings();
         };
 
-        // ফিল্টার লজিক (এখানে তারিখের ভ্যালিডেশন যোগ করা হয়েছে)
+        // ফিল্টার লজিক 
         window.filterReport = () => {
             const startDate = document.getElementById('startDate').value;
             const endDate = document.getElementById('endDate').value;
 
             // ভ্যালিডেশন: শুরুর তারিখ শেষ তারিখের চেয়ে বড় হতে পারবে না
             if (startDate && endDate && startDate > endDate) {
-                alert('⚠️ ভুল তারিখ! শুরুর তারিখ শেষ তারিখের চেয়ে পরে হতে পারে না। দয়া করে সঠিক তারিখ নির্বাচন করুন।');
-                return; // ফাংশন এখানেই থেমে যাবে, রিপোর্ট লোড হবে না
+                showToast('ভুল তারিখ! শুরুর তারিখ শেষ তারিখের চেয়ে পরে হতে পারে না।', true);
+                return; 
             }
 
             loadReportData(startDate, endDate);
@@ -607,8 +649,19 @@
             const { data: orders, error } = await query.order('created_at', { ascending: false });
             const tbody = document.getElementById('reportTableBody');
             
+            // ডাটা না থাকলে সুন্দর মেসেজ দেখাবে
             if (error || !orders || orders.length === 0) { 
-                tbody.innerHTML = `<tr><td colspan="5" class="p-2 text-center text-gray-500">এই সময়ের মধ্যে কোনো ডাটা নেই।</td></tr>`; 
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="py-8 text-center bg-gray-50 rounded-lg">
+                            <div class="flex flex-col items-center justify-center text-gray-500">
+                                <svg class="w-12 h-12 mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                <p class="text-lg font-bold text-gray-700">কোনো ডাটা পাওয়া যায়নি!</p>
+                                <p class="text-sm">নির্বাচিত তারিখের মধ্যে কোনো অর্ডার নেই।</p>
+                            </div>
+                        </td>
+                    </tr>
+                `; 
                 document.getElementById('rep-total-orders').innerText = '0';
                 document.getElementById('rep-success-orders').innerText = '0';
                 document.getElementById('rep-total-revenue').innerText = '৳ 0';
@@ -650,4 +703,4 @@
         init();
     </script>
 </body>
-                                </html>
+                                                                      </html>
