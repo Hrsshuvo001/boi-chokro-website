@@ -21,15 +21,11 @@
             <!-- ক্যাটাগরি ও লেখক যোগ করার ফর্ম -->
             <div class="bg-white p-6 rounded-lg shadow-md border-t-4 border-purple-500">
                 <h2 class="text-lg font-bold mb-4 text-gray-800">ক্যাটাগরি যোগ করুন</h2>
-                
-                <!-- ক্যাটাগরি ফর্ম -->
                 <form id="addCategoryForm" class="flex gap-2 mb-4">
                     <input type="text" id="categoryName" required placeholder="নতুন ক্যাটাগরি" class="w-full px-3 py-2 border rounded-md text-sm">
-                    <button type="submit" id="addCatBtn" class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 text-sm">যোগ</button>
+                    <button type="submit" class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 text-sm">যোগ</button>
                 </form>
-                <div id="catMessage" class="text-xs mb-3 hidden font-bold"></div>
 
-                <!-- লেখক ফর্ম -->
                 <h2 class="text-lg font-bold mb-4 text-gray-800 border-t pt-4">লেখক যোগ করুন</h2>
                 <form id="addAuthorForm" class="space-y-3">
                     <input type="text" id="authorName" required placeholder="লেখকের নাম" class="w-full px-3 py-2 border rounded-md text-sm">
@@ -37,7 +33,6 @@
                     <input type="file" id="authorImage" accept="image/*" class="w-full px-3 py-2 border rounded-md text-sm bg-gray-50">
                     <button type="submit" id="addAuthBtn" class="w-full bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 text-sm">লেখক যোগ করুন</button>
                 </form>
-                <div id="authMessage" class="text-xs mt-2 hidden font-bold"></div>
             </div>
 
             <!-- নতুন বই যোগ করার ফর্ম -->
@@ -122,18 +117,15 @@
         const authorSelect = document.getElementById('author');
 
         async function loadDropdowns() {
-            // ক্যাটাগরি
             const { data: cats } = await supabaseClient.from('categories').select('*').order('name');
             categorySelect.innerHTML = '<option value="" disabled selected>ক্যাটাগরি সিলেক্ট করুন</option>';
             if (cats) cats.forEach(c => categorySelect.innerHTML += `<option value="${c.name}">${c.name}</option>`);
 
-            // লেখক
             const { data: auths } = await supabaseClient.from('authors').select('*').order('name');
             authorSelect.innerHTML = '<option value="" disabled selected>লেখক সিলেক্ট করুন</option>';
             if (auths) auths.forEach(a => authorSelect.innerHTML += `<option value="${a.name}">${a.name}</option>`);
         }
 
-        // ক্যাটাগরি যোগ
         document.getElementById('addCategoryForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const catName = document.getElementById('categoryName').value.trim();
@@ -144,7 +136,6 @@
             }
         });
 
-        // লেখক যোগ (ছবি ও বায়ো সহ)
         document.getElementById('addAuthorForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('addAuthBtn');
@@ -204,7 +195,7 @@
                         <img src="${book.cover_url || 'https://via.placeholder.com/150'}" class="w-full h-40 object-cover rounded mb-3 mt-4">
                         <h3 class="font-bold text-lg leading-tight">${book.title}</h3>
                         <p class="text-sm text-gray-600 mb-2">${book.author}</p>
-                        <span class="text-green-600 font-bold text-lg">৳ ${book.discount_price}</span>
+                        <span class="text-green-600 font-bold text-lg">৳ ${book.discount_price || book.original_price || 0}</span>
                     </div>
                     <button onclick="deleteBook('${book.id}')" class="mt-4 w-full bg-red-50 text-red-600 py-1 rounded text-sm hover:bg-red-100 border border-red-200">ডিলিট</button>
                 </div>
@@ -214,7 +205,21 @@
         document.getElementById('addBookForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('addBtn');
+            const msgDiv = document.getElementById('message');
+            
+            // === নতুন ভ্যালিডেশন ===
+            const origPrice = parseFloat(document.getElementById('original_price').value);
+            const discPrice = parseFloat(document.getElementById('discount_price').value);
+
+            if (origPrice && discPrice && discPrice > origPrice) {
+                msgDiv.innerText = '⚠️ ডিসকাউন্ট দাম আসল দামের চেয়ে বেশি হতে পারে না!';
+                msgDiv.className = 'mt-3 text-sm text-center text-red-600 block font-bold';
+                return; // ফর্ম সাবমিট বন্ধ করে দেবে
+            }
+            // =====================
+
             btn.innerText = 'প্রসেস হচ্ছে...'; btn.disabled = true;
+            msgDiv.classList.add('hidden');
 
             try {
                 const files = document.getElementById('cover_files').files;
@@ -236,8 +241,8 @@
                     title: document.getElementById('title').value,
                     author: document.getElementById('author').value,
                     category: document.getElementById('category').value,
-                    original_price: parseFloat(document.getElementById('original_price').value) || null,
-                    discount_price: parseFloat(document.getElementById('discount_price').value),
+                    original_price: origPrice || null,
+                    discount_price: discPrice,
                     purchase_link: document.getElementById('purchase_link').value || null,
                     is_affiliate: isAffiliate,
                     description: document.getElementById('description').value,
@@ -249,13 +254,13 @@
                 const { error } = await supabaseClient.from('books').insert([newBook]);
                 if (error) throw error;
 
-                document.getElementById('message').innerText = 'সফলভাবে বই যোগ হয়েছে!';
-                document.getElementById('message').className = 'mt-3 text-sm text-center text-green-600 block font-bold';
+                msgDiv.innerText = 'সফলভাবে বই যোগ হয়েছে!';
+                msgDiv.className = 'mt-3 text-sm text-center text-green-600 block font-bold';
                 document.getElementById('addBookForm').reset(); toggleLinkType(); loadBooks();
 
             } catch (error) {
-                document.getElementById('message').innerText = '⚠️ ' + error.message;
-                document.getElementById('message').className = 'mt-3 text-sm text-center text-red-600 block font-bold';
+                msgDiv.innerText = '⚠️ ' + error.message;
+                msgDiv.className = 'mt-3 text-sm text-center text-red-600 block font-bold';
             } finally {
                 btn.innerText = 'বই যোগ করুন'; btn.disabled = false;
             }
