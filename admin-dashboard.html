@@ -9,15 +9,14 @@
 </head>
 <body class="bg-gray-100 min-h-screen">
 
-    <!-- নেভিগেশন বার -->
     <nav class="bg-slate-800 text-white shadow-md p-4 flex justify-between items-center">
         <h1 class="text-xl font-bold">Boi Chokro - Admin</h1>
         <button id="logoutBtn" class="bg-red-500 px-4 py-2 rounded hover:bg-red-600">লগআউট</button>
     </nav>
 
-    <div class="max-w-5xl mx-auto mt-8 p-4 grid grid-cols-1 md:grid-cols-3 gap-8">
+    <div class="max-w-6xl mx-auto mt-8 p-4 grid grid-cols-1 md:grid-cols-3 gap-8">
         
-        <!-- বাম দিক: নতুন বই যোগ করার ফর্ম -->
+        <!-- নতুন বই যোগ করার ফর্ম -->
         <div class="bg-white p-6 rounded-lg shadow-md md:col-span-1 h-fit">
             <h2 class="text-xl font-bold mb-4 text-gray-800">নতুন বই যোগ করুন</h2>
             <form id="addBookForm" class="space-y-4">
@@ -34,19 +33,22 @@
                     <input type="number" id="price" required class="mt-1 w-full px-3 py-2 border rounded-md">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">বইয়ের ছবির লিংক (URL)</label>
-                    <input type="url" id="cover_url" class="mt-1 w-full px-3 py-2 border rounded-md" placeholder="https://...">
+                    <label class="block text-sm font-medium text-gray-700">বইয়ের বিবরণ (Description)</label>
+                    <textarea id="description" rows="3" class="mt-1 w-full px-3 py-2 border rounded-md"></textarea>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">বইয়ের ছবি আপলোড করুন</label>
+                    <input type="file" id="cover_file" accept="image/*" class="mt-1 w-full px-3 py-2 border rounded-md bg-gray-50">
                 </div>
                 <button type="submit" id="addBtn" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">বই যোগ করুন</button>
             </form>
             <div id="message" class="mt-3 text-sm text-center hidden"></div>
         </div>
 
-        <!-- ডান দিক: বইয়ের লিস্ট -->
+        <!-- বইয়ের লিস্ট -->
         <div class="md:col-span-2">
             <h2 class="text-xl font-bold mb-4 text-gray-800">সব বই</h2>
             <div id="bookList" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <!-- এখানে JS দিয়ে বই লোড হবে -->
                 <p class="text-gray-500">বই লোড হচ্ছে...</p>
             </div>
         </div>
@@ -61,22 +63,22 @@
         const addBookForm = document.getElementById('addBookForm');
         const messageDiv = document.getElementById('message');
 
-        // ১. অ্যাডমিন চেক এবং বই লোড করা
+        // অ্যাডমিন চেক এবং বই লোড
         async function initDashboard() {
             const { data: { session } } = await supabaseClient.auth.getSession();
             if (!session) {
                 window.location.href = '/admin-login.html';
                 return;
             }
-            loadBooks(); // বই লোড করা
+            loadBooks();
         }
 
-        // ২. ডাটাবেস থেকে বই নিয়ে আসা
+        // বই লোড করা
         async function loadBooks() {
             const { data: books, error } = await supabaseClient
                 .from('books')
                 .select('*')
-                .order('created_at', { ascending: false }); // নতুন বই আগে দেখাবে
+                .order('created_at', { ascending: false });
 
             if (error) {
                 bookListDiv.innerHTML = `<p class="text-red-500">বই লোড করতে সমস্যা হয়েছে!</p>`;
@@ -88,7 +90,6 @@
                 return;
             }
 
-            // UI তে বইগুলো দেখানো
             bookListDiv.innerHTML = books.map(book => `
                 <div class="bg-white p-4 rounded-lg shadow border-t-4 border-blue-500 flex flex-col justify-between">
                     <div>
@@ -96,58 +97,85 @@
                         <h3 class="font-bold text-lg">${book.title}</h3>
                         <p class="text-sm text-gray-600">লেখক: ${book.author}</p>
                         <p class="text-blue-600 font-bold mt-2">৳ ${book.price}</p>
+                        <p class="text-sm text-gray-500 mt-1 truncate">${book.description || 'কোনো বিবরণ নেই'}</p>
                     </div>
                     <button onclick="deleteBook('${book.id}')" class="mt-3 w-full bg-red-100 text-red-600 py-1 rounded text-sm hover:bg-red-200">ডিলিট করুন</button>
                 </div>
             `).join('');
         }
 
-        // ৩. নতুন বই যোগ করা
+        // নতুন বই যোগ করা (ছবি আপলোড সহ)
         addBookForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('addBtn');
             btn.innerText = 'যোগ হচ্ছে...';
             btn.disabled = true;
 
-            const newBook = {
-                title: document.getElementById('title').value,
-                author: document.getElementById('author').value,
-                price: parseFloat(document.getElementById('price').value),
-                cover_url: document.getElementById('cover_url').value
-            };
+            try {
+                const file = document.getElementById('cover_file').files[0];
+                let cover_url = '';
 
-            const { error } = await supabaseClient.from('books').insert([newBook]);
+                // ১. যদি ছবি সিলেক্ট করা থাকে, তবে সেটি Supabase Storage-এ আপলোড করব
+                if (file) {
+                    const fileExt = file.name.split('.').pop();
+                    const fileName = `${Date.now()}.${fileExt}`; // ইউনিক ফাইল নাম
+                    
+                    const { data: uploadData, error: uploadError } = await supabaseClient
+                        .storage
+                        .from('book-covers')
+                        .upload(fileName, file);
 
-            if (error) {
-                messageDiv.className = 'mt-3 text-sm text-center text-red-600 block';
-                messageDiv.innerText = 'বই যোগ করা যায়নি! ' + error.message;
-            } else {
+                    if (uploadError) throw new Error("ছবি আপলোড ব্যর্থ হয়েছে: " + uploadError.message);
+
+                    // আপলোড হওয়া ছবির পাবলিক লিংক বের করা
+                    const { data: publicUrlData } = supabaseClient
+                        .storage
+                        .from('book-covers')
+                        .getPublicUrl(fileName);
+                    
+                    cover_url = publicUrlData.publicUrl;
+                }
+
+                // ২. ডাটাবেসে বইয়ের তথ্য সেভ করা
+                const newBook = {
+                    title: document.getElementById('title').value,
+                    author: document.getElementById('author').value,
+                    price: parseFloat(document.getElementById('price').value),
+                    description: document.getElementById('description').value,
+                    cover_url: cover_url // আপলোড করা ছবির লিংক
+                };
+
+                const { error: insertError } = await supabaseClient.from('books').insert([newBook]);
+                if (insertError) throw insertError;
+
                 messageDiv.className = 'mt-3 text-sm text-center text-green-600 block';
                 messageDiv.innerText = 'সফলভাবে বই যোগ হয়েছে!';
                 addBookForm.reset();
-                loadBooks(); // লিস্ট রিফ্রেশ করা
-            }
+                loadBooks(); // লিস্ট রিফ্রেশ
 
-            btn.innerText = 'বই যোগ করুন';
-            btn.disabled = false;
+            } catch (error) {
+                messageDiv.className = 'mt-3 text-sm text-center text-red-600 block';
+                messageDiv.innerText = '⚠️ ' + error.message;
+            } finally {
+                btn.innerText = 'বই যোগ করুন';
+                btn.disabled = false;
+            }
         });
 
-        // ৪. বই ডিলিট করা (গ্লোবাল ফাংশন)
+        // বই ডিলিট
         window.deleteBook = async (id) => {
             if(!confirm("আপনি কি নিশ্চিত এই বইটি ডিলিট করতে চান?")) return;
-            
             const { error } = await supabaseClient.from('books').delete().eq('id', id);
             if(error) alert("ডিলিট করা যায়নি: " + error.message);
             else loadBooks();
         };
 
-        // ৫. লগআউট
+        // লগআউট
         document.getElementById('logoutBtn').addEventListener('click', async () => {
             await supabaseClient.auth.signOut();
             window.location.href = '/admin-login.html';
         });
 
-        // শুরু করা
         initDashboard();
     </script>
 </body>
