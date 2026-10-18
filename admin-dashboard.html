@@ -335,7 +335,7 @@
             if(sectionId === 'home') loadDashboardData();
             if(sectionId === 'settings') loadSettings();
             if(sectionId === 'confirm-booking') loadPendingBookings();
-            if(sectionId === 'report') loadReportData(); // ডিফল্টভাবে সব ডাটা লোড হবে
+            if(sectionId === 'report') loadReportData(); 
         };
 
         async function init() {
@@ -424,7 +424,7 @@
             } catch (err) {
                 alert(err.message);
             } finally {
-                btn.innerText = 'সাইট সেটিংস সেভ করুন'; btn.disabled = false;
+                btn.innerText = 'সেটিংস সেভ করুন'; btn.disabled = false;
             }
         });
 
@@ -572,26 +572,31 @@
             loadPendingBookings();
         };
 
-        // ফিল্টার লজিক
+        // ফিল্টার লজিক (এখানে তারিখের ভ্যালিডেশন যোগ করা হয়েছে)
         window.filterReport = () => {
             const startDate = document.getElementById('startDate').value;
             const endDate = document.getElementById('endDate').value;
+
+            // ভ্যালিডেশন: শুরুর তারিখ শেষ তারিখের চেয়ে বড় হতে পারবে না
+            if (startDate && endDate && startDate > endDate) {
+                alert('⚠️ ভুল তারিখ! শুরুর তারিখ শেষ তারিখের চেয়ে পরে হতে পারে না। দয়া করে সঠিক তারিখ নির্বাচন করুন।');
+                return; // ফাংশন এখানেই থেমে যাবে, রিপোর্ট লোড হবে না
+            }
+
             loadReportData(startDate, endDate);
         };
 
         window.resetReport = () => {
             document.getElementById('startDate').value = '';
             document.getElementById('endDate').value = '';
-            loadReportData(); // প্যারামিটার ছাড়া কল করলে সব ডাটা আসবে
+            loadReportData(); 
         };
 
-        // ডেটা লোড এবং ফিল্টার লজিক আপডেট
         async function loadReportData(startDate = null, endDate = null) {
             document.getElementById('report-date').innerText = new Date().toLocaleDateString('bn-BD');
             
             let query = supabaseClient.from('orders').select('*');
 
-            // যদি তারিখ সিলেক্ট করা থাকে তবে কুয়েরিতে যোগ হবে
             if (startDate) {
                 query = query.gte('created_at', startDate + 'T00:00:00');
             }
@@ -645,4 +650,4 @@
         init();
     </script>
 </body>
-                                    </html>
+                                </html>
