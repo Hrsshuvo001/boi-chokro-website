@@ -7,14 +7,12 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        /* স্লাইডারের স্ক্রলবার লুকানোর জন্য */
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
 <body class="bg-gray-50 min-h-screen flex flex-col">
 
-    <!-- নেভিগেশন বার -->
     <nav class="bg-white shadow-sm sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
             <a href="/" class="text-2xl font-bold text-blue-600 tracking-tight">Boi Chokro</a>
@@ -38,10 +36,8 @@
         <p class="text-lg md:text-xl text-blue-100 max-w-2xl mx-auto">সেরা লেখকদের বইয়ের বিশাল সংগ্রহ।</p>
     </header>
 
-    <!-- মেইন কন্টেন্ট -->
     <main class="flex-grow max-w-7xl mx-auto w-full px-4 py-8">
         
-        <!-- ১. বেস্ট সেলার সেকশন -->
         <section class="mb-10">
             <div class="flex items-center gap-2 mb-6">
                 <span class="text-3xl">🔥</span>
@@ -54,26 +50,19 @@
 
         <hr class="border-gray-300 mb-8">
 
-        <!-- ২. ডাইনামিক ক্যাটাগরি সেকশন (কোড নিজেই সব ক্যাটাগরি তৈরি করবে) -->
         <div id="dynamicCategorySections">
             <p class="text-gray-500 text-center py-10">ক্যাটাগরি লোড হচ্ছে...</p>
         </div>
 
         <hr class="border-gray-300 mb-8">
 
-        <!-- ৩. সব ক্যাটাগরি ফিল্টার ও সব বই -->
         <section>
             <h2 class="text-2xl font-bold text-gray-800 mb-4">সব ক্যাটাগরি</h2>
-            
-            <!-- ডাইনামিক ফিল্টার বাটন -->
             <div class="flex flex-wrap gap-2 mb-6" id="categoryButtons">
                 <button onclick="filterCategory('all')" class="category-btn bg-blue-600 text-white px-4 py-2 rounded-full text-sm font-semibold transition">সব বই</button>
-                <!-- বাকি বাটনগুলো জাভাস্ক্রিপ্ট দিয়ে লোড হবে -->
             </div>
 
-            <div id="bookGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                <!-- সব বই লোড হবে -->
-            </div>
+            <div id="bookGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
         </section>
     </main>
 
@@ -97,39 +86,37 @@
         async function checkAuth() {
             const { data: { session } } = await supabaseClient.auth.getSession();
             const authButtons = document.getElementById('authButtons');
-
             if (session) {
                 currentUser = session.user;
-                authButtons.innerHTML = `
-                    <button onclick="handleLogout()" class="bg-red-50 text-red-600 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-red-100 border border-red-200">লগআউট</button>
-                `;
+                authButtons.innerHTML = `<button onclick="handleLogout()" class="bg-red-50 text-red-600 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-red-100 border border-red-200">লগআউট</button>`;
             } else {
                 currentUser = null;
-                authButtons.innerHTML = `
-                    <a href="/login.html" class="text-blue-600 text-sm font-semibold hover:underline">লগইন</a>
-                `;
+                authButtons.innerHTML = `<a href="/login.html" class="text-blue-600 text-sm font-semibold hover:underline">লগইন</a>`;
             }
         }
 
-        // বইয়ের কার্ড তৈরির ফাংশন (ক্লিক করলে ডিটেইলসে যাবে)
+        // কার্ড তৈরির ফাংশন (পার্সেন্টেজ ক্যালকুলেশনসহ)
         function createBookCard(book, isSlider = false) {
             const currentPrice = book.discount_price || book.original_price || 0;
             const hasDiscount = book.original_price && book.discount_price && book.original_price > book.discount_price;
             const widthClass = isSlider ? "min-w-[220px] max-w-[220px] snap-start" : "w-full";
 
+            // ডিসকাউন্ট পার্সেন্টেজ বের করা
+            let discountPercent = 0;
+            if (hasDiscount) {
+                discountPercent = Math.round(((book.original_price - book.discount_price) / book.original_price) * 100);
+            }
+
             return `
             <div class="bg-white rounded-xl shadow-sm hover:shadow-xl transition duration-300 overflow-hidden flex flex-col border border-gray-100 relative ${widthClass}">
                 
-                <!-- ছবিতে ক্লিক করলে ডিটেইলসে যাবে -->
                 <a href="/book-details.html?id=${book.id}" class="block h-56 bg-gray-100 overflow-hidden relative">
-                    ${hasDiscount ? `<div class="absolute top-3 left-3 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded shadow z-10">ডিসকাউন্ট</div>` : ''}
+                    ${hasDiscount ? `<div class="absolute top-3 left-3 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded shadow z-10">${discountPercent}% ছাড়</div>` : ''}
                     <img src="${book.cover_url || 'https://via.placeholder.com/150'}" class="w-full h-full object-cover hover:scale-105 transition duration-500">
                 </a>
                 
                 <div class="p-4 flex flex-col flex-grow">
                     <span class="text-xs text-blue-600 font-semibold mb-1">${book.category || 'সাধারণ'}</span>
-                    
-                    <!-- নামে ক্লিক করলে ডিটেইলসে যাবে -->
                     <a href="/book-details.html?id=${book.id}">
                         <h3 class="font-bold text-md text-gray-800 leading-tight mb-1 line-clamp-2 hover:text-blue-600 transition">${book.title}</h3>
                     </a>
@@ -140,13 +127,10 @@
                         ${hasDiscount ? `<span class="text-gray-400 line-through text-xs mb-1">৳ ${book.original_price}</span>` : ''}
                     </div>
 
-                    <!-- বাটনে ক্লিক করলে পেজ চেঞ্জ হবে না, শুধু একশন হবে -->
                     ${book.is_affiliate ? `
                         <button onclick="event.preventDefault(); handleAffiliateBuy('${book.purchase_link}')" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-1.5 rounded-lg transition text-sm z-10 relative">অন্য সাইট থেকে কিনুন</button>
                     ` : `
-                        <button onclick="event.preventDefault(); addToCart('${book.id}', '${book.title}', ${currentPrice}, '${book.cover_url}')" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-1.5 rounded-lg transition flex justify-center items-center gap-1 text-sm z-10 relative">
-                            কার্টে যোগ করুন
-                        </button>
+                        <button onclick="event.preventDefault(); addToCart('${book.id}', '${book.title}', ${currentPrice}, '${book.cover_url}')" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-1.5 rounded-lg transition flex justify-center items-center gap-1 text-sm z-10 relative">কার্টে যোগ করুন</button>
                     `}
                 </div>
             </div>
@@ -154,7 +138,6 @@
         }
 
         async function loadHomePage() {
-            // ১. সব বই ডাটাবেস থেকে নিয়ে আসা
             const { data: books, error: bookError } = await supabaseClient.from('books').select('*').order('created_at', { ascending: false });
             
             if (bookError || !books) {
@@ -163,11 +146,9 @@
             }
             allBooksData = books;
 
-            // ২. বেস্ট সেলার রেন্ডার
             const bestSellers = [...books].sort((a, b) => (b.sales_count || 0) - (a.sales_count || 0)).slice(0, 4);
             document.getElementById('bestSellerGrid').innerHTML = bestSellers.map(book => createBookCard(book)).join('');
 
-            // ৩. সব ক্যাটাগরি ডাটাবেস থেকে নিয়ে আসা
             const { data: categories, error: catError } = await supabaseClient.from('categories').select('*').order('name');
             
             const dynamicContainer = document.getElementById('dynamicCategorySections');
@@ -176,15 +157,10 @@
             if (!catError && categories && categories.length > 0) {
                 dynamicContainer.innerHTML = ''; 
                 
-                // প্রতিটি ক্যাটাগরির জন্য লুপ চালানো
                 categories.forEach(cat => {
-                    // এই নির্দিষ্ট ক্যাটাগরির বই খুঁজে বের করা (সর্বোচ্চ ১০টি)
                     const catBooks = books.filter(b => b.category === cat.name).slice(0, 10);
-
-                    // যদি এই ক্যাটাগরিতে কোনো বই না থাকে, তবে সেকশনটি স্কিপ করবে
                     if (catBooks.length === 0) return;
 
-                    // ১. ডাইনামিক স্লাইডার সেকশন তৈরি
                     const sectionHTML = `
                         <section class="mb-10">
                             <div class="flex justify-between items-end mb-6">
@@ -205,7 +181,6 @@
                     `;
                     dynamicContainer.insertAdjacentHTML('beforeend', sectionHTML);
 
-                    // ২. নিচের ফিল্টার বাটনেও ক্যাটাগরিটি যোগ করা
                     const btnHTML = `<button onclick="filterCategory('${cat.name}')" class="category-btn bg-white text-gray-700 border border-gray-300 px-4 py-2 rounded-full text-sm font-semibold hover:bg-blue-50 transition">${cat.name}</button>`;
                     categoryButtons.insertAdjacentHTML('beforeend', btnHTML);
                 });
@@ -213,7 +188,6 @@
                 dynamicContainer.innerHTML = `<p class="text-gray-500 text-center">কোনো ক্যাটাগরি পাওয়া যায়নি।</p>`;
             }
 
-            // ৪. নিচের সব বই গ্রিড রেন্ডার
             renderFilteredBooks('all');
         }
 
@@ -229,60 +203,44 @@
                 clickedBtn.classList.remove('bg-white', 'text-gray-700', 'border-gray-300');
                 clickedBtn.classList.add('bg-blue-600', 'text-white');
             }
-
             renderFilteredBooks(category);
         }
 
         function renderFilteredBooks(category) {
             const grid = document.getElementById('bookGrid');
             let filtered = allBooksData;
-            
             if (category !== 'all') {
                 filtered = allBooksData.filter(book => book.category === category);
             }
-
             if (filtered.length === 0) {
                 grid.innerHTML = `<p class="text-gray-500 col-span-full text-center py-10">এই ক্যাটাগরিতে কোনো বই পাওয়া যায়নি।</p>`;
                 return;
             }
-
             grid.innerHTML = filtered.map(book => createBookCard(book)).join('');
         }
 
         window.addToCart = (id, title, price, image) => {
             if (!currentUser) {
                 alert('কার্টে যোগ করতে অনুগ্রহ করে প্রথমে লগইন করুন!');
-                window.location.href = '/login.html';
-                return;
+                window.location.href = '/login.html'; return;
             }
             let cart = JSON.parse(localStorage.getItem('boiChokroCart')) || [];
             if (cart.find(item => item.id === id)) {
-                alert('বইটি ইতিমধ্যে আপনার কার্টে আছে!');
-                return;
+                alert('বইটি ইতিমধ্যে আপনার কার্টে আছে!'); return;
             }
             cart.push({ id, title, price, image });
             localStorage.setItem('boiChokroCart', JSON.stringify(cart));
-            updateCartCount();
-            alert('সফলভাবে কার্টে যোগ হয়েছে!');
+            updateCartCount(); alert('সফলভাবে কার্টে যোগ হয়েছে!');
         }
 
         window.handleAffiliateBuy = (link) => {
-            if (!currentUser) {
-                alert('লিংকে যেতে অনুগ্রহ করে প্রথমে লগইন করুন!');
-                window.location.href = '/login.html';
-                return;
-            }
+            if (!currentUser) { alert('লিংকে যেতে প্রথমে লগইন করুন!'); window.location.href = '/login.html'; return; }
             if(link) window.open(link, '_blank');
         }
 
-        window.handleLogout = async () => {
-            await supabaseClient.auth.signOut();
-            checkAuth(); 
-        }
+        window.handleLogout = async () => { await supabaseClient.auth.signOut(); checkAuth(); }
 
-        checkAuth();
-        loadHomePage(); 
-        updateCartCount();
+        checkAuth(); loadHomePage(); updateCartCount();
     </script>
 </body>
 </html>
