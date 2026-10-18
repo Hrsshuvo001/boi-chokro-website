@@ -45,32 +45,62 @@
 
         const loginForm = document.getElementById('loginForm');
         const messageDiv = document.getElementById('message');
+        const loginBtn = document.getElementById('loginBtn');
 
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const btn = document.getElementById('loginBtn');
-            btn.innerText = 'অপেক্ষা করুন...';
-            btn.disabled = true;
+            
+            loginBtn.innerText = 'অপেক্ষা করুন...';
+            loginBtn.disabled = true;
             messageDiv.classList.add('hidden');
 
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
 
-            const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+            try {
+                // ১. প্রথমে Supabase Auth দিয়ে লগইন করা
+                const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
 
-            if (error) {
+                if (error) {
+                    throw new Error(error.message === 'Invalid login credentials' ? 'ভুল ইমেইল বা পাসওয়ার্ড!' : error.message);
+                }
+
+                // ২. লগইন সফল হলে, চেক করা সে অ্যাডমিন কি না
+                if (data.user) {
+                    const { data: profile, error: profileError } = await supabaseClient
+                        .from('profiles')
+                        .select('role')
+                        .eq('id', data.user.id)
+                        .maybeSingle(); // maybeSingle ব্যবহার করা হয়েছে যাতে এরর না আসে
+
+                    if (profileError) throw new Error("প্রোফাইল চেক করতে সমস্যা হয়েছে!");
+
+                    // ৩. যদি ইউজার অ্যাডমিন হয়
+                    if (profile && profile.role === 'admin') {
+                        await supabaseClient.auth.signOut(); // সাথে সাথে লগআউট করে দাও
+                        
+                        messageDiv.classList.remove('hidden', 'text-green-600');
+                        messageDiv.classList.add('text-red-600');
+                        messageDiv.innerText = '❌ আপনি একজন অ্যাডমিন! দয়া করে অ্যাডমিন পোর্টাল দিয়ে লগইন করুন।';
+                    } 
+                    // ৪. যদি সাধারণ ইউজার হয়
+                    else {
+                        messageDiv.classList.remove('hidden', 'text-red-600');
+                        messageDiv.classList.add('text-green-600');
+                        messageDiv.innerText = '✅ সফলভাবে লগইন হয়েছে! হোম পেজে যাচ্ছেন...';
+                        
+                        setTimeout(() => {
+                            window.location.href = '/index.html'; // হোম পেজে পাঠিয়ে দাও
+                        }, 1000);
+                    }
+                }
+            } catch (err) {
                 messageDiv.classList.remove('hidden', 'text-green-600');
                 messageDiv.classList.add('text-red-600');
-                messageDiv.innerText = '⚠️ ' + (error.message === 'Invalid login credentials' ? 'ভুল ইমেইল বা পাসওয়ার্ড!' : error.message);
-                btn.innerText = 'লগইন';
-                btn.disabled = false;
-            } else {
-                messageDiv.classList.remove('hidden', 'text-red-600');
-                messageDiv.classList.add('text-green-600');
-                messageDiv.innerText = '✅ সফলভাবে লগইন হয়েছে! হোম পেজে যাচ্ছেন...';
-                setTimeout(() => {
-                    window.location.href = '/index.html'; // সফল হলে হোম পেজে যাবে
-                }, 1000);
+                messageDiv.innerText = '⚠️ ' + err.message;
+            } finally {
+                loginBtn.innerText = 'লগইন';
+                loginBtn.disabled = false;
             }
         });
     </script>
