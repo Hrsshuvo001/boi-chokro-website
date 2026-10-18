@@ -29,7 +29,6 @@
                     <input type="text" id="author" required class="mt-1 w-full px-3 py-2 border rounded-md">
                 </div>
                 
-                <!-- ডিসকাউন্ট অপশন -->
                 <div class="grid grid-cols-2 gap-2">
                     <div>
                         <label class="block text-sm font-medium text-gray-700">আসল দাম (৳)</label>
@@ -41,29 +40,23 @@
                     </div>
                 </div>
 
-                <!-- নতুন লিংক অপশন -->
+                <!-- লিংক অপশন -->
                 <div class="p-4 bg-blue-50 border border-blue-200 rounded-md">
-                    <label class="block text-sm font-bold text-blue-800 mb-2">বিক্রয়ের ধরন (Link Type)</label>
+                    <label class="block text-sm font-bold text-blue-800 mb-2">বিক্রয়ের ধরন</label>
                     
-                    <!-- রেডিও বাটন -->
                     <div class="flex flex-col gap-2 mb-3">
                         <label class="flex items-center space-x-2 text-sm text-blue-900 cursor-pointer">
                             <input type="radio" name="link_type" id="type_affiliate" value="affiliate" checked onchange="toggleLinkType()">
-                            <span>অ্যাফিলিয়েট লিংক (অন্য সাইট থেকে কিনবে)</span>
+                            <span>অ্যাফিলিয়েট লিংক (অন্য সাইট)</span>
                         </label>
                         <label class="flex items-center space-x-2 text-sm text-blue-900 cursor-pointer">
                             <input type="radio" name="link_type" id="type_payment" value="payment" onchange="toggleLinkType()">
-                            <span>পেমেন্ট গেটওয়ে (নিজের সাইটে পেমেন্ট)</span>
+                            <span>নিজের সাইটে বিক্রি (কার্ট ও পেমেন্ট গেটওয়ে)</span>
                         </label>
                     </div>
 
                     <input type="url" id="purchase_link" placeholder="https://..." class="w-full px-3 py-2 border rounded-md mb-2">
-                    <p class="text-xs text-gray-600" id="link_hint">এখানে অ্যাফিলিয়েট লিংক দিন। কাস্টমার 'কিনুন' বাটনে চাপ দিলে নতুন ট্যাবে ওই লিংকে চলে যাবে।</p>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">বিকাশ/নগদ নাম্বার (পেমেন্টের জন্য)</label>
-                    <input type="text" id="payment_info" placeholder="বিকাশ: 017xxxx, নগদ: 017xxxx" class="mt-1 w-full px-3 py-2 border rounded-md">
+                    <p class="text-xs text-gray-600" id="link_hint">এখানে অ্যাফিলিয়েট লিংক দিন।</p>
                 </div>
 
                 <div>
@@ -72,7 +65,7 @@
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">বইয়ের ছবি (একাধিক সিলেক্ট করতে পারবেন)</label>
+                    <label class="block text-sm font-medium text-gray-700">বইয়ের ছবি</label>
                     <input type="file" id="cover_files" accept="image/*" multiple required class="mt-1 w-full px-3 py-2 border rounded-md bg-gray-50 text-sm">
                 </div>
                 
@@ -84,9 +77,7 @@
         <!-- লিস্ট -->
         <div class="lg:col-span-2">
             <h2 class="text-xl font-bold mb-4 text-gray-800">সব বই</h2>
-            <div id="bookList" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                <!-- লোডিং -->
-            </div>
+            <div id="bookList" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4"></div>
         </div>
     </div>
 
@@ -99,7 +90,6 @@
         const addBookForm = document.getElementById('addBookForm');
         const messageDiv = document.getElementById('message');
 
-        // লিংকের ধরন পরিবর্তন হলে হিন্ট টেক্সট পরিবর্তন হবে
         window.toggleLinkType = () => {
             const isAffiliate = document.getElementById('type_affiliate').checked;
             const input = document.getElementById('purchase_link');
@@ -107,10 +97,13 @@
             
             if (isAffiliate) {
                 input.placeholder = "https://amazon.com/... (Affiliate Link)";
-                hint.innerText = "এখানে অ্যাফিলিয়েট লিংক দিন। কাস্টমার 'কিনুন' বাটনে চাপ দিলে নতুন ট্যাবে ওই লিংকে চলে যাবে।";
+                hint.innerText = "কাস্টমার 'কিনুন' বাটনে চাপ দিলে নতুন ট্যাবে ওই লিংকে চলে যাবে।";
+                input.required = true;
             } else {
-                input.placeholder = "https://your-payment-gateway.com/...";
-                hint.innerText = "এখানে আপনার পেমেন্ট পেজের লিংক দিন (যেমন: SSLCommerz বা আপনার চেকআউট পেজ)। কাস্টমারকে সরাসরি ওই পেজে পাঠানো হবে।";
+                input.placeholder = "লিংকের প্রয়োজন নেই (কার্টে যাবে)";
+                hint.innerText = "কাস্টমার এই বইটি কার্টে যোগ করতে পারবে এবং চেকআউটে গিয়ে পেমেন্ট করবে।";
+                input.required = false;
+                input.value = ""; 
             }
         };
 
@@ -140,8 +133,7 @@
                             ${book.original_price ? `<span class="text-gray-400 line-through text-sm">৳ ${book.original_price}</span>` : ''}
                         </div>
                         
-                        ${book.payment_info ? `<p class="text-xs text-gray-500 mt-1">💳 ${book.payment_info}</p>` : ''}
-                        ${book.is_affiliate ? `<span class="inline-block mt-2 bg-purple-100 text-purple-700 text-xs px-2 py-1 rounded">Affiliate Link</span>` : `<span class="inline-block mt-2 bg-green-100 text-green-700 text-xs px-2 py-1 rounded">Direct Payment</span>`}
+                        ${book.is_affiliate ? `<span class="inline-block mt-2 bg-purple-100 text-purple-700 text-xs px-2 py-1 rounded">Affiliate</span>` : `<span class="inline-block mt-2 bg-green-100 text-green-700 text-xs px-2 py-1 rounded">Direct Sale</span>`}
                     </div>
                     <button onclick="deleteBook('${book.id}')" class="mt-4 w-full bg-red-50 text-red-600 py-1 rounded text-sm hover:bg-red-100 border border-red-200">ডিলিট করুন</button>
                 </div>
@@ -151,7 +143,7 @@
         addBookForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('addBtn');
-            btn.innerText = 'ছবি আপলোড হচ্ছে...';
+            btn.innerText = 'প্রসেস হচ্ছে...';
             btn.disabled = true;
 
             try {
@@ -172,7 +164,6 @@
                     }
                 }
 
-                // রেডিও বাটন থেকে চেক করা হচ্ছে অ্যাফিলিয়েট নাকি পেমেন্ট
                 const isAffiliate = document.getElementById('type_affiliate').checked;
 
                 const newBook = {
@@ -180,9 +171,8 @@
                     author: document.getElementById('author').value,
                     original_price: parseFloat(document.getElementById('original_price').value) || null,
                     discount_price: parseFloat(document.getElementById('discount_price').value),
-                    purchase_link: document.getElementById('purchase_link').value,
+                    purchase_link: document.getElementById('purchase_link').value || null,
                     is_affiliate: isAffiliate,
-                    payment_info: document.getElementById('payment_info').value,
                     description: document.getElementById('description').value,
                     cover_url: uploadedUrls[0] || '',
                     gallery_images: uploadedUrls
@@ -194,7 +184,7 @@
                 messageDiv.className = 'mt-3 text-sm text-center text-green-600 block';
                 messageDiv.innerText = 'সফলভাবে বই যোগ হয়েছে!';
                 addBookForm.reset();
-                toggleLinkType(); // রিসেট করার পর হিন্ট আবার আগের অবস্থায় আনবে
+                toggleLinkType();
                 loadBooks();
 
             } catch (error) {
