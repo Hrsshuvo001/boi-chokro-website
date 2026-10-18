@@ -14,29 +14,36 @@
         <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
             <a href="/" class="text-2xl font-bold text-blue-600 tracking-tight">Boi Chokro</a>
             
-            <div id="authButtons" class="flex items-center gap-4">
-                <div class="animate-pulse bg-gray-200 h-8 w-20 rounded"></div>
+            <div class="flex items-center gap-4 sm:gap-6">
+                <!-- কার্ট আইকন -->
+                <a href="/cart.html" class="relative text-gray-600 hover:text-blue-600 transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    <!-- কার্ট ব্যাজ -->
+                    <span id="cartCount" class="absolute -top-1 -right-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">0</span>
+                </a>
+
+                <!-- ইউজার অথ বাটন -->
+                <div id="authButtons" class="flex items-center gap-3">
+                    <div class="animate-pulse bg-gray-200 h-8 w-16 rounded"></div>
+                </div>
             </div>
         </div>
     </nav>
 
-    <!-- হিরো সেকশন -->
-    <header class="bg-blue-600 text-white py-12 px-4">
-        <div class="max-w-7xl mx-auto text-center">
-            <h1 class="text-3xl md:text-5xl font-bold mb-4">আপনার পছন্দের বই, এক জায়গায়</h1>
-            <p class="text-lg md:text-xl text-blue-100 max-w-2xl mx-auto">সেরা লেখকদের বইয়ের বিশাল সংগ্রহ। আজই আপনার প্রিয় বইটি খুঁজে নিন অথবা অন্য সাইট থেকে অ্যাফিলিয়েট লিংকের মাধ্যমে কিনুন।</p>
-        </div>
+    <header class="bg-blue-600 text-white py-12 px-4 text-center">
+        <h1 class="text-3xl md:text-5xl font-bold mb-4">আপনার পছন্দের বই, এক জায়গায়</h1>
+        <p class="text-lg md:text-xl text-blue-100 max-w-2xl mx-auto">সেরা লেখকদের বইয়ের বিশাল সংগ্রহ।</p>
     </header>
 
-    <!-- বইয়ের গ্রিড -->
     <main class="flex-grow max-w-7xl mx-auto w-full px-4 py-10">
         <h2 class="text-2xl font-bold text-gray-800 mb-6 border-b pb-2">সব বই</h2>
         <div id="bookGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            <p class="text-gray-500 col-span-full text-center py-10">বই লোড হচ্ছে, অপেক্ষা করুন...</p>
+            <p class="text-gray-500 col-span-full text-center py-10">বই লোড হচ্ছে...</p>
         </div>
     </main>
 
-    <!-- ফুটার -->
     <footer class="bg-gray-800 text-gray-300 py-6 text-center mt-auto">
         <p>&copy; 2024 Boi Chokro. All rights reserved.</p>
     </footer>
@@ -48,6 +55,12 @@
 
         let currentUser = null;
 
+        // কার্ট কাউন্ট আপডেট করা
+        function updateCartCount() {
+            const cart = JSON.parse(localStorage.getItem('boiChokroCart')) || [];
+            document.getElementById('cartCount').innerText = cart.length;
+        }
+
         async function checkAuth() {
             const { data: { session } } = await supabaseClient.auth.getSession();
             const authButtons = document.getElementById('authButtons');
@@ -55,48 +68,34 @@
             if (session) {
                 currentUser = session.user;
                 authButtons.innerHTML = `
-                    <span class="text-sm text-gray-600 hidden sm:block">স্বাগতম, ${currentUser.email.split('@')[0]}</span>
                     <button onclick="handleLogout()" class="bg-red-50 text-red-600 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-red-100 border border-red-200">লগআউট</button>
                 `;
             } else {
                 currentUser = null;
                 authButtons.innerHTML = `
                     <a href="/login.html" class="text-blue-600 text-sm font-semibold hover:underline">লগইন</a>
-                    <a href="/signup.html" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700 shadow-sm">সাইন আপ</a>
                 `;
             }
         }
 
         async function loadBooks() {
-            const { data: books, error } = await supabaseClient
-                .from('books')
-                .select('*')
-                .order('created_at', { ascending: false });
-
+            const { data: books, error } = await supabaseClient.from('books').select('*').order('created_at', { ascending: false });
             const bookGrid = document.getElementById('bookGrid');
 
-            if (error) {
-                bookGrid.innerHTML = `<p class="text-red-500 col-span-full text-center">বই লোড করতে সমস্যা হয়েছে!</p>`;
-                return;
-            }
-
-            if (books.length === 0) {
-                bookGrid.innerHTML = `<p class="text-gray-500 col-span-full text-center">এখনো কোনো বই যোগ করা হয়নি।</p>`;
+            if (error || books.length === 0) {
+                bookGrid.innerHTML = `<p class="text-gray-500 col-span-full text-center">বই পাওয়া যায়নি।</p>`;
                 return;
             }
 
             bookGrid.innerHTML = books.map(book => {
-                const currentPrice = book.discount_price || book.original_price || 'N/A';
+                const currentPrice = book.discount_price || book.original_price || 0;
                 const hasDiscount = book.original_price && book.discount_price && book.original_price > book.discount_price;
 
                 return `
-                <div class="bg-white rounded-xl shadow-sm hover:shadow-xl transition duration-300 overflow-hidden flex flex-col border border-gray-100 relative group">
-                    
-                    ${hasDiscount ? 
-                        `<div class="absolute top-3 left-3 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded shadow z-10">ডিসকাউন্ট</div>` : ''}
-
-                    <div class="overflow-hidden h-64 bg-gray-100">
-                        <img src="${book.cover_url || 'https://via.placeholder.com/150'}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                <div class="bg-white rounded-xl shadow-sm hover:shadow-xl transition duration-300 overflow-hidden flex flex-col border border-gray-100 relative">
+                    ${hasDiscount ? `<div class="absolute top-3 left-3 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded shadow z-10">ডিসকাউন্ট</div>` : ''}
+                    <div class="h-64 bg-gray-100">
+                        <img src="${book.cover_url || 'https://via.placeholder.com/150'}" class="w-full h-full object-cover">
                     </div>
                     
                     <div class="p-5 flex flex-col flex-grow">
@@ -108,47 +107,62 @@
                             ${hasDiscount ? `<span class="text-gray-400 line-through text-sm mb-1">৳ ${book.original_price}</span>` : ''}
                         </div>
 
-                        ${book.payment_info ? `<div class="bg-gray-50 p-2 rounded text-xs text-gray-600 mb-4 border border-gray-200">💳 পেমেন্ট: ${book.payment_info}</div>` : ''}
-
-                        <!-- বাই বাটন (লিংকের ধরন অনুযায়ী টেক্সট ও কালার পরিবর্তন হবে) -->
-                        <button onclick="handleBuy('${book.purchase_link}', ${book.is_affiliate})" class="w-full block text-center ${book.is_affiliate ? 'bg-purple-600 hover:bg-purple-700' : 'bg-green-600 hover:bg-green-700'} text-white font-bold py-2 rounded-lg transition">
-                            ${book.is_affiliate ? 'অন্য সাইট থেকে কিনুন' : 'এখনই কিনুন'}
-                        </button>
+                        ${book.is_affiliate ? `
+                            <button onclick="handleAffiliateBuy('${book.purchase_link}')" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 rounded-lg transition">অন্য সাইট থেকে কিনুন</button>
+                        ` : `
+                            <button onclick="addToCart('${book.id}', '${book.title}', ${currentPrice}, '${book.cover_url}')" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 rounded-lg transition flex justify-center items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" /></svg>
+                                কার্টে যোগ করুন
+                            </button>
+                        `}
                     </div>
                 </div>
             `}).join('');
         }
 
-        // ৩. কেনার সময় লজিক
-        window.handleBuy = (link, isAffiliate) => {
+        // কার্টে যোগ করা
+        window.addToCart = (id, title, price, image) => {
             if (!currentUser) {
-                alert('বইটি কিনতে অনুগ্রহ করে প্রথমে লগইন করুন!');
+                alert('কার্টে যোগ করতে অনুগ্রহ করে প্রথমে লগইন করুন!');
                 window.location.href = '/login.html';
                 return;
             }
             
-            if(!link) {
-                alert('এই বইয়ের জন্য কোনো লিংক দেওয়া নেই।');
+            let cart = JSON.parse(localStorage.getItem('boiChokroCart')) || [];
+            
+            // চেক করা বইটি আগে থেকেই কার্টে আছে কি না
+            const existingItem = cart.find(item => item.id === id);
+            if (existingItem) {
+                alert('বইটি ইতিমধ্যে আপনার কার্টে আছে!');
                 return;
             }
 
-            if (isAffiliate) {
-                // যদি অ্যাফিলিয়েট হয়, নতুন ট্যাবে ওই সাইটে পাঠাবে
-                window.open(link, '_blank');
-            } else {
-                // যদি পেমেন্ট লিংক হয়, তবে সরাসরি পেমেন্ট পেজে নিয়ে যাবে (বর্তমান ট্যাবেই)
-                window.location.href = link; 
+            cart.push({ id, title, price, image });
+            localStorage.setItem('boiChokroCart', JSON.stringify(cart));
+            
+            updateCartCount();
+            alert('সফলভাবে কার্টে যোগ হয়েছে!');
+        }
+
+        window.handleAffiliateBuy = (link) => {
+            if (!currentUser) {
+                alert('লিংকে যেতে অনুগ্রহ করে প্রথমে লগইন করুন!');
+                window.location.href = '/login.html';
+                return;
             }
+            if(link) window.open(link, '_blank');
         }
 
         window.handleLogout = async () => {
             await supabaseClient.auth.signOut();
             checkAuth(); 
-            alert('সফলভাবে লগআউট হয়েছেন।');
+            alert('লগআউট হয়েছে।');
         }
 
+        // শুরু
         checkAuth();
         loadBooks();
+        updateCartCount();
     </script>
 </body>
 </html>
