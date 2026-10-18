@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login - Boi Chokro</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Supabase JS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-gray-900 min-h-screen flex items-center justify-center p-4">
+
+    <!-- অ্যাডমিন লগইন ফর্ম (ডার্ক থিম) -->
+    <div class="bg-gray-800 p-8 rounded-lg shadow-2xl w-full max-w-md border border-gray-700">
+        <h2 class="text-2xl font-bold mb-6 text-center text-white">Admin Portal</h2>
+        
+        <form id="adminLoginForm" class="space-y-4">
+            <div>
+                <label class="block text-gray-400 text-sm font-bold mb-2">Admin Email</label>
+                <input type="email" id="email" required class="w-full px-4 py-2 bg-gray-700 text-white border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            
+            <div>
+                <label class="block text-gray-400 text-sm font-bold mb-2">Password</label>
+                <input type="password" id="password" required class="w-full px-4 py-2 bg-gray-700 text-white border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            
+            <button type="submit" id="loginBtn" class="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded hover:bg-blue-700 transition duration-300">
+                অ্যাডমিন লগইন
+            </button>
+        </form>
+
+        <!-- এরর বা সাকসেস মেসেজ -->
+        <div id="message" class="text-center font-semibold text-sm mt-4 hidden"></div>
+    </div>
+
+    <script>
+        // আপনার Supabase URL এবং Key
+        const SUPABASE_URL = 'https://jhbpaezbpkfwjfmazdcn.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_oBzutzPKvIvujmSG7icXug_SwwveL5g';
+
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        const adminLoginForm = document.getElementById('adminLoginForm');
+        const messageDiv = document.getElementById('message');
+        const loginBtn = document.getElementById('loginBtn');
+
+        adminLoginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            loginBtn.innerText = 'যাচাই করা হচ্ছে...';
+            loginBtn.disabled = true;
+            messageDiv.classList.add('hidden');
+
+            try {
+                // ১. প্রথমে Supabase Auth দিয়ে লগইন করা
+                const { data, error } = await supabaseClient.auth.signInWithPassword({
+                    email: email,
+                    password: password,
+                });
+
+                if (error) {
+                    messageDiv.classList.remove('hidden', 'text-green-500');
+                    messageDiv.classList.add('text-red-500');
+                    messageDiv.innerText = '⚠️ ' + (error.message === 'Invalid login credentials' ? 'ভুল ইমেইল বা পাসওয়ার্ড!' : error.message);
+                    return;
+                }
+
+                // ২. লগইন সফল হলে, এখন চেক করব সে অ্যাডমিন কি না
+                if (data.user) {
+                    const { data: profile, error: profileError } = await supabaseClient
+                        .from('profiles')
+                        .select('role')
+                        .eq('id', data.user.id)
+                        .single();
+
+                    if (profileError) {
+                        throw new Error("প্রোফাইল চেক করতে সমস্যা হয়েছে!");
+                    }
+
+                    // ৩. রোল চেক
+                    if (profile.role === 'admin') {
+                        // সে অ্যাডমিন, তাকে ঢুকতে দাও
+                        messageDiv.classList.remove('hidden', 'text-red-500');
+                        messageDiv.classList.add('text-green-500');
+                        messageDiv.innerText = '✅ সফল! অ্যাডমিন ড্যাশবোর্ডে যাচ্ছেন...';
+                        
+                        setTimeout(() => {
+                            window.location.href = '/admin-dashboard.html';
+                        }, 1000);
+                    } else {
+                        // সে অ্যাডমিন নয়! সাথে সাথে লগআউট করে দাও
+                        await supabaseClient.auth.signOut();
+                        messageDiv.classList.remove('hidden', 'text-green-500');
+                        messageDiv.classList.add('text-red-500');
+                        messageDiv.innerText = '❌ আপনি অ্যাডমিন নন! প্রবেশাধিকার নেই।';
+                    }
+                }
+            } catch (err) {
+                messageDiv.classList.remove('hidden', 'text-green-500');
+                messageDiv.classList.add('text-red-500');
+                messageDiv.innerText = '⚠️ ' + err.message;
+            } finally {
+                loginBtn.innerText = 'অ্যাডমিন লগইন';
+                loginBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
