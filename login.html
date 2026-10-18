@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supabase Login</title>
+    <!-- Supabase JS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: sans-serif; display: flex; justify-content: center; padding-top: 50px; }
+        form { display: flex; flex-direction: column; width: 300px; gap: 15px; }
+        input, button { padding: 10px; font-size: 16px; }
+        #error-box { 
+            display: none; 
+            background-color: #ffebee; 
+            color: #c62828; 
+            padding: 10px; 
+            border-radius: 5px; 
+            margin-top: 15px; 
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div>
+        <h2>লগইন করুন</h2>
+        <form id="login-form">
+            <input type="email" id="email" placeholder="ইমেইল দিন" required>
+            <input type="password" id="password" placeholder="পাসওয়ার্ড দিন" required>
+            <button type="submit" id="login-btn">লগইন</button>
+        </form>
+        
+        <!-- এরর মেসেজ দেখানোর জন্য ডিভ -->
+        <div id="error-box"></div>
+    </div>
+
+    <script>
+        // ⚠️ এখানে আপনার নিজের URL এবং Anon Key বসান
+        const supabaseUrl = 'https://YOUR_PROJECT_ID.supabase.co';
+        const supabaseAnonKey = 'YOUR_SUPABASE_ANON_KEY';
+        
+        // Supabase ক্লায়েন্ট তৈরি
+        const { createClient } = supabase;
+        const supabaseClient = createClient(supabaseUrl, supabaseAnonKey);
+
+        const form = document.getElementById('login-form');
+        const errorBox = document.getElementById('error-box');
+        const loginBtn = document.getElementById('login-btn');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault(); // পেজ রিলোড হওয়া বন্ধ
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            // লোডিং শুরু
+            errorBox.style.display = 'none';
+            loginBtn.innerText = 'অপেক্ষা করুন...';
+            loginBtn.disabled = true;
+
+            // Supabase লগইন কল
+            const { data, error } = await supabaseClient.auth.signInWithPassword({
+                email: email,
+                password: password
+            });
+
+            loginBtn.innerText = 'লগইন';
+            loginBtn.disabled = false;
+
+            if (error) {
+                // ⚠️ লগইন ফেইল করলে এখানে আসবে
+                errorBox.style.display = 'block';
+                
+                if (error.message === 'Invalid login credentials') {
+                    errorBox.innerText = '⚠️ ভুল ইমেইল বা পাসওয়ার্ড! আবার চেষ্টা করুন।';
+                } else if (error.message === 'Email not confirmed') {
+                    errorBox.innerText = '⚠️ আপনার ইমেইল ভেরিফাই করা হয়নি। ইনবক্স চেক করুন।';
+                } else {
+                    errorBox.innerText = '⚠️ ' + error.message;
+                }
+                
+                // return করায় নিচের রিডাইরেক্ট কোড রান হবে না
+                return; 
+            }
+
+            // লগইন সফল হলে 
+            if (data.user) {
+                alert('সফলভাবে লগইন হয়েছে!');
+                // এখানে আপনার ড্যাশবোর্ড বা হোম পেজের লিংক দিন
+                window.location.href = '/dashboard.html'; 
+            }
+        });
+    </script>
+</body>
+</html>
