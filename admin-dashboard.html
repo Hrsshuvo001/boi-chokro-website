@@ -27,7 +27,7 @@
             <button onclick="toggleSidebar()" class="md:hidden text-red-400 hover:text-red-300 bg-slate-700 px-2 py-1 rounded text-sm">✕</button>
         </div>
         
-        <!-- মেনু এরিয়া (সব বাটন এখানে একসাথে থাকবে) -->
+        <!-- মেনু এরিয়া -->
         <nav class="flex-grow flex flex-col p-2 overflow-y-auto">
             <div class="flex flex-col gap-1">
                 <button onclick="showSection('home')" class="nav-item active text-left px-4 py-3 rounded-md hover:bg-slate-700 transition flex items-center gap-3 w-full">📊 হোম (ড্যাশবোর্ড)</button>
@@ -40,7 +40,7 @@
                 <!-- সাইট সেটিংস রিপোর্টের ঠিক নিচে -->
                 <button onclick="showSection('settings')" class="nav-item text-left px-4 py-3 rounded-md hover:bg-slate-700 transition flex items-center gap-3 w-full">⚙️ সাইট সেটিংস</button>
                 
-                <!-- লগআউট বাটন ঠিক সেটিংসের নিচেই (কোনো mt-auto নেই) -->
+                <!-- লগআউট বাটন ঠিক সেটিংসের নিচেই -->
                 <div class="border-t border-slate-700 mt-2 pt-2">
                     <button onclick="handleLogout()" class="w-full text-left px-4 py-3 rounded-md bg-red-900/30 hover:bg-red-600 text-red-400 hover:text-white transition flex items-center gap-3 border border-red-900/50">🚪 লগআউট</button>
                 </div>
@@ -54,7 +54,6 @@
         <!-- মোবাইল টপবার -->
         <header class="bg-white shadow-sm p-4 flex justify-between items-center md:hidden z-30 flex-shrink-0">
             <h1 class="text-xl font-bold text-blue-600" id="mobile-header-title">Boi Chokro</h1>
-            <!-- হ্যামবার্গার মেনু বাটন -->
             <button onclick="toggleSidebar()" class="text-gray-700 text-3xl focus:outline-none p-2 -mr-2">☰</button>
         </header>
 
@@ -180,6 +179,22 @@
                         PDF ডাউনলোড
                     </button>
                 </div>
+
+                <!-- ডেট ফিল্টার সেকশন -->
+                <div class="bg-white p-4 rounded-xl shadow-sm max-w-4xl mx-auto mb-6 flex flex-wrap items-end gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">শুরুর তারিখ</label>
+                        <input type="date" id="startDate" class="px-3 py-2 border rounded-md text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">শেষ তারিখ</label>
+                        <input type="date" id="endDate" class="px-3 py-2 border rounded-md text-sm">
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="filterReport()" class="bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700">ফিল্টার করুন</button>
+                        <button onclick="resetReport()" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-md text-sm hover:bg-gray-300">রিসেট</button>
+                    </div>
+                </div>
                 
                 <!-- PDF এরিয়া -->
                 <div class="bg-white p-4 md:p-8 rounded-xl shadow-sm max-w-4xl mx-auto overflow-x-auto">
@@ -292,7 +307,6 @@
         let myChart = null;
         let siteSettings = null; 
 
-        // সাইডবার টগল (ব্যাকড্রপ ছাড়া, যাতে ক্লিকে সমস্যা না হয়)
         window.toggleSidebar = () => {
             const sidebar = document.getElementById('sidebar');
             sidebar.classList.toggle('-translate-x-full');
@@ -311,7 +325,6 @@
                 }
             });
 
-            // মোবাইলে সেকশন চেঞ্জ হলে সাইডবার বন্ধ হয়ে যাবে
             if(window.innerWidth < 768) {
                 const sidebar = document.getElementById('sidebar');
                 if(!sidebar.classList.contains('-translate-x-full')){
@@ -322,7 +335,7 @@
             if(sectionId === 'home') loadDashboardData();
             if(sectionId === 'settings') loadSettings();
             if(sectionId === 'confirm-booking') loadPendingBookings();
-            if(sectionId === 'report') loadReportData();
+            if(sectionId === 'report') loadReportData(); // ডিফল্টভাবে সব ডাটা লোড হবে
         };
 
         async function init() {
@@ -411,7 +424,7 @@
             } catch (err) {
                 alert(err.message);
             } finally {
-                btn.innerText = 'সেটিংস সেভ করুন'; btn.disabled = false;
+                btn.innerText = 'সাইট সেটিংস সেভ করুন'; btn.disabled = false;
             }
         });
 
@@ -559,17 +572,55 @@
             loadPendingBookings();
         };
 
-        async function loadReportData() {
+        // ফিল্টার লজিক
+        window.filterReport = () => {
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            loadReportData(startDate, endDate);
+        };
+
+        window.resetReport = () => {
+            document.getElementById('startDate').value = '';
+            document.getElementById('endDate').value = '';
+            loadReportData(); // প্যারামিটার ছাড়া কল করলে সব ডাটা আসবে
+        };
+
+        // ডেটা লোড এবং ফিল্টার লজিক আপডেট
+        async function loadReportData(startDate = null, endDate = null) {
             document.getElementById('report-date').innerText = new Date().toLocaleDateString('bn-BD');
-            const { data: orders } = await supabaseClient.from('orders').select('*').order('created_at', { ascending: false });
+            
+            let query = supabaseClient.from('orders').select('*');
+
+            // যদি তারিখ সিলেক্ট করা থাকে তবে কুয়েরিতে যোগ হবে
+            if (startDate) {
+                query = query.gte('created_at', startDate + 'T00:00:00');
+            }
+            if (endDate) {
+                query = query.lte('created_at', endDate + 'T23:59:59');
+            }
+
+            const { data: orders, error } = await query.order('created_at', { ascending: false });
             const tbody = document.getElementById('reportTableBody');
-            if(!orders || orders.length === 0) { tbody.innerHTML = `<tr><td colspan="5" class="p-2 text-center text-gray-500">কোনো ডাটা নেই।</td></tr>`; return; }
+            
+            if (error || !orders || orders.length === 0) { 
+                tbody.innerHTML = `<tr><td colspan="5" class="p-2 text-center text-gray-500">এই সময়ের মধ্যে কোনো ডাটা নেই।</td></tr>`; 
+                document.getElementById('rep-total-orders').innerText = '0';
+                document.getElementById('rep-success-orders').innerText = '0';
+                document.getElementById('rep-total-revenue').innerText = '৳ 0';
+                return; 
+            }
 
             let totalRev = 0, completed = 0;
             tbody.innerHTML = orders.map(o => {
                 totalRev += Number(o.total_amount);
                 if(o.status === 'completed') completed++;
-                return `<tr class="border-b"><td class="p-2 text-left">${new Date(o.created_at).toLocaleDateString('bn-BD')}</td><td class="p-2 text-left">${o.customer_name || 'N/A'}</td><td class="p-2 text-left">${o.customer_phone || 'N/A'}</td><td class="p-2 capitalize text-left">${o.status}</td><td class="p-2 text-right">৳ ${o.total_amount}</td></tr>`;
+                return `<tr class="border-b">
+                    <td class="p-2 text-left">${new Date(o.created_at).toLocaleDateString('bn-BD')}</td>
+                    <td class="p-2 text-left">${o.customer_name || 'N/A'}</td>
+                    <td class="p-2 text-left">${o.customer_phone || 'N/A'}</td>
+                    <td class="p-2 capitalize text-left">${o.status}</td>
+                    <td class="p-2 text-right">৳ ${o.total_amount}</td>
+                </tr>`;
             }).join('');
 
             document.getElementById('rep-total-orders').innerText = orders.length;
@@ -581,7 +632,7 @@
             const element = document.getElementById('report-container');
             const opt = { 
                 margin:       0.5, 
-                filename:     `${siteSettings ? siteSettings.company_name : 'Boi_Chokro'}_Report.pdf`, 
+                filename:     `${siteSettings ? siteSettings.company_name : 'Boi_Chokro'}_Report_${new Date().toISOString().split('T')[0]}.pdf`, 
                 image:        { type: 'jpeg', quality: 0.98 }, 
                 html2canvas:  { scale: 2, useCORS: true, allowTaint: true, scrollY: 0, scrollX: 0 }, 
                 jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
@@ -594,4 +645,4 @@
         init();
     </script>
 </body>
-                            </html>
+                                    </html>
