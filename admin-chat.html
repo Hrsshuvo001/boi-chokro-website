@@ -80,7 +80,7 @@
 
         let currentAdmin = null;
         let selectedUserId = null;
-        let selectedUserEmail = '';
+        let selectedUserName = '';
         let chatSubscription = null;
         let globalChatSubscription = null;
 
@@ -115,7 +115,7 @@
             const { data: messages, error } = await supabaseClient
                 .from('chat_messages')
                 .select('user_id, is_read')
-                .eq('is_admin', false) // শুধু কাস্টমারের মেসেজ
+                .eq('is_admin', false)
                 .order('created_at', { ascending: false });
 
             if (error || !messages) {
@@ -123,7 +123,6 @@
                 return;
             }
 
-            // ইউনিক ইউজার এবং তাদের আনরিড মেসেজ কাউন্ট
             const userMap = {};
             messages.forEach(msg => {
                 if(!userMap[msg.user_id]) {
@@ -141,7 +140,7 @@
 
             const { data: profiles } = await supabaseClient
                 .from('profiles')
-                .select('id, email')
+                .select('id, email, full_name') // full_name আনা হচ্ছে
                 .in('id', uniqueUserIds);
 
             userListDiv.innerHTML = '';
@@ -155,18 +154,19 @@
                 const unreadCount = userMap[profile.id].unread;
                 const div = document.createElement('div');
                 div.className = `p-4 border-b border-gray-100 hover:bg-blue-50 cursor-pointer transition flex items-center justify-between gap-3`;
-                div.onclick = () => selectUser(profile.id, profile.email, div);
+                div.onclick = () => selectUser(profile.id, profile.full_name || profile.email, div);
                 
-                const name = profile.email ? profile.email.split('@')[0] : 'Unknown';
+                // যদি নাম না থাকে, তবে ইমেইলের প্রথম অংশ দেখাবে
+                const displayName = profile.full_name || (profile.email ? profile.email.split('@')[0] : 'Unknown');
                 
                 div.innerHTML = `
                     <div class="flex items-center gap-3">
                         <div class="w-10 h-10 rounded-full bg-blue-200 text-blue-700 flex items-center justify-center font-bold text-lg uppercase relative">
-                            ${name.charAt(0)}
+                            ${displayName.charAt(0)}
                             ${unreadCount > 0 ? `<span class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full border-2 border-white">${unreadCount}</span>` : ''}
                         </div>
                         <div>
-                            <h4 class="font-bold text-gray-800 text-sm">${name}</h4>
+                            <h4 class="font-bold text-gray-800 text-sm">${displayName}</h4>
                             <p class="text-xs text-gray-500 truncate w-32">${profile.email}</p>
                         </div>
                     </div>
@@ -175,16 +175,16 @@
             });
         }
 
-        window.selectUser = async (userId, email, element) => {
+        window.selectUser = async (userId, name, element) => {
             selectedUserId = userId;
-            selectedUserEmail = email;
+            selectedUserName = name;
             
             const allUsers = document.getElementById('userList').children;
             for(let child of allUsers) child.classList.remove('bg-blue-100', 'border-l-4', 'border-blue-600');
             if(element) element.classList.add('bg-blue-100', 'border-l-4', 'border-blue-600');
 
-            document.getElementById('chatHeaderName').innerText = email.split('@')[0];
-            document.getElementById('chatHeaderStatus').innerText = email;
+            document.getElementById('chatHeaderName').innerText = name;
+            document.getElementById('chatHeaderStatus').innerText = 'কাস্টমার';
 
             document.getElementById('adminChatInput').disabled = false;
             document.getElementById('adminSendBtn').disabled = false;
@@ -192,9 +192,7 @@
 
             if(window.innerWidth < 768) toggleUserList();
 
-            // মেসেজগুলো সিন (Seen) মার্ক করা
             await markMessagesAsRead(userId);
-            
             loadChatHistory(userId);
             subscribeToUserChat(userId);
         };
@@ -207,21 +205,19 @@
                 .eq('is_admin', false)
                 .eq('is_read', false);
                 
-            if(!error) {
-                // সাইডবারে আনরিড কাউন্ট আপডেট করা
-                loadChatUsers(); 
-            }
+            if(!error) loadChatUsers(); 
         }
 
         async function loadChatHistory(userId) {
             const chatContainer = document.getElementById('adminChatMessages');
             chatContainer.innerHTML = `<p class="text-center text-gray-500 text-sm mt-4">মেসেজ লোড হচ্ছে...</p>`;
 
+            // নতুন মেসেজ উপরে থাকার জন্য descending false (অর্থাৎ newest first)
             const { data, error } = await supabaseClient
                 .from('chat_messages')
                 .select('*')
                 .eq('user_id', userId)
-                .order('created_at', { ascending: false }); // নতুন মেসেজ উপরে থাকবে
+                .order('created_at', { ascending: false }); 
 
             if (error || !data) {
                 chatContainer.innerHTML = `<p class="text-center text-red-500 text-sm mt-4">মেসেজ লোড ব্যর্থ হয়েছে।</p>`;
@@ -235,9 +231,23 @@
                 return;
             }
 
-            data.forEach(msg => {
-                appendAdminMessage(msg.is_admin ? 'admin' : 'user', msg.message, msg.is_read);
-            });
+            // লুপ চালিয়ে সরাসরি innerHTML এ সেট করা, যাতে নতুনটা সবার উপরে থাকে
+            chatContainer.innerHTML = data.map(msg => {
+                const isAdmin = msg.is_admin;
+                const bubbleClass = isAdmin ? "bg-blue-600 text-white rounded-tr-none" : "bg-gray-200 text-gray-800 rounded-tl-none";
+                const senderLabel = isAdmin ? 'Admin' : selectedUserName;
+                const seenStatus = isAdmin ? (msg.is_read ? '<span class="text-[10px] text-gray-400 ml-1">✔✔ Seen</span>' : '<span class="text-[10px] text-gray-400 ml-1">✔ Sent</span>') : '';
+
+                return `
+                    <div class="flex flex-col ${isAdmin ? 'items-end' : 'items-start'} mb-2">
+                        <span class="text-[10px] text-gray-500 mb-0.5 px-1">${senderLabel}</span>
+                        <div class="max-w-[75%] px-4 py-2 rounded-xl text-sm shadow-sm ${bubbleClass} flex items-center gap-1">
+                            ${msg.message}
+                            ${seenStatus}
+                        </div>
+                    </div>
+                `;
+            }).join('');
         }
 
         window.sendAdminReply = async () => {
@@ -247,7 +257,18 @@
 
             input.value = '';
 
-            appendAdminMessage('admin', text, false);
+            // লোকালি উপরে দেখানোর জন্য
+            const chatContainer = document.getElementById('adminChatMessages');
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `flex flex-col items-end mb-2`;
+            msgDiv.innerHTML = `
+                <span class="text-[10px] text-gray-500 mb-0.5 px-1">Admin</span>
+                <div class="max-w-[75%] px-4 py-2 rounded-xl text-sm shadow-sm bg-blue-600 text-white rounded-tr-none flex items-center gap-1">
+                    ${text}
+                    <span class="text-[10px] text-gray-400 ml-1">✔ Sent</span>
+                </div>
+            `;
+            chatContainer.prepend(msgDiv); // sবার উপরে যোগ করা
 
             const { error } = await supabaseClient.from('chat_messages').insert([{
                 user_id: selectedUserId,
@@ -256,42 +277,12 @@
                 is_read: false
             }]);
 
-            if (error) {
-                alert('মেসেজ পাঠানো যায়নি! ' + error.message);
-            }
+            if (error) alert('মেসেজ পাঠানো যায়নি! ' + error.message);
         };
 
         window.handleAdminEnter = (e) => {
             if (e.key === 'Enter') sendAdminReply();
         };
-
-        // মেসেজ রেন্ডার করা (নতুন মেসেজ উপরে যোগ হবে)
-        function appendAdminMessage(sender, text, isRead) {
-            const chatContainer = document.getElementById('adminChatMessages');
-            const isAdmin = sender === 'admin';
-            
-            const msgDiv = document.createElement('div');
-            msgDiv.className = `flex flex-col ${isAdmin ? 'items-end' : 'items-start'} mb-2`;
-            
-            const bubbleClass = isAdmin 
-                ? "bg-blue-600 text-white rounded-tr-none" 
-                : "bg-gray-200 text-gray-800 rounded-tl-none";
-
-            let senderLabel = isAdmin ? 'Admin' : selectedUserEmail;
-            let seenStatus = isAdmin ? (isRead ? '<span class="text-[10px] text-gray-400 ml-1">✔✔ Seen</span>' : '<span class="text-[10px] text-gray-400 ml-1">✔ Sent</span>') : '';
-
-            msgDiv.innerHTML = `
-                <span class="text-[10px] text-gray-500 mb-0.5 px-1">${senderLabel}</span>
-                <div class="max-w-[75%] px-4 py-2 rounded-xl text-sm shadow-sm ${bubbleClass} flex items-center gap-1">
-                    ${text}
-                    ${seenStatus}
-                </div>
-            `;
-            
-            // নতুন মেসেজ সবার উপরে যোগ করা (Prepend)
-            chatContainer.prepend(msgDiv);
-            chatContainer.scrollTop = 0; // নতুন মেসেজ দেখার জন্য উপরে স্ক্রল করে রাখা
-        }
 
         function subscribeToUserChat(userId) {
             if (chatSubscription) chatSubscription.unsubscribe();
@@ -301,8 +292,17 @@
                 .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages', filter: `user_id=eq.${userId}` }, payload => {
                     const newMsg = payload.new;
                     if (!newMsg.is_admin) {
-                        appendAdminMessage('user', newMsg.message, false);
-                        markMessagesAsRead(userId); // নতুন মেসেজ আসলে সাথে সাথে সিন মার্ক করা
+                        const chatContainer = document.getElementById('adminChatMessages');
+                        const msgDiv = document.createElement('div');
+                        msgDiv.className = `flex flex-col items-start mb-2`;
+                        msgDiv.innerHTML = `
+                            <span class="text-[10px] text-gray-500 mb-0.5 px-1">${selectedUserName}</span>
+                            <div class="max-w-[75%] px-4 py-2 rounded-xl text-sm shadow-sm bg-gray-200 text-gray-800 rounded-tl-none">
+                                ${newMsg.message}
+                            </div>
+                        `;
+                        chatContainer.prepend(msgDiv); // নতুন মেসেজ উপরে
+                        markMessagesAsRead(userId); 
                     }
                 })
                 .subscribe();
@@ -313,9 +313,7 @@
                 .channel('global_chat_list_new')
                 .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages' }, payload => {
                     const newMsg = payload.new;
-                    if (!newMsg.is_admin) {
-                        loadChatUsers(); // নতুন মেসেজ আসলে বাম দিকের লিস্ট আপডেট (আনরিড কাউন্ট বাড়বে)
-                    }
+                    if (!newMsg.is_admin) loadChatUsers();
                 })
                 .subscribe();
         }
