@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>লাইভ সাপোর্ট চ্যাট - Boi Chokro Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-gray-100 h-[100dvh] overflow-hidden flex flex-col md:flex-row">
+
+    <!-- সাইডবার নেভিগেশন -->
+    <aside class="w-full md:w-64 bg-slate-800 text-slate-300 flex flex-col shadow-lg flex-shrink-0 h-full hidden md:flex">
+        <div class="p-4 text-2xl font-bold text-white border-b border-slate-700 flex justify-between items-center">
+            Boi Chokro Admin
+            <a href="/admin-dashboard.html" class="text-xs bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700">ড্যাশবোর্ড</a>
+        </div>
+        <nav class="flex-grow flex flex-col gap-1 p-2">
+            <a href="/admin-dashboard.html" class="text-left px-4 py-3 rounded-md hover:bg-slate-700 transition flex items-center gap-3">📊 হোম (ড্যাশবোর্ড)</a>
+            <a href="/admin-chat.html" class="bg-slate-700 text-white border-l-4 border-blue-500 text-left px-4 py-3 rounded-md transition flex items-center gap-3">💬 লাইভ চ্যাট</a>
+        </nav>
+    </aside>
+
+    <!-- মেইন চ্যাট এরিয়া -->
+    <div class="flex-1 flex h-full overflow-hidden bg-white">
+        
+        <!-- বাম দিক: কাস্টমার লিস্ট -->
+        <div class="w-full md:w-80 border-r border-gray-200 flex flex-col flex-shrink-0 absolute md:relative z-20 bg-white h-full transition-transform" id="userListPanel">
+            <div class="p-4 bg-blue-600 text-white shadow-md">
+                <h2 class="text-xl font-bold">কাস্টমার লিস্ট</h2>
+                <p class="text-xs text-blue-100 mt-1">যারা মেসেজ করেছেন</p>
+            </div>
+            <div id="userList" class="flex-grow overflow-y-auto bg-gray-50">
+                <p class="p-4 text-center text-gray-500 text-sm">লোড হচ্ছে...</p>
+            </div>
+        </div>
+
+        <!-- ডান দিক: চ্যাট বক্স -->
+        <div class="flex-1 flex flex-col h-full w-full relative">
+            <!-- চ্যাট হেডার -->
+            <div class="bg-white border-b p-4 flex justify-between items-center shadow-sm z-10">
+                <div class="flex items-center gap-3">
+                    <button onclick="toggleUserList()" class="md:hidden text-gray-600 focus:outline-none">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
+                    </button>
+                    <div>
+                        <h2 id="chatHeaderName" class="font-bold text-gray-800">একজন কাস্টমার সিলেক্ট করুন</h2>
+                        <p id="chatHeaderStatus" class="text-xs text-gray-500">বাম দিকের তালিকা থেকে কাস্টমার বেছে নিন</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- চ্যাট মেসেজ এরিয়া -->
+            <div id="adminChatMessages" class="flex-grow p-4 overflow-y-auto bg-gray-50 flex flex-col gap-3">
+                <div class="flex items-center justify-center h-full text-gray-400 flex-col">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mb-2 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+                    <p>মেসেজ দেখতে একজন কাস্টমার সিলেক্ট করুন</p>
+                </div>
+            </div>
+
+            <!-- চ্যাট ইনপুট এরিয়া -->
+            <div class="p-3 bg-white border-t">
+                <div class="flex items-center gap-2">
+                    <input type="text" id="adminChatInput" placeholder="রিপ্লাই লিখুন..." class="flex-grow px-4 py-2 border rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" disabled onkeypress="handleAdminEnter(event)">
+                    <button onclick="sendAdminReply()" id="adminSendBtn" class="bg-blue-600 text-white p-2.5 rounded-full hover:bg-blue-700 transition disabled:opacity-50" disabled>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 transform rotate-90" viewBox="0 0 20 20" fill="currentColor"><path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" /></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://jhbpaezbpkfwjfmazdcn.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_oBzutzPKvIvujmSG7icXug_SwwveL5g';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        let currentAdmin = null;
+        let selectedUserId = null;
+        let selectedUserEmail = '';
+        let chatSubscription = null;
+        let globalChatSubscription = null;
+
+        // মোবাইলে ইউজার লিস্ট টগল করার জন্য
+        window.toggleUserList = () => {
+            const panel = document.getElementById('userListPanel');
+            panel.classList.toggle('translate-x-0');
+            panel.classList.toggle('-translate-x-full');
+        };
+
+        // অ্যাডমিন চেক
+        async function checkAdminAuth() {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (!session) {
+                window.location.href = '/admin-login.html';
+                return;
+            }
+            
+            const { data: profile } = await supabaseClient.from('profiles').select('role').eq('id', session.user.id).single();
+            if (!profile || profile.role !== 'admin') {
+                alert('আপনি অ্যাডমিন নন!');
+                window.location.href = '/index.html';
+                return;
+            }
+            
+            currentAdmin = session.user;
+            loadChatUsers();
+            listenForGlobalNewMessages();
+        }
+
+        // যেসব কাস্টমার মেসেজ দিয়েছে তাদের লিস্ট আনা
+        async function loadChatUsers() {
+            const userListDiv = document.getElementById('userList');
+            
+            // chat_messages থেকে ইউনিক user_id বের করা (Supabase-এ সরাসরি distinct করা যায় না, তাই সব আনি এবং ফিল্টার করি)
+            const { data: messages, error } = await supabaseClient
+                .from('chat_messages')
+                .select('user_id, created_at')
+                .order('created_at', { ascending: false });
+
+            if (error || !messages) {
+                userListDiv.innerHTML = `<p class="p-4 text-center text-red-500 text-sm">লিস্ট লোড করতে সমস্যা হয়েছে।</p>`;
+                return;
+            }
+
+            // ইউনিক ইউজার আইডি বের করা
+            const uniqueUserIds = [...new Set(messages.map(m => m.user_id))];
+
+            if (uniqueUserIds.length === 0) {
+                userListDiv.innerHTML = `<p class="p-4 text-center text-gray-500 text-sm">এখনো কেউ মেসেজ করেনি।</p>`;
+                return;
+            }
+
+            // ইউজারদের ইমেইল আনা (profiles টেবিল থেকে)
+            const { data: profiles } = await supabaseClient
+                .from('profiles')
+                .select('id, email')
+                .in('id', uniqueUserIds);
+
+            userListDiv.innerHTML = '';
+            
+            profiles.forEach(profile => {
+                const div = document.createElement('div');
+                div.className = `p-4 border-b border-gray-100 hover:bg-blue-50 cursor-pointer transition flex items-center gap-3`;
+                div.onclick = () => selectUser(profile.id, profile.email, div);
+                
+                // ইমেইলের প্রথম অংশটুকু নাম হিসেবে দেখানো
+                const name = profile.email ? profile.email.split('@')[0] : 'Unknown';
+                
+                div.innerHTML = `
+                    <div class="w-10 h-10 rounded-full bg-blue-200 text-blue-700 flex items-center justify-center font-bold text-lg uppercase">
+                        ${name.charAt(0)}
+                    </div>
+                    <div class="flex-grow">
+                        <h4 class="font-bold text-gray-800 text-sm">${name}</h4>
+                        <p class="text-xs text-gray-500 truncate">${profile.email}</p>
+                    </div>
+                `;
+                userListDiv.appendChild(div);
+            });
+        }
+
+        // ইউজার সিলেক্ট করা
+        window.selectUser = (userId, email, element) => {
+            selectedUserId = userId;
+            selectedUserEmail = email;
+            
+            // UI আপডেট (সিলেক্টেড ইউজার হাইলাইট)
+            const allUsers = document.getElementById('userList').children;
+            for(let child of allUsers) child.classList.remove('bg-blue-100', 'border-l-4', 'border-blue-600');
+            if(element) element.classList.add('bg-blue-100', 'border-l-4', 'border-blue-600');
+
+            // চ্যাট হেডার আপডেট
+            document.getElementById('chatHeaderName').innerText = email.split('@')[0];
+            document.getElementById('chatHeaderStatus').innerText = email;
+
+            // ইনপুট এনাবল করা
+            document.getElementById('adminChatInput').disabled = false;
+            document.getElementById('adminSendBtn').disabled = false;
+            document.getElementById('adminChatInput').focus();
+
+            // মোবাইলে লিস্ট প্যানেল বন্ধ করা
+            if(window.innerWidth < 768) toggleUserList();
+
+            // চ্যাট হিস্ট্রি লোড করা
+            loadChatHistory(userId);
+            
+            // এই নির্দিষ্ট ইউজারের মেসেজ লিসেন করা (Realtime)
+            subscribeToUserChat(userId);
+        };
+
+        // নির্দিষ্ট ইউজারের চ্যাট হিস্ট্রি লোড
+        async function loadChatHistory(userId) {
+            const chatContainer = document.getElementById('adminChatMessages');
+            chatContainer.innerHTML = `<p class="text-center text-gray-500 text-sm mt-4">মেসেজ লোড হচ্ছে...</p>`;
+
+            const { data, error } = await supabaseClient
+                .from('chat_messages')
+                .select('*')
+                .eq('user_id', userId)
+                .order('created_at', { ascending: true });
+
+            if (error || !data) {
+                chatContainer.innerHTML = `<p class="text-center text-red-500 text-sm mt-4">মেসেজ লোড ব্যর্থ হয়েছে।</p>`;
+                return;
+            }
+
+            chatContainer.innerHTML = '';
+            
+            if (data.length === 0) {
+                chatContainer.innerHTML = `<p class="text-center text-gray-400 text-sm mt-4">কোনো মেসেজ নেই।</p>`;
+                return;
+            }
+
+            data.forEach(msg => {
+                appendAdminMessage(msg.is_admin ? 'admin' : 'user', msg.message);
+            });
+        }
+
+        // অ্যাডমিনের পক্ষ থেকে মেসেজ পাঠানো
+        window.sendAdminReply = async () => {
+            const input = document.getElementById('adminChatInput');
+            const text = input.value.trim();
+            if (!text || !selectedUserId) return;
+
+            input.value = ''; // ইনপুট খালি করা
+
+            // লোকাল UI তে মেসেজ দেখানো
+            appendAdminMessage('admin', text);
+
+            // ডাটাবেসে সেভ করা
+            const { error } = await supabaseClient.from('chat_messages').insert([{
+                user_id: selectedUserId,
+                message: text,
+                is_admin: true
+            }]);
+
+            if (error) {
+                alert('মেসেজ পাঠানো যায়নি!');
+                console.error(error);
+            }
+        };
+
+        window.handleAdminEnter = (e) => {
+            if (e.key === 'Enter') sendAdminReply();
+        };
+
+        // মেসেজ UI তে অ্যাপেন্ড করা
+        function appendAdminMessage(sender, text) {
+            const chatContainer = document.getElementById('adminChatMessages');
+            const isAdmin = sender === 'admin';
+            
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `flex ${isAdmin ? 'justify-end' : 'justify-start'} mb-2`;
+            
+            const bubbleClass = isAdmin 
+                ? "bg-blue-600 text-white rounded-tr-none" 
+                : "bg-gray-200 text-gray-800 rounded-tl-none";
+
+            msgDiv.innerHTML = `
+                <div class="max-w-[75%] px-4 py-2 rounded-xl text-sm shadow-sm ${bubbleClass}">
+                    ${text}
+                </div>
+            `;
+            chatContainer.appendChild(msgDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight; // নিচে অটো স্ক্রল
+        }
+
+        // Realtime: নির্দিষ্ট ইউজারের নতুন মেসেজ লিসেন করা
+        function subscribeToUserChat(userId) {
+            if (chatSubscription) chatSubscription.unsubscribe();
+
+            chatSubscription = supabaseClient
+                .channel('admin_chat_' + userId)
+                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages', filter: `user_id=eq.${userId}` }, payload => {
+                    const newMsg = payload.new;
+                    // যদি নতুন মেসেজ কাস্টমার পাঠায় (অ্যাডমিন না)
+                    if (!newMsg.is_admin) {
+                        appendAdminMessage('user', newMsg.message);
+                    }
+                })
+                .subscribe();
+        }
+
+        // Realtime: গ্লোবাল লিসেনার (যখন নতুন কেউ মেসেজ দেয়, লিস্ট আপডেট হয়)
+        function listenForGlobalNewMessages() {
+            globalChatSubscription = supabaseClient
+                .channel('global_chat_list')
+                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages' }, payload => {
+                    const newMsg = payload.new;
+                    // যদি নতুন কোনো কাস্টমার মেসেজ পাঠায়, লিস্ট রিফ্রেশ করি
+                    if (!newMsg.is_admin) {
+                        loadChatUsers();
+                    }
+                })
+                .subscribe();
+        }
+
+        // চ্যাট সিস্টেম চালু
+        checkAdminAuth();
+    </script>
+</body>
+</html>
