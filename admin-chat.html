@@ -13,7 +13,6 @@
 </head>
 <body class="bg-gray-100 h-[100dvh] overflow-hidden flex flex-col md:flex-row">
 
-    <!-- সাইডবার -->
     <aside class="w-full md:w-64 bg-slate-800 text-slate-300 flex flex-col shadow-lg flex-shrink-0 h-full hidden md:flex">
         <div class="p-4 text-2xl font-bold text-white border-b border-slate-700 flex justify-between items-center">
             Boi Chokro Admin
@@ -25,10 +24,9 @@
         </nav>
     </aside>
 
-    <!-- মেইন চ্যাট এরিয়া -->
     <div class="flex-1 flex h-full overflow-hidden bg-white">
         
-        <!-- বাম দিক: কাস্টমার লিস্ট -->
+        <!-- কাস্টমার লিস্ট -->
         <div class="w-full md:w-80 border-r border-gray-200 flex flex-col flex-shrink-0 absolute md:relative z-20 bg-white h-full transition-transform -translate-x-full md:translate-x-0" id="userListPanel">
             <div class="p-4 bg-blue-600 text-white shadow-md">
                 <h2 class="text-xl font-bold">কাস্টমার লিস্ট</h2>
@@ -39,7 +37,7 @@
             </div>
         </div>
 
-        <!-- ডান দিক: চ্যাট বক্স -->
+        <!-- চ্যাট বক্স -->
         <div class="flex-1 flex flex-col h-full w-full relative">
             <div class="bg-white border-b p-4 flex justify-between items-center shadow-sm z-10">
                 <div class="flex items-center gap-3">
@@ -53,7 +51,6 @@
                 </div>
             </div>
 
-            <!-- চ্যাট মেসেজ কন্টেইনার -->
             <div id="adminChatMessages" class="flex-grow p-4 overflow-y-auto bg-gray-50 flex flex-col gap-3">
                 <div class="flex items-center justify-center h-full text-gray-400 flex-col">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mb-2 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
@@ -61,7 +58,6 @@
                 </div>
             </div>
 
-            <!-- ইনপুট এরিয়া -->
             <div class="p-3 bg-white border-t">
                 <div class="flex items-center gap-2">
                     <input type="text" id="adminChatInput" placeholder="রিপ্লাই লিখুন..." class="flex-grow px-4 py-2 border rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" disabled onkeypress="handleAdminEnter(event)">
@@ -92,10 +88,7 @@
 
         async function checkAdminAuth() {
             const { data: { session } } = await supabaseClient.auth.getSession();
-            if (!session) {
-                window.location.href = '/admin-login.html';
-                return;
-            }
+            if (!session) { window.location.href = '/admin-login.html'; return; }
             
             const { data: profile } = await supabaseClient.from('profiles').select('role').eq('id', session.user.id).single();
             if (!profile || profile.role !== 'admin') {
@@ -211,7 +204,7 @@
             const chatContainer = document.getElementById('adminChatMessages');
             chatContainer.innerHTML = `<p class="text-center text-gray-500 text-sm mt-4">মেসেজ লোড হচ্ছে...</p>`;
 
-            // এখানে ascending: false দেওয়া হয়েছে যাতে নতুন মেসেজ সবার আগে আসে
+            // নতুন মেসেজ সবার উপরে থাকবে
             const { data, error } = await supabaseClient
                 .from('chat_messages')
                 .select('*')
@@ -230,23 +223,24 @@
                 return;
             }
 
-            // মেসেজগুলো ম্যাপ করে সরাসরি HTML এ বসানো হচ্ছে
-            chatContainer.innerHTML = data.map(msg => {
+            data.forEach(msg => {
                 const isAdmin = msg.is_admin;
                 const bubbleClass = isAdmin ? "bg-blue-600 text-white rounded-tr-none" : "bg-gray-200 text-gray-800 rounded-tl-none";
                 const senderLabel = isAdmin ? 'Admin' : selectedUserName;
-                const seenStatus = isAdmin ? (msg.is_read ? '<span class="text-[10px] text-gray-400 ml-1">✔✔ Seen</span>' : '<span class="text-[10px] text-gray-400 ml-1">✔ Sent</span>') : '';
+                // সিন / আনসিন স্টেটাস
+                const seenStatus = isAdmin ? `<span id="tick-${msg.id}" class="text-[10px] ml-1 ${msg.is_read ? 'text-blue-200' : 'text-gray-400'}">${msg.is_read ? '✔✔ Seen' : '✔ Sent'}</span>` : '';
 
-                return `
-                    <div class="flex flex-col ${isAdmin ? 'items-end' : 'items-start'} mb-2">
-                        <span class="text-[10px] text-gray-500 mb-0.5 px-1">${senderLabel}</span>
-                        <div class="max-w-[75%] px-4 py-2 rounded-xl text-sm shadow-sm ${bubbleClass} flex items-center gap-1">
-                            ${msg.message}
-                            ${seenStatus}
-                        </div>
+                const msgDiv = document.createElement('div');
+                msgDiv.className = `flex flex-col ${isAdmin ? 'items-end' : 'items-start'} mb-2`;
+                msgDiv.innerHTML = `
+                    <span class="text-[10px] text-gray-500 mb-0.5 px-1">${senderLabel}</span>
+                    <div class="max-w-[75%] px-4 py-2 rounded-xl text-sm shadow-sm ${bubbleClass} flex items-center gap-1">
+                        ${msg.message}
+                        ${seenStatus}
                     </div>
                 `;
-            }).join('');
+                chatContainer.appendChild(msgDiv);
+            });
         }
 
         window.sendAdminReply = async () => {
@@ -258,25 +252,33 @@
 
             // লোকালি উপরে দেখানোর জন্য (Prepend)
             const chatContainer = document.getElementById('adminChatMessages');
+            const tempId = 'temp-' + Date.now();
             const msgDiv = document.createElement('div');
             msgDiv.className = `flex flex-col items-end mb-2`;
             msgDiv.innerHTML = `
                 <span class="text-[10px] text-gray-500 mb-0.5 px-1">Admin</span>
                 <div class="max-w-[75%] px-4 py-2 rounded-xl text-sm shadow-sm bg-blue-600 text-white rounded-tr-none flex items-center gap-1">
                     ${text}
-                    <span class="text-[10px] text-gray-400 ml-1">✔ Sent</span>
+                    <span id="tick-${tempId}" class="text-[10px] text-gray-400 ml-1">✔ Sent</span>
                 </div>
             `;
             chatContainer.prepend(msgDiv); // সবার উপরে যোগ করা হলো
 
-            const { error } = await supabaseClient.from('chat_messages').insert([{
+            // ডাটাবেসে সেভ
+            const { data, error } = await supabaseClient.from('chat_messages').insert([{
                 user_id: selectedUserId,
                 message: text,
                 is_admin: true,
                 is_read: false
-            }]);
+            }]).select().single();
 
-            if (error) alert('মেসেজ পাঠানো যায়নি! ' + error.message);
+            if (error) {
+                alert('মেসেজ পাঠানো যায়নি! ' + error.message);
+            } else {
+                // টেম্পোরারি আইডির বদলে আসল আইডি বসানো
+                const tickEl = document.getElementById(`tick-${tempId}`);
+                if (tickEl) tickEl.id = `tick-${data.id}`;
+            }
         };
 
         window.handleAdminEnter = (e) => {
@@ -302,6 +304,18 @@
                         `;
                         chatContainer.prepend(msgDiv); // নতুন মেসেজ সবার উপরে
                         markMessagesAsRead(userId); 
+                    }
+                })
+                // সিন (Seen) আপডেট লিসেনার (যখন কাস্টমার মেসেজ পড়বে)
+                .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'chat_messages', filter: `user_id=eq.${userId}` }, payload => {
+                    const updatedMsg = payload.new;
+                    if (updatedMsg.is_admin && updatedMsg.is_read) {
+                        const tickEl = document.getElementById(`tick-${updatedMsg.id}`);
+                        if (tickEl) {
+                            tickEl.innerHTML = '✔✔ Seen';
+                            tickEl.classList.remove('text-gray-400');
+                            tickEl.classList.add('text-blue-200'); // হাইলাইট
+                        }
                     }
                 })
                 .subscribe();
