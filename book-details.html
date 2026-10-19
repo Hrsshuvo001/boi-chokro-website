@@ -7,7 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body class="bg-gray-50 min-h-screen flex flex-col">
+<body class="bg-gray-50 min-h-screen flex flex-col text-gray-800">
 
     <nav class="bg-white shadow-sm sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
@@ -81,17 +81,18 @@
             const hasDiscount = book.original_price && book.discount_price && book.original_price > book.discount_price;
             
             let discountPercent = 0;
-            if (hasDiscount) {
-                discountPercent = Math.round(((book.original_price - book.discount_price) / book.original_price) * 100);
-            }
+            if (hasDiscount) discountPercent = Math.round(((book.original_price - book.discount_price) / book.original_price) * 100);
 
+            // এখানে প্রকাশনীর লিংক যোগ করা হয়েছে
             document.getElementById('bookDetailsContainer').innerHTML = `
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
-                    <div class="bg-gray-50 rounded-xl overflow-hidden p-4 flex items-center justify-center border relative">
+                    <!-- বাম দিক: ছবি -->
+                    <div class="bg-gray-50 rounded-xl overflow-hidden p-4 flex items-center justify-center border relative h-96 md:h-[500px]">
                         ${hasDiscount ? `<div class="absolute top-4 left-4 bg-red-500 text-white font-bold px-3 py-1 rounded shadow z-10">${discountPercent}% ছাড়</div>` : ''}
-                        <img src="${book.cover_url || 'https://via.placeholder.com/300'}" class="max-h-[500px] w-auto object-contain drop-shadow-xl">
+                        <img src="${book.cover_url || 'https://via.placeholder.com/300'}" class="max-h-full w-auto object-contain drop-shadow-xl">
                     </div>
                     
+                    <!-- ডান দিক: তথ্য ও বাটন -->
                     <div class="flex flex-col">
                         <!-- ক্যাটাগরিতে ক্লিক করলে ঐ ক্যাটাগরির সব বই দেখাবে -->
                         <a href="/category.html?cat=${encodeURIComponent(book.category)}" class="text-sm font-bold text-blue-600 tracking-wider mb-2 uppercase hover:underline w-fit">${book.category || 'সাধারণ'}</a>
@@ -99,7 +100,10 @@
                         <h1 class="text-3xl md:text-4xl font-extrabold text-gray-900 leading-tight mb-2">${book.title}</h1>
                         
                         <!-- লেখকের নামে ক্লিক করলে লেখকের প্রোফাইলে যাবে -->
-                        <p class="text-lg text-gray-600 mb-4">লেখক: <a href="/author.html?name=${encodeURIComponent(book.author)}" class="font-semibold text-blue-600 hover:underline">${book.author}</a></p>
+                        <p class="text-lg text-gray-600 mb-1">লেখক: <a href="/author.html?name=${encodeURIComponent(book.author)}" class="font-semibold text-blue-600 hover:underline">${book.author}</a></p>
+                        
+                        <!-- প্রকাশনীর নামে ক্লিক করলে প্রকাশনীর সব বই দেখাবে (নতুন যোগ করা হলো) -->
+                        <p class="text-lg text-gray-600 mb-4">প্রকাশনী: <a href="/publisher.html?pub=${encodeURIComponent(book.publisher)}" class="font-semibold text-blue-600 hover:underline">${book.publisher || 'অজানা'}</a></p>
                         
                         <div class="flex items-end gap-3 mb-6 bg-gray-50 p-4 rounded-lg w-fit">
                             <span class="text-4xl font-bold text-green-600">৳ ${currentPrice}</span>
@@ -138,20 +142,18 @@
             const currentPrice = book.discount_price || book.original_price || 0;
             const hasDiscount = book.original_price && book.discount_price && book.original_price > book.discount_price;
             let discountPercent = 0;
-            if (hasDiscount) {
-                discountPercent = Math.round(((book.original_price - book.discount_price) / book.original_price) * 100);
-            }
+            if (hasDiscount) discountPercent = Math.round(((book.original_price - book.discount_price) / book.original_price) * 100);
 
             return `
             <div onclick="window.location.href='/book-details.html?id=${book.id}'" class="bg-white rounded-xl shadow-sm hover:shadow-xl transition duration-300 overflow-hidden flex flex-col border border-gray-100 relative cursor-pointer group">
-                <div class="h-56 bg-gray-100 overflow-hidden relative">
+                <div class="h-48 sm:h-56 bg-gray-100 overflow-hidden relative">
                     ${hasDiscount ? `<div class="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow z-10">${discountPercent}% ছাড়</div>` : ''}
                     <img src="${book.cover_url || 'https://via.placeholder.com/150'}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
                 </div>
-                <div class="p-4 flex flex-col flex-grow">
-                    <h3 class="font-bold text-md text-gray-800 leading-tight mb-1 line-clamp-2">${book.title}</h3>
-                    <p class="text-xs text-gray-500 mb-2">${book.author}</p>
-                    <div class="mt-auto"><span class="text-lg font-bold text-blue-600">৳ ${currentPrice}</span></div>
+                <div class="p-3 sm:p-4 flex flex-col flex-grow">
+                    <h3 class="font-bold text-sm sm:text-base text-gray-800 leading-tight mb-1 line-clamp-2">${book.title}</h3>
+                    <p class="text-xs text-gray-500 mb-2 truncate">${book.author}</p>
+                    <div class="mt-auto"><span class="text-base sm:text-lg font-bold text-blue-600">৳ ${currentPrice}</span></div>
                 </div>
             </div>
             `;
