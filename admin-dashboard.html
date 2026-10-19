@@ -19,10 +19,8 @@
 </head>
 <body class="bg-gray-100 h-[100dvh] overflow-hidden flex flex-col md:flex-row">
 
-    <!-- টোস্ট নোটিফিকেশন কন্টেইনার -->
     <div id="toast-container" class="fixed top-5 right-5 z-[100] flex flex-col gap-3 pointer-events-none"></div>
 
-    <!-- সাইডবার -->
     <aside id="sidebar" class="fixed md:sticky top-0 left-0 z-40 h-[100dvh] w-64 bg-slate-800 text-slate-300 flex flex-col shadow-xl transition-transform duration-300 transform -translate-x-full md:translate-x-0 flex-shrink-0">
         <div class="p-4 border-b border-slate-700 flex justify-between items-center flex-shrink-0">
             <div class="flex items-center gap-2">
@@ -50,17 +48,14 @@
         </nav>
     </aside>
 
-    <!-- মেইন কন্টেন্ট -->
     <div class="flex-1 flex flex-col h-[100dvh] overflow-hidden w-full relative">
         
-        <!-- টপবার -->
         <header class="bg-white shadow-sm p-4 flex justify-between items-center z-30 flex-shrink-0">
             <div class="flex items-center gap-3">
                 <button onclick="toggleSidebar()" class="text-gray-700 text-2xl focus:outline-none md:hidden">☰</button>
                 <h1 class="text-xl font-bold text-blue-600 hidden md:block" id="mobile-header-title">ড্যাশবোর্ড</h1>
             </div>
             
-            <!-- নোটিফিকেশন বেল -->
             <div class="relative">
                 <button onclick="toggleNotifications()" class="relative p-2 text-gray-600 hover:text-blue-600 focus:outline-none transition">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -108,7 +103,7 @@
                 </div>
             </section>
 
-            <!-- ২. সব বই (All Books) -->
+            <!-- ২. সব বই -->
             <section id="section-all-books" class="section-content">
                 <div class="flex justify-between items-center mb-6">
                     <h2 class="text-2xl font-bold text-gray-800">সব বই</h2>
@@ -209,12 +204,10 @@
                 </div>
             </section>
 
-            <!-- ৫. অ্যাড ক্যাটাগরি / লেখক / প্রকাশনী -->
+            <!-- ৫. অ্যাড মেটা -->
             <section id="section-add-meta" class="section-content">
                 <h2 class="text-2xl font-bold text-gray-800 mb-6">ক্যাটাগরি, লেখক ও প্রকাশনী যোগ করুন</h2>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    
-                    <!-- ক্যাটাগরি ফর্ম -->
                     <div class="bg-white p-6 rounded-xl shadow-sm border-t-4 border-purple-500">
                         <h3 class="font-bold mb-4">ক্যাটাগরি</h3>
                         <form id="addCategoryForm" class="flex flex-col gap-3">
@@ -222,8 +215,6 @@
                             <button type="submit" class="bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700">যোগ করুন</button>
                         </form>
                     </div>
-
-                    <!-- লেখক ফর্ম -->
                     <div class="bg-white p-6 rounded-xl shadow-sm border-t-4 border-indigo-500">
                         <h3 class="font-bold mb-4">লেখক</h3>
                         <form id="addAuthorForm" class="flex flex-col gap-3">
@@ -233,8 +224,6 @@
                             <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700">যোগ করুন</button>
                         </form>
                     </div>
-
-                    <!-- প্রকাশনী ফর্ম -->
                     <div class="bg-white p-6 rounded-xl shadow-sm border-t-4 border-teal-500">
                         <h3 class="font-bold mb-4">প্রকাশনী</h3>
                         <form id="addPublisherForm" class="flex flex-col gap-3">
@@ -242,7 +231,6 @@
                             <button type="submit" class="bg-teal-600 text-white px-4 py-2 rounded-md hover:bg-teal-700">যোগ করুন</button>
                         </form>
                     </div>
-
                 </div>
             </section>
 
@@ -250,11 +238,8 @@
             <section id="section-report" class="section-content">
                 <div class="flex justify-between items-center mb-6">
                     <h2 class="text-2xl font-bold text-gray-800">সেলস রিপোর্ট</h2>
-                    <button onclick="generatePDF()" class="bg-red-600 text-white px-6 py-2 rounded-md hover:bg-red-700 flex items-center gap-2 shadow-lg">
-                        PDF ডাউনলোড
-                    </button>
+                    <button onclick="generatePDF()" class="bg-red-600 text-white px-6 py-2 rounded-md hover:bg-red-700 flex items-center gap-2 shadow-lg">PDF ডাউনলোড</button>
                 </div>
-
                 <div class="bg-white p-4 rounded-xl shadow-sm max-w-4xl mx-auto mb-6 flex flex-wrap items-end gap-4">
                     <div><label class="block text-xs font-semibold text-gray-600 mb-1">শুরুর তারিখ</label><input type="date" id="startDate" class="px-3 py-2 border rounded-md text-sm"></div>
                     <div><label class="block text-xs font-semibold text-gray-600 mb-1">শেষ তারিখ</label><input type="date" id="endDate" class="px-3 py-2 border rounded-md text-sm"></div>
@@ -263,7 +248,6 @@
                         <button onclick="resetReport()" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-md text-sm hover:bg-gray-300">রিসেট</button>
                     </div>
                 </div>
-                
                 <div class="bg-white p-4 md:p-8 rounded-xl shadow-sm max-w-4xl mx-auto overflow-x-auto">
                     <div id="report-container" class="text-gray-800 bg-white mx-auto" style="width: 100%; max-width: 800px; padding: 10px; font-family: sans-serif;">
                         <div class="flex flex-row justify-between items-start border-b-2 border-gray-800 pb-4 mb-6">
@@ -305,14 +289,8 @@
                 <h2 class="text-2xl font-bold text-gray-800 mb-6">সাইট সেটিংস</h2>
                 <div class="bg-white p-6 rounded-xl shadow-sm max-w-2xl">
                     <form id="siteSettingsForm" class="space-y-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">কোম্পানির নাম</label>
-                            <input type="text" id="set_company_name" required class="mt-1 w-full px-3 py-2 border rounded-md">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">কোম্পানির টাইটেল / স্লোগান</label>
-                            <input type="text" id="set_tagline" required class="mt-1 w-full px-3 py-2 border rounded-md">
-                        </div>
+                        <div><label class="block text-sm font-medium text-gray-700">কোম্পানির নাম</label><input type="text" id="set_company_name" required class="mt-1 w-full px-3 py-2 border rounded-md"></div>
+                        <div><label class="block text-sm font-medium text-gray-700">কোম্পানির টাইটেল / স্লোগান</label><input type="text" id="set_tagline" required class="mt-1 w-full px-3 py-2 border rounded-md"></div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700">কোম্পানির লোগো</label>
                             <div class="flex items-center gap-4 mt-1">
@@ -321,19 +299,10 @@
                             </div>
                         </div>
                         <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">ফোন নাম্বার</label>
-                                <input type="text" id="set_phone" class="mt-1 w-full px-3 py-2 border rounded-md">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">ঠিকানা</label>
-                                <input type="text" id="set_address" class="mt-1 w-full px-3 py-2 border rounded-md">
-                            </div>
+                            <div><label class="block text-sm font-medium text-gray-700">ফোন নাম্বার</label><input type="text" id="set_phone" class="mt-1 w-full px-3 py-2 border rounded-md"></div>
+                            <div><label class="block text-sm font-medium text-gray-700">ঠিকানা</label><input type="text" id="set_address" class="mt-1 w-full px-3 py-2 border rounded-md"></div>
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">ফুটার টেক্সট (কপিরাইট)</label>
-                            <input type="text" id="set_footer_text" class="mt-1 w-full px-3 py-2 border rounded-md">
-                        </div>
+                        <div><label class="block text-sm font-medium text-gray-700">ফুটার টেক্সট (কপিরাইট)</label><input type="text" id="set_footer_text" class="mt-1 w-full px-3 py-2 border rounded-md"></div>
                         <button type="submit" id="saveSettingsBtn" class="w-full bg-blue-600 text-white font-bold py-2 rounded hover:bg-blue-700 transition">সেটিংস সেভ করুন</button>
                     </form>
                     <div id="settingsMessage" class="mt-3 text-center font-bold hidden"></div>
@@ -354,54 +323,23 @@
                 <form id="editBookForm" class="space-y-4">
                     <input type="hidden" id="edit_book_id">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">বইয়ের নাম</label>
-                            <input type="text" id="edit_title" required class="mt-1 w-full px-4 py-2 border rounded-md">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">লেখক</label>
-                            <select id="edit_author" required class="mt-1 w-full px-4 py-2 border rounded-md bg-white"></select>
-                        </div>
+                        <div><label class="block text-sm font-medium text-gray-700">বইয়ের নাম</label><input type="text" id="edit_title" required class="mt-1 w-full px-4 py-2 border rounded-md"></div>
+                        <div><label class="block text-sm font-medium text-gray-700">লেখক</label><select id="edit_author" required class="mt-1 w-full px-4 py-2 border rounded-md bg-white"></select></div>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">ক্যাটাগরি</label>
-                            <select id="edit_category" required class="mt-1 w-full px-4 py-2 border rounded-md bg-white"></select>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">প্রকাশনী</label>
-                            <select id="edit_publisher" required class="mt-1 w-full px-4 py-2 border rounded-md bg-white"></select>
-                        </div>
+                        <div><label class="block text-sm font-medium text-gray-700">ক্যাটাগরি</label><select id="edit_category" required class="mt-1 w-full px-4 py-2 border rounded-md bg-white"></select></div>
+                        <div><label class="block text-sm font-medium text-gray-700">প্রকাশনী</label><select id="edit_publisher" required class="mt-1 w-full px-4 py-2 border rounded-md bg-white"></select></div>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">স্টক পরিমাণ</label>
-                            <input type="number" id="edit_stock_quantity" required class="mt-1 w-full px-4 py-2 border rounded-md">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">নতুন ছবি (ঐচ্ছিক)</label>
-                            <input type="file" id="edit_cover_file" accept="image/*" class="mt-1 w-full px-3 py-2 border rounded-md bg-gray-50 text-sm">
-                        </div>
+                        <div><label class="block text-sm font-medium text-gray-700">স্টক পরিমাণ</label><input type="number" id="edit_stock_quantity" required class="mt-1 w-full px-4 py-2 border rounded-md"></div>
+                        <div><label class="block text-sm font-medium text-gray-700">নতুন ছবি (ঐচ্ছিক)</label><input type="file" id="edit_cover_file" accept="image/*" class="mt-1 w-full px-3 py-2 border rounded-md bg-gray-50 text-sm"></div>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">ক্রয় মূল্য (৳)</label>
-                            <input type="number" id="edit_purchase_price" class="mt-1 w-full px-3 py-2 border rounded-md">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">আসল মূল্য (৳)</label>
-                            <input type="number" id="edit_original_price" class="mt-1 w-full px-3 py-2 border rounded-md">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">ডিসকাউন্ট মূল্য (৳)</label>
-                            <input type="number" id="edit_discount_price" required class="mt-1 w-full px-3 py-2 border rounded-md">
-                        </div>
+                        <div><label class="block text-sm font-medium text-gray-700">ক্রয় মূল্য (৳)</label><input type="number" id="edit_purchase_price" class="mt-1 w-full px-3 py-2 border rounded-md"></div>
+                        <div><label class="block text-sm font-medium text-gray-700">আসল মূল্য (৳)</label><input type="number" id="edit_original_price" class="mt-1 w-full px-3 py-2 border rounded-md"></div>
+                        <div><label class="block text-sm font-medium text-gray-700">ডিসকাউন্ট মূল্য (৳)</label><input type="number" id="edit_discount_price" required class="mt-1 w-full px-3 py-2 border rounded-md"></div>
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">বিবরণ</label>
-                        <textarea id="edit_description" rows="3" class="mt-1 w-full px-4 py-2 border rounded-md"></textarea>
-                    </div>
-                    
+                    <div><label class="block text-sm font-medium text-gray-700">বিবরণ</label><textarea id="edit_description" rows="3" class="mt-1 w-full px-4 py-2 border rounded-md"></textarea></div>
                     <button type="submit" id="updateBookBtn" class="w-full bg-green-600 text-white font-bold py-3 rounded-md hover:bg-green-700">আপডেট করুন</button>
                 </form>
             </div>
@@ -418,7 +356,6 @@
         let notifications = [];
         let mutedNotifications = JSON.parse(localStorage.getItem('muted_notifs')) || [];
 
-        // --- টোস্ট নোটিফিকেশন ---
         window.showToast = (message, isError = false) => {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
@@ -433,7 +370,6 @@
             }, 4000);
         };
 
-        // --- নোটিফিকেশন সিস্টেম ---
         window.toggleNotifications = () => {
             document.getElementById('notif-dropdown').classList.toggle('hidden');
         };
@@ -477,7 +413,8 @@
             }
         });
 
-        function addNotification(text, type, targetId = null) {
+        // isUrgent = true হলে স্ক্রিনে ভেসে উঠবে (পপআপ), false হলে শুধু তালিকায় জমা হবে
+        function addNotification(text, type, targetId = null, isUrgent = false) {
             if(mutedNotifications.includes(text)) return;
 
             const notifId = Date.now().toString() + Math.random().toString().slice(2,5);
@@ -485,7 +422,9 @@
             if(!exists) {
                 notifications.unshift({ id: notifId, text, type, targetId });
                 renderNotifications();
-                showToast(text, true); 
+                if (isUrgent) {
+                    showToast(text, true); 
+                }
             }
         }
 
@@ -531,37 +470,37 @@
             }
         };
 
+        // সিস্টেম নোটিফিকেশন (স্ক্রিনে পপআপ হবে না, শুধু লিস্টে যোগ হবে)
         async function checkSystemNotifications() {
             const { data: books } = await supabaseClient.from('books').select('id, title, stock_quantity, category');
             if(books) {
                 books.forEach(b => {
-                    if (b.stock_quantity <= 0) addNotification(`"${b.title}" বইটির স্টক শেষ!`, 'stock', b.id);
+                    if (b.stock_quantity <= 0) addNotification(`"${b.title}" বইটির স্টক শেষ!`, 'stock', b.id, false);
                 });
 
                 const { data: cats } = await supabaseClient.from('categories').select('name');
                 if (cats) {
                     const bookCats = books.map(b => b.category);
                     cats.forEach(c => {
-                        if (!bookCats.includes(c.name)) addNotification(`"${c.name}" ক্যাটাগরিতে কোনো বই নেই!`, 'category');
+                        if (!bookCats.includes(c.name)) addNotification(`"${c.name}" ক্যাটাগরিতে কোনো বই নেই!`, 'category', null, false);
                     });
                 }
             }
         }
 
-        // --- লাইভ চ্যাট নোটিফিকেশন লিসেনার ---
+        // লাইভ চ্যাট নোটিফিকেশন (স্ক্রিনে পপআপ হবে)
         function listenForChatNotifications() {
             supabaseClient
-                .channel('admin_notif_channel_new') // চ্যানেলের নাম ইউনিক করা হলো
+                .channel('admin_notif_channel_new')
                 .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages' }, payload => {
                     const newMsg = payload.new;
                     if (!newMsg.is_admin) {
-                        addNotification('💬 নতুন চ্যাট মেসেজ এসেছে!', 'chat');
+                        addNotification('💬 নতুন চ্যাট মেসেজ এসেছে!', 'chat', null, true); // isUrgent = true
                     }
                 })
                 .subscribe();
         }
 
-        // --- সেকশন নেভিগেশন ---
         window.toggleSidebar = () => { document.getElementById('sidebar').classList.toggle('-translate-x-full'); };
 
         window.showSection = (sectionId) => {
@@ -594,7 +533,7 @@
             loadDropdowns();
             loadDashboardData();
             checkSystemNotifications();
-            listenForChatNotifications(); // চ্যাট নোটিফিকেশন চালু করা হলো
+            listenForChatNotifications(); 
         }
 
         async function fetchGlobalSettings() {
@@ -618,12 +557,8 @@
             }
         }
 
-        // ==========================================
-        // --- সব বই (All Books) ও এডিট লজিক ---
-        // ==========================================
         async function loadAllBooks() {
             const tbody = document.getElementById('allBooksTableBody');
-            // এবার সরাসরি ডাটাবেস থেকে ডাটা আনবো
             const { data: books, error } = await supabaseClient.from('books').select('*').order('created_at', { ascending: false });
             
             if (error || !books) {
@@ -654,7 +589,6 @@
                         </span>
                     </td>
                     <td class="p-4 text-center">
-                        <!-- এডিট বাটনে ক্লিক করলে openEditModal কল হবে -->
                         <button onclick="openEditModal('${book.id}')" class="text-blue-600 hover:text-blue-800 p-2 rounded-full hover:bg-blue-50 transition mr-1">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
                         </button>
@@ -666,9 +600,7 @@
             `).join('');
         }
 
-        // এডিট মডাল ওপেন করার ফাংশন (সরাসরি ডাটাবেস থেকে ডাটা আনবে)
         window.openEditModal = async (bookId) => {
-            // ডাটাবেস থেকে নির্দিষ্ট বইটি খুঁজে আনা
             const { data: book, error } = await supabaseClient.from('books').select('*').eq('id', bookId).single();
             
             if (error || !book) {
@@ -676,7 +608,6 @@
                 return;
             }
 
-            // ফর্মে ডাটা পপুলেট করা
             document.getElementById('edit_book_id').value = book.id;
             document.getElementById('edit_title').value = book.title;
             document.getElementById('edit_stock_quantity').value = book.stock_quantity;
@@ -686,7 +617,6 @@
             document.getElementById('edit_description').value = book.description || '';
             document.getElementById('edit_cover_file').value = ''; 
 
-            // ড্রপডাউন অপশন লোড করা
             const catSelect = document.getElementById('edit_category');
             const authSelect = document.getElementById('edit_author');
             const pubSelect = document.getElementById('edit_publisher');
@@ -701,21 +631,17 @@
                 pubSelect.innerHTML = pubs ? pubs.map(p => `<option value="${p.name}">${p.name}</option>`).join('') : '';
             }
 
-            // সিলেক্টেড ভ্যালু সেট করা
             catSelect.value = book.category;
             authSelect.value = book.author;
             if(book.publisher) pubSelect.value = book.publisher;
 
-            // মডাল ওপেন করা
-            const modal = document.getElementById('editBookModal');
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
+            document.getElementById('editBookModal').classList.remove('hidden');
+            document.getElementById('editBookModal').classList.add('flex');
         };
 
         window.closeEditModal = () => {
-            const modal = document.getElementById('editBookModal');
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
+            document.getElementById('editBookModal').classList.add('hidden');
+            document.getElementById('editBookModal').classList.remove('flex');
         };
 
         document.getElementById('editBookForm').addEventListener('submit', async (e) => {
@@ -751,7 +677,7 @@
 
                 showToast('বই সফলভাবে আপডেট হয়েছে!');
                 closeEditModal();
-                loadAllBooks(); // টেবিল রিফ্রেশ
+                loadAllBooks(); 
                 
             } catch (err) {
                 showToast(err.message, true);
@@ -767,10 +693,6 @@
             else { showToast('বই ডিলিট করা হয়েছে।'); loadAllBooks(); }
         };
 
-
-        // ==========================================
-        // --- অন্যান্য ফাংশন (সেটিংস, রিপোর্ট ইত্যাদি) ---
-        // ==========================================
         async function loadSettings() {
             if (!siteSettings) await fetchGlobalSettings();
             if(siteSettings) {
@@ -820,7 +742,6 @@
         async function loadDashboardData() {
             const { data: orders } = await supabaseClient.from('orders').select('*').eq('status', 'completed');
             const { data: books } = await supabaseClient.from('books').select('*');
-            
             if (!orders) return;
 
             const today = new Date().toISOString().split('T')[0];
@@ -1087,4 +1008,4 @@
         init();
     </script>
 </body>
-                        </html>
+                                    </html>
