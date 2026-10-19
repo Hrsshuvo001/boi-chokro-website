@@ -355,6 +355,7 @@
         let siteSettings = null; 
         let notifications = [];
         let mutedNotifications = JSON.parse(localStorage.getItem('muted_notifs')) || [];
+        let userEmails = {}; // নোটিফিকেশনে নাম দেখানোর জন্য
 
         window.showToast = (message, isError = false) => {
             const container = document.getElementById('toast-container');
@@ -413,7 +414,6 @@
             }
         });
 
-        // isUrgent = true হলে স্ক্রিনে ভেসে উঠবে (পপআপ), false হলে শুধু তালিকায় জমা হবে
         function addNotification(text, type, targetId = null, isUrgent = false) {
             if(mutedNotifications.includes(text)) return;
 
@@ -470,7 +470,6 @@
             }
         };
 
-        // সিস্টেম নোটিফিকেশন (স্ক্রিনে পপআপ হবে না, শুধু লিস্টে যোগ হবে)
         async function checkSystemNotifications() {
             const { data: books } = await supabaseClient.from('books').select('id, title, stock_quantity, category');
             if(books) {
@@ -488,14 +487,24 @@
             }
         }
 
-        // লাইভ চ্যাট নোটিফিকেশন (স্ক্রিনে পপআপ হবে)
+        // কাস্টমারদের ইমেইল লোড করা (নোটিফিকেশনে দেখানোর জন্য)
+        async function loadUserEmails() {
+            const { data: profiles } = await supabaseClient.from('profiles').select('id, email');
+            if(profiles) {
+                profiles.forEach(p => {
+                    if(p.email) userEmails[p.id] = p.email;
+                });
+            }
+        }
+
         function listenForChatNotifications() {
             supabaseClient
                 .channel('admin_notif_channel_new')
                 .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages' }, payload => {
                     const newMsg = payload.new;
                     if (!newMsg.is_admin) {
-                        addNotification('💬 নতুন চ্যাট মেসেজ এসেছে!', 'chat', null, true); // isUrgent = true
+                        const senderName = userEmails[newMsg.user_id] || 'একজন কাস্টমার';
+                        addNotification(`💬 ${senderName} মেসেজ দিয়েছেন!`, 'chat', null, true);
                     }
                 })
                 .subscribe();
@@ -533,6 +542,7 @@
             loadDropdowns();
             loadDashboardData();
             checkSystemNotifications();
+            await loadUserEmails(); // ইউজার ইমেইল লোড করো
             listenForChatNotifications(); 
         }
 
@@ -1008,4 +1018,4 @@
         init();
     </script>
 </body>
-                                    </html>
+                        </html>
