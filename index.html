@@ -69,8 +69,8 @@
                     <h2 class="text-lg sm:text-2xl font-bold text-gray-800">বেস্ট সেলার</h2>
                 </div>
             </div>
-            <!-- গ্রিড লেআউট -->
-            <div id="bestSellerGrid" class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5">
+            <!-- গ্রিড লেআউট (মোবাইলে ২টি, বড় স্ক্রিনে ৪টি) -->
+            <div id="bestSellerGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5">
                 <p class="text-gray-500 col-span-full text-center py-10 text-sm">লোড হচ্ছে...</p>
             </div>
         </section>
@@ -88,8 +88,8 @@
                 <button onclick="filterCategory('all')" class="category-btn bg-blue-600 text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-semibold transition shadow-sm">সব বই</button>
             </div>
 
-            <!-- গ্রিড লেআউট -->
-            <div id="bookGrid" class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5">
+            <!-- গ্রিড লেআউট (মোবাইলে ২টি, বড় স্ক্রিনে ৪টি) -->
+            <div id="bookGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5">
                 <!-- সব বই লোড হবে -->
             </div>
         </section>
@@ -169,13 +169,11 @@
         }
 
         // ==========================================
-        // পারফেক্ট এবং কমপ্যাক্ট কার্ড ডিজাইন
+        // পারফেক্ট কার্ড ডিজাইন (সব জায়গায় একই সাইজ)
         // ==========================================
-        function createBookCard(book, isSlider = false) {
+        function createBookCard(book) {
             const currentPrice = book.discount_price || book.original_price || 0;
             const hasDiscount = book.original_price && book.discount_price && book.original_price > book.discount_price;
-            
-            const widthClass = isSlider ? "min-w-[140px] max-w-[140px] sm:min-w-[180px] sm:max-w-[180px] snap-start flex-shrink-0" : "w-full";
             
             let discountPercent = 0;
             if (hasDiscount) discountPercent = Math.round(((book.original_price - book.discount_price) / book.original_price) * 100);
@@ -183,9 +181,9 @@
             const isOutOfStock = (book.stock_quantity !== undefined && book.stock_quantity !== null) ? book.stock_quantity <= 0 : false;
 
             return `
-            <div class="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-col border border-gray-100 relative group ${widthClass}">
+            <div class="bg-white rounded-lg sm:rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-col border border-gray-100 relative group w-full">
                 
-                <!-- ছবির কন্টেইনার (aspect-[3/4] নিশ্চিত করে ছবি লম্বা হবে না) -->
+                <!-- ছবির কন্টেইনার (aspect-[3/4] নিশ্চিত করে সব ছবি একই সাইজ হবে) -->
                 <a href="/book-details.html?id=${book.id}" class="block w-full aspect-[3/4] bg-gray-100 overflow-hidden relative">
                     ${hasDiscount ? `<div class="absolute top-1.5 left-1.5 bg-red-500 text-white text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 rounded shadow z-10">${discountPercent}% ছাড়</div>` : ''}
                     
@@ -194,24 +192,24 @@
                     <img src="${book.cover_url || 'https://via.placeholder.com/300x400?text=No+Image'}" class="w-full h-full object-cover object-center group-hover:scale-105 transition duration-500">
                 </a>
                 
-                <!-- তথ্যের কন্টেইনার -->
-                <div class="p-2.5 flex flex-col flex-grow">
+                <!-- তথ্যের কন্টেইনার (নির্দিষ্ট উচ্চতা দেওয়া হয়েছে) -->
+                <div class="p-2.5 flex flex-col flex-grow h-[130px] sm:h-[150px]">
                     <span class="text-[9px] sm:text-[10px] text-blue-600 font-bold uppercase mb-0.5">${book.category || 'সাধারণ'}</span>
                     
                     <!-- বইয়ের নাম (ফিক্সড হাইট) -->
                     <a href="/book-details.html?id=${book.id}" class="flex-grow mb-1">
-                        <h3 class="font-bold text-xs sm:text-sm text-gray-800 leading-tight line-clamp-2 h-8 sm:h-10 group-hover:text-blue-600 transition">${book.title}</h3>
+                        <h3 class="font-bold text-[11px] sm:text-xs md:text-sm text-gray-800 leading-tight line-clamp-2 group-hover:text-blue-600 transition">${book.title}</h3>
                     </a>
                     
                     <!-- লেখক ও প্রকাশনী -->
                     <div class="mb-1.5">
-                        <p class="text-[10px] sm:text-[11px] text-gray-600 truncate">লেখক: ${book.author}</p>
+                        <p class="text-[9px] sm:text-[10px] text-gray-600 truncate">লেখক: ${book.author}</p>
                         <p class="text-[9px] sm:text-[10px] text-gray-500 truncate">প্রকাশনী: ${book.publisher || 'N/A'}</p>
                     </div>
                     
                     <!-- দাম -->
-                    <div class="flex items-center gap-1.5 mb-1.5 mt-auto">
-                        <span class="text-sm sm:text-base font-bold text-blue-600">৳ ${currentPrice}</span>
+                    <div class="flex items-center gap-1 mb-1.5 mt-auto">
+                        <span class="text-[13px] sm:text-sm md:text-base font-bold text-blue-600">৳ ${currentPrice}</span>
                         ${hasDiscount ? `<span class="text-gray-400 line-through text-[9px] sm:text-[10px]">৳ ${book.original_price}</span>` : ''}
                     </div>
 
@@ -250,6 +248,7 @@
                     const catBooks = books.filter(b => b.category === cat.name).slice(0, 10);
                     if (catBooks.length === 0) return;
                     
+                    // স্লাইডারের জন্য গ্রিড লেআউট ব্যবহার করা হয়েছে, যাতে কার্ডের সাইজ গ্রিডের মতোই হয়
                     dynamicContainer.insertAdjacentHTML('beforeend', `
                         <section class="mb-10">
                             <div class="flex justify-between items-end mb-4 border-b pb-2">
@@ -262,8 +261,10 @@
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 group-hover:translate-x-0.5 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
                                 </a>
                             </div>
-                            <div class="flex overflow-x-auto gap-3 sm:gap-4 snap-x pb-4 hide-scrollbar">
-                                ${catBooks.map(book => createBookCard(book, true)).join('')}
+                            
+                            <!-- স্লাইডার (এখানে auto-cols ব্যবহার করা হয়েছে যাতে মোবাইলে ২টি কার্ড দেখায়) -->
+                            <div class="grid grid-flow-col auto-cols-[calc(50%-0.5rem)] sm:auto-cols-[calc(33.33%-0.5rem)] md:auto-cols-[calc(25%-0.5rem)] gap-3 sm:gap-4 overflow-x-auto snap-x snap-mandatory hide-scrollbar pb-4">
+                                ${catBooks.map(book => createBookCard(book)).join('')}
                             </div>
                         </section>
                     `);
@@ -319,7 +320,7 @@
 
         window.handleLogout = async () => { await supabaseClient.auth.signOut(); checkAuth(); alert('লগআউট হয়েছে।'); }
 
-        // --- চ্যাট সিস্টেম (আগের মতোই) ---
+        // --- চ্যাট সিস্টেম ---
         window.toggleChat = () => {
             if (!currentUser) { alert('লাইভ চ্যাটে কথা বলতে অনুগ্রহ করে প্রথমে লগইন করুন!'); window.location.href = '/login.html'; return; }
             const chatBox = document.getElementById('chatBox');
