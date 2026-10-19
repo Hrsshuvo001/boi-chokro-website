@@ -140,7 +140,7 @@
 
             const { data: profiles } = await supabaseClient
                 .from('profiles')
-                .select('id, email, full_name') // full_name আনা হচ্ছে
+                .select('id, email, full_name')
                 .in('id', uniqueUserIds);
 
             userListDiv.innerHTML = '';
@@ -156,7 +156,6 @@
                 div.className = `p-4 border-b border-gray-100 hover:bg-blue-50 cursor-pointer transition flex items-center justify-between gap-3`;
                 div.onclick = () => selectUser(profile.id, profile.full_name || profile.email, div);
                 
-                // যদি নাম না থাকে, তবে ইমেইলের প্রথম অংশ দেখাবে
                 const displayName = profile.full_name || (profile.email ? profile.email.split('@')[0] : 'Unknown');
                 
                 div.innerHTML = `
@@ -212,7 +211,7 @@
             const chatContainer = document.getElementById('adminChatMessages');
             chatContainer.innerHTML = `<p class="text-center text-gray-500 text-sm mt-4">মেসেজ লোড হচ্ছে...</p>`;
 
-            // নতুন মেসেজ উপরে থাকার জন্য descending false (অর্থাৎ newest first)
+            // এখানে ascending: false দেওয়া হয়েছে যাতে নতুন মেসেজ সবার আগে আসে
             const { data, error } = await supabaseClient
                 .from('chat_messages')
                 .select('*')
@@ -231,7 +230,7 @@
                 return;
             }
 
-            // লুপ চালিয়ে সরাসরি innerHTML এ সেট করা, যাতে নতুনটা সবার উপরে থাকে
+            // মেসেজগুলো ম্যাপ করে সরাসরি HTML এ বসানো হচ্ছে
             chatContainer.innerHTML = data.map(msg => {
                 const isAdmin = msg.is_admin;
                 const bubbleClass = isAdmin ? "bg-blue-600 text-white rounded-tr-none" : "bg-gray-200 text-gray-800 rounded-tl-none";
@@ -257,7 +256,7 @@
 
             input.value = '';
 
-            // লোকালি উপরে দেখানোর জন্য
+            // লোকালি উপরে দেখানোর জন্য (Prepend)
             const chatContainer = document.getElementById('adminChatMessages');
             const msgDiv = document.createElement('div');
             msgDiv.className = `flex flex-col items-end mb-2`;
@@ -268,7 +267,7 @@
                     <span class="text-[10px] text-gray-400 ml-1">✔ Sent</span>
                 </div>
             `;
-            chatContainer.prepend(msgDiv); // sবার উপরে যোগ করা
+            chatContainer.prepend(msgDiv); // সবার উপরে যোগ করা হলো
 
             const { error } = await supabaseClient.from('chat_messages').insert([{
                 user_id: selectedUserId,
@@ -301,7 +300,7 @@
                                 ${newMsg.message}
                             </div>
                         `;
-                        chatContainer.prepend(msgDiv); // নতুন মেসেজ উপরে
+                        chatContainer.prepend(msgDiv); // নতুন মেসেজ সবার উপরে
                         markMessagesAsRead(userId); 
                     }
                 })
