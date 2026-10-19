@@ -433,7 +433,7 @@
             }, 4000);
         };
 
-        // --- নোটিফিকেশন সিস্টেম (থ্রি ডট মেনু সহ) ---
+        // --- নোটিফিকেশন সিস্টেম ---
         window.toggleNotifications = () => {
             document.getElementById('notif-dropdown').classList.toggle('hidden');
         };
@@ -471,6 +471,7 @@
             if(!exists) {
                 notifications.unshift({ id: notifId, text, type, targetId });
                 renderNotifications();
+                showToast(text, true); // উপরে টোস্ট মেসেজ দেখাবে
             }
         }
 
@@ -532,9 +533,10 @@
             }
         }
 
+        // লাইভ চ্যাট মেসেজ লিসেনার (নোটিফিকেশনের জন্য)
         function listenForChatNotifications() {
             supabaseClient
-                .channel('admin_chat_notif_live')
+                .channel('admin_chat_notif_live_01')
                 .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages' }, payload => {
                     const newMsg = payload.new;
                     if (!newMsg.is_admin) {
