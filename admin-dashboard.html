@@ -39,7 +39,14 @@
                 <button onclick="showSection('add-category')" class="nav-item text-left px-4 py-3 rounded-md hover:bg-slate-700 transition flex items-center gap-3 w-full">🏷️ অ্যাড ক্যাটাগরি</button>
                 <button onclick="showSection('add-author')" class="nav-item text-left px-4 py-3 rounded-md hover:bg-slate-700 transition flex items-center gap-3 w-full">✍️ অ্যাড অথর</button>
                 <button onclick="showSection('report')" class="nav-item text-left px-4 py-3 rounded-md hover:bg-slate-700 transition flex items-center gap-3 w-full">📄 রিপোর্ট</button>
+                
+                <!-- ============================================== -->
+                <!-- এখানে লাইভ চ্যাট লিংকটি যোগ করা আছে -->
+                <a href="/admin-chat.html" class="nav-item text-left px-4 py-3 rounded-md hover:bg-slate-700 transition flex items-center gap-3 w-full">💬 লাইভ চ্যাট</a>
+                <!-- ============================================== -->
+                
                 <button onclick="showSection('settings')" class="nav-item text-left px-4 py-3 rounded-md hover:bg-slate-700 transition flex items-center gap-3 w-full">⚙️ সাইট সেটিংস</button>
+                
                 <div class="border-t border-slate-700 mt-2 pt-2">
                     <button onclick="handleLogout()" class="w-full text-left px-4 py-3 rounded-md bg-red-900/30 hover:bg-red-600 text-red-400 hover:text-white transition flex items-center gap-3 border border-red-900/50">🚪 লগআউট</button>
                 </div>
@@ -63,7 +70,6 @@
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                     </svg>
-                    <!-- নোটিফিকেশন কাউন্টার -->
                     <span id="notif-count" class="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold rounded-full h-5 w-5 flex items-center justify-center border-2 border-white hidden">0</span>
                 </button>
                 
@@ -85,7 +91,6 @@
             <!-- ১. হোম (KPI) -->
             <section id="section-home" class="section-content active">
                 <h2 class="text-2xl font-bold text-gray-800 mb-6">ড্যাশবোর্ড ওভারভিউ</h2>
-                <!-- KPI Cards -->
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
                     <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-blue-500">
                         <p class="text-gray-500 text-sm font-semibold">আজকের সেলস</p>
@@ -128,7 +133,6 @@
                             <input type="number" id="stock_quantity" required placeholder="স্টক পরিমাণ (কত কপি)" class="w-full px-4 py-2 border rounded-md">
                         </div>
                         
-                        <!-- দাম ও স্টক -->
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-gray-50 border rounded-md">
                             <div>
                                 <label class="block text-xs text-gray-500 mb-1">ক্রয় মূল্য (৳)</label>
@@ -161,6 +165,7 @@
                         
                         <button type="submit" id="addBookBtn" class="w-full bg-blue-600 text-white font-bold py-3 rounded-md hover:bg-blue-700">বই যোগ করুন</button>
                     </form>
+                    <div id="bookMessage" class="mt-4 text-center font-bold hidden"></div>
                 </div>
             </section>
 
@@ -184,7 +189,7 @@
                 </div>
             </section>
 
-            <!-- ৪. ক্যাটাগরি ও লেখক (কোড সংক্ষিপ্ত রাখার জন্য একই ডিজাইন) -->
+            <!-- ৪. অ্যাড ক্যাটাগরি -->
             <section id="section-add-category" class="section-content">
                 <h2 class="text-2xl font-bold text-gray-800 mb-6">নতুন ক্যাটাগরি যোগ করুন</h2>
                 <div class="bg-white p-6 rounded-xl shadow-sm max-w-lg">
@@ -195,6 +200,7 @@
                 </div>
             </section>
 
+            <!-- ৫. অ্যাড অথর -->
             <section id="section-add-author" class="section-content">
                 <h2 class="text-2xl font-bold text-gray-800 mb-6">নতুন লেখক যোগ করুন</h2>
                 <div class="bg-white p-6 rounded-xl shadow-sm max-w-lg">
@@ -291,7 +297,6 @@
 
             <!-- ৭. সাইট সেটিংস -->
             <section id="section-settings" class="section-content">
-                <!-- আগের কোডের মতোই -->
                 <h2 class="text-2xl font-bold text-gray-800 mb-6">সাইট সেটিংস</h2>
                 <div class="bg-white p-6 rounded-xl shadow-sm max-w-2xl">
                     <form id="siteSettingsForm" class="space-y-4">
@@ -382,14 +387,12 @@
         }
 
         async function checkSystemNotifications() {
-            // ১. স্টক চেক
             const { data: books } = await supabaseClient.from('books').select('id, title, stock_quantity, category, author');
             if(books) {
                 books.forEach(b => {
                     if (b.stock_quantity <= 0) addNotification(`"${b.title}" বইটির স্টক শেষ!`);
                 });
 
-                // ২. ক্যাটাগরি চেক (যেসব ক্যাটাগরিতে বই নেই)
                 const { data: cats } = await supabaseClient.from('categories').select('name');
                 if (cats) {
                     const bookCats = books.map(b => b.category);
@@ -511,7 +514,6 @@
             let totalSales = 0, todaySales = 0, weeklyData = [0, 0, 0, 0, 0, 0, 0];
             let totalProfit = 0;
 
-            // আনুমানিক লাভ হিসাব: (ডিসকাউন্ট প্রাইস - পারচেজ প্রাইস) * সেলস কাউন্ট
             if(books) {
                 books.forEach(b => {
                     const sellP = b.discount_price || 0;
@@ -699,9 +701,8 @@
             const { data: orders, error } = await query.order('created_at', { ascending: false });
             const tbody = document.getElementById('reportTableBody');
             
-            // ডাটা না থাকলে টোস্ট নোটিফিকেশন এবং টেবিলের ভেতরে মেসেজ
             if (error || !orders || orders.length === 0) { 
-                showToast('নির্বাচিত তারিখের মধ্যে কোনো ডাটা পাওয়া যায়নি!', true); // টোস্ট মেসেজ
+                showToast('নির্বাচিত তারিখের মধ্যে কোনো ডাটা পাওয়া যায়নি!', true);
                 tbody.innerHTML = `
                     <tr><td colspan="5" class="py-8 text-center bg-gray-50 rounded-lg">
                         <div class="flex flex-col items-center justify-center text-gray-500">
@@ -731,7 +732,6 @@
                 </tr>`;
             }).join('');
 
-            // রিপোর্টে লাভ দেখানোর জন্য (এটি আনুমানিক, কারণ আমাদের অর্ডার আইটেম ডিটেইলস নেই)
             const { data: books } = await supabaseClient.from('books').select('discount_price, purchase_price, sales_count');
             let totalProfit = 0;
             if(books) {
@@ -757,4 +757,4 @@
         init();
     </script>
 </body>
-                                </html>
+                                    </html>
