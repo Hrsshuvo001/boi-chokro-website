@@ -13,7 +13,6 @@
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
-        /* টাইটেল ২ লাইনেই থাকবে, এর বেশি বাড়বে না */
         .line-clamp-2 {
             display: -webkit-box;
             -webkit-line-clamp: 2;
@@ -26,31 +25,34 @@
             to { transform: translateY(0); opacity: 1; }
         }
         .chat-animate { animation: slideUp 0.3s ease-out forwards; }
+
+        /* প্রফেশনাল কার্ড শ্যাডো */
+        .card-shadow {
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+        .card-shadow:hover {
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+        }
     </style>
 </head>
 <body class="bg-gray-50 min-h-screen flex flex-col text-gray-800">
 
     <!-- নেভিগেশন বার -->
     <nav class="bg-white shadow-sm sticky top-0 z-40">
-        <div class="max-w-7xl mx-auto px-3 sm:px-4 py-2 sm:py-3 flex justify-between items-center">
-            <!-- লোগো ও নাম -->
+        <div class="max-w-7xl mx-auto px-3 sm:px-4 py-3 flex justify-between items-center">
             <a href="/" class="flex items-center gap-2 group">
                 <img id="web_header_logo" src="" class="hidden h-8 sm:h-10 w-auto max-w-[40px] sm:max-w-[50px] object-contain">
                 <span id="web_header_name" class="text-xl sm:text-2xl font-extrabold text-blue-600 tracking-tight">Boi Chokro</span>
             </a>
             
-            <!-- ডান দিকের বাটনসমূহ (কার্ট ও লগআউট) -->
             <div class="flex items-center gap-2 sm:gap-4">
-                <!-- কার্ট বাটন -->
-                <a href="/cart.html" class="relative flex items-center gap-1.5 sm:gap-2 bg-blue-50 text-blue-600 hover:bg-blue-100 px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg font-semibold transition border border-blue-100">
+                <a href="/cart.html" class="relative flex items-center gap-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg font-semibold transition border border-blue-100">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
                     <span class="hidden sm:inline text-sm">কার্ট</span>
                     <span id="cartCount" class="absolute -top-1.5 -right-1.5 sm:-top-2 sm:-right-2 bg-red-500 text-white text-[10px] sm:text-xs font-bold rounded-full h-4 w-4 sm:h-5 sm:w-5 flex items-center justify-center border-2 border-white shadow-sm">0</span>
                 </a>
-
-                <!-- লগইন / লগআউট বাটন -->
                 <div id="authButtons" class="flex items-center text-sm">
                     <div class="animate-pulse bg-gray-200 h-7 w-14 sm:h-8 sm:w-16 rounded"></div>
                 </div>
@@ -59,24 +61,28 @@
     </nav>
 
     <!-- হিরো সেকশন -->
-    <header class="bg-gradient-to-r from-blue-700 to-blue-500 text-white py-10 sm:py-16 px-4 text-center rounded-b-2xl sm:rounded-b-3xl shadow-inner">
-        <h1 id="web_tagline" class="text-2xl sm:text-4xl lg:text-5xl font-extrabold mb-3 leading-tight tracking-tight drop-shadow-md">আপনার পছন্দের বই, এক জায়গায়</h1>
-        <p class="text-sm sm:text-base lg:text-lg text-blue-100 max-w-2xl mx-auto font-medium">সেরা লেখকদের বইয়ের বিশাল সংগ্রহ। আজই আপনার প্রিয় বইটি খুঁজে নিন।</p>
+    <header class="bg-gradient-to-r from-blue-700 to-blue-500 text-white py-12 sm:py-16 px-4 text-center rounded-b-3xl shadow-inner relative overflow-hidden">
+        <!-- ডেকোরেটিভ ব্যাকগ্রাউন্ড সার্কেল -->
+        <div class="absolute -top-10 -left-10 w-32 h-32 bg-white opacity-10 rounded-full blur-2xl"></div>
+        <div class="absolute -bottom-10 -right-10 w-40 h-40 bg-white opacity-10 rounded-full blur-2xl"></div>
+        
+        <h1 id="web_tagline" class="text-2xl sm:text-4xl lg:text-5xl font-extrabold mb-3 leading-tight tracking-tight drop-shadow-md relative z-10">আপনার পছন্দের বই, এক জায়গায়</h1>
+        <p class="text-sm sm:text-base lg:text-lg text-blue-100 max-w-2xl mx-auto font-medium relative z-10">সেরা লেখকদের বইয়ের বিশাল সংগ্রহ। আজই আপনার প্রিয় বইটি খুঁজে নিন।</p>
     </header>
 
     <!-- মেইন কন্টেন্ট -->
-    <main class="flex-grow max-w-7xl mx-auto w-full px-3 sm:px-4 py-6 sm:py-10">
+    <main class="flex-grow max-w-7xl mx-auto w-full px-3 sm:px-4 py-8">
         
-        <!-- ১. বেস্ট সেলার -->
-        <section class="mb-10 sm:mb-14">
-            <div class="flex items-center justify-between mb-4 border-b pb-2">
+        <!-- ১. বেস্ট সেলার (সর্বোচ্চ ৩টি) -->
+        <section class="mb-12">
+            <div class="flex items-center justify-between mb-5 border-b pb-2">
                 <div class="flex items-center gap-2">
-                    <span class="text-xl sm:text-2xl">🔥</span>
-                    <h2 class="text-lg sm:text-2xl font-bold text-gray-800">বেস্ট সেলার</h2>
+                    <span class="text-2xl">🔥</span>
+                    <h2 class="text-xl sm:text-2xl font-bold text-gray-800">বেস্ট সেলার</h2>
                 </div>
             </div>
-            <!-- গ্রিড লেআউট -->
-            <div id="bestSellerGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5 items-stretch">
+            <!-- গ্রিড লেআউট: মোবাইলে ২টি, বড় স্ক্রিনে ৩টি -->
+            <div id="bestSellerGrid" class="grid grid-cols-2 sm:grid-cols-3 gap-4 sm:gap-6 items-stretch">
                 <p class="text-gray-500 col-span-full text-center py-10 text-sm">লোড হচ্ছে...</p>
             </div>
         </section>
@@ -87,22 +93,22 @@
         </div>
 
         <!-- ৩. সব ক্যাটাগরি ফিল্টার ও সব বই -->
-        <section class="mt-8 sm:mt-12">
-            <h2 class="text-lg sm:text-2xl font-bold text-gray-800 mb-4 border-b pb-2">সব ক্যাটাগরি</h2>
+        <section class="mt-10">
+            <h2 class="text-xl sm:text-2xl font-bold text-gray-800 mb-5 border-b pb-2">সব ক্যাটাগরি</h2>
             
             <div class="flex flex-wrap gap-2 mb-6" id="categoryButtons">
-                <button onclick="filterCategory('all')" class="category-btn bg-blue-600 text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-semibold transition shadow-sm">সব বই</button>
+                <button onclick="filterCategory('all')" class="category-btn bg-blue-600 text-white px-4 py-2 rounded-full text-xs sm:text-sm font-semibold transition shadow-sm">সব বই</button>
             </div>
 
-            <!-- গ্রিড লেআউট -->
-            <div id="bookGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5 items-stretch">
+            <!-- গ্রিড লেআউট: মোবাইলে ২টি, বড় স্ক্রিনে ৪টি -->
+            <div id="bookGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 sm:gap-6 items-stretch">
                 <!-- সব বই লোড হবে -->
             </div>
         </section>
     </main>
 
     <!-- ফুটার -->
-    <footer class="bg-gray-900 text-gray-400 py-6 text-center mt-auto">
+    <footer class="bg-gray-900 text-gray-400 py-8 text-center mt-auto">
         <p id="web_footer_text" class="text-xs sm:text-sm font-medium">&copy; 2024 Boi Chokro. All rights reserved.</p>
     </footer>
 
@@ -175,7 +181,7 @@
         }
 
         // ==========================================
-        // পারফেক্ট কার্ড ডিজাইন (নিচের বাটন কাটা পড়বে না)
+        // ১০০% প্রফেশনাল কার্ড ডিজাইন
         // ==========================================
         function createBookCard(book) {
             const currentPrice = book.discount_price || book.original_price || 0;
@@ -187,47 +193,46 @@
             const isOutOfStock = (book.stock_quantity !== undefined && book.stock_quantity !== null) ? book.stock_quantity <= 0 : false;
 
             return `
-            <div class="bg-white rounded-lg sm:rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col border border-gray-100 relative group w-full h-full">
+            <div class="bg-white rounded-2xl card-shadow transition-all duration-300 flex flex-col relative group w-full h-full overflow-hidden border border-gray-100">
                 
-                <!-- ছবি (উপরে ফিক্সড) -->
-                <a href="/book-details.html?id=${book.id}" class="block w-full aspect-[3/4] bg-gray-100 overflow-hidden relative shrink-0">
-                    ${hasDiscount ? `<div class="absolute top-1.5 left-1.5 bg-red-500 text-white text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 rounded shadow z-10">${discountPercent}% ছাড়</div>` : ''}
+                <!-- ছবি -->
+                <a href="/book-details.html?id=${book.id}" class="block w-full aspect-[3/4] bg-gray-100 overflow-hidden relative">
+                    ${hasDiscount ? `<div class="absolute top-2 left-2 bg-red-500 text-white text-[10px] sm:text-xs font-bold px-2 py-1 rounded-md shadow-md z-10">${discountPercent}% ছাড়</div>` : ''}
                     
-                    ${isOutOfStock ? `<div class="absolute inset-0 bg-black/60 flex items-center justify-center z-10"><span class="bg-red-600 text-white font-bold text-[10px] sm:text-xs px-2 py-1 rounded">স্টক নেই</span></div>` : ''}
+                    ${isOutOfStock ? `<div class="absolute inset-0 bg-black/60 backdrop-blur-[2px] flex items-center justify-center z-10"><span class="bg-red-600 text-white font-bold text-xs sm:text-sm px-3 py-1 rounded-md shadow-lg">স্টক নেই</span></div>` : ''}
                     
-                    <img src="${book.cover_url || 'https://via.placeholder.com/300x400?text=No+Image'}" class="w-full h-full object-cover object-center group-hover:scale-105 transition duration-500">
+                    <img src="${book.cover_url || 'https://via.placeholder.com/300x400?text=No+Image'}" class="w-full h-full object-cover object-center group-hover:scale-110 transition duration-500 ease-in-out">
                 </a>
                 
-                <!-- তথ্য (নিচে অটো বাড়বে) -->
-                <div class="p-2.5 flex flex-col flex-grow">
-                    <span class="text-[9px] sm:text-[10px] text-blue-600 font-bold uppercase mb-0.5">${book.category || 'সাধারণ'}</span>
+                <!-- তথ্য -->
+                <div class="p-3 sm:p-4 flex flex-col flex-grow bg-white">
+                    <span class="text-[10px] text-blue-600 font-bold uppercase tracking-wider mb-1">${book.category || 'সাধারণ'}</span>
                     
-                    <a href="/book-details.html?id=${book.id}" class="block mb-1">
-                        <h3 class="font-bold text-[11px] sm:text-xs md:text-sm text-gray-800 leading-tight line-clamp-2 group-hover:text-blue-600 transition h-[30px] sm:h-[34px]">${book.title}</h3>
+                    <a href="/book-details.html?id=${book.id}" class="mb-1 block">
+                        <h3 class="font-bold text-sm sm:text-base text-gray-800 leading-snug line-clamp-2 group-hover:text-blue-600 transition h-[38px] sm:h-[44px]">${book.title}</h3>
                     </a>
                     
-                    <div class="mb-1">
-                        <p class="text-[9px] sm:text-[10px] text-gray-600 truncate">লেখক: ${book.author}</p>
-                        <p class="text-[9px] sm:text-[10px] text-gray-500 truncate">প্রকাশনী: ${book.publisher || 'N/A'}</p>
+                    <div class="mt-auto pt-2 flex flex-col gap-0.5 mb-2">
+                        <p class="text-[11px] sm:text-xs text-gray-500 truncate">লেখক: <span class="text-gray-700 font-medium">${book.author}</span></p>
+                        <p class="text-[11px] sm:text-xs text-gray-500 truncate">প্রকাশনী: <span class="text-gray-700 font-medium">${book.publisher || 'N/A'}</span></p>
                     </div>
                     
-                    <div class="flex items-center gap-1 mb-1 mt-auto">
-                        <span class="text-[13px] sm:text-sm md:text-base font-bold text-blue-600">৳ ${currentPrice}</span>
-                        ${hasDiscount ? `<span class="text-gray-400 line-through text-[9px] sm:text-[10px]">৳ ${book.original_price}</span>` : ''}
+                    <div class="flex items-center gap-2 mb-3">
+                        <span class="text-lg sm:text-xl font-extrabold text-gray-900">৳ ${currentPrice}</span>
+                        ${hasDiscount ? `<span class="text-gray-400 line-through text-xs font-medium">৳ ${book.original_price}</span>` : ''}
                     </div>
 
-                    <!-- স্টক ও বাটন (সবসময় নিচে থাকবে mt-auto দিয়ে) -->
-                    <div class="mt-auto pt-1">
-                        <p class="text-[9px] sm:text-[10px] font-bold mb-1.5 ${isOutOfStock ? 'text-red-500' : 'text-green-600'}">
-                            ${isOutOfStock ? '❌ স্টক নেই' : '✅ স্টকে আছে'}
-                        </p>
-
+                    <!-- অ্যাকশন বাটন -->
+                    <div class="mt-auto">
                         ${isOutOfStock ? `
-                            <button disabled class="w-full bg-gray-100 text-gray-400 font-bold py-1.5 rounded text-[9px] sm:text-[10px] cursor-not-allowed border border-gray-200">স্টক নেই</button>
+                            <button disabled class="w-full bg-gray-100 text-gray-400 font-bold py-2 rounded-xl text-xs sm:text-sm cursor-not-allowed border border-gray-200">স্টক নেই</button>
                         ` : (book.is_affiliate ? `
-                            <button onclick="event.preventDefault(); handleAffiliateBuy('${book.purchase_link}')" class="w-full bg-purple-50 text-purple-700 border border-purple-200 hover:bg-purple-600 hover:text-white font-bold py-1.5 rounded transition text-[9px] sm:text-[10px]">অন্য সাইটে কিনুন</button>
+                            <button onclick="event.preventDefault(); handleAffiliateBuy('${book.purchase_link}')" class="w-full bg-purple-600 text-white hover:bg-purple-700 font-bold py-2 rounded-xl transition text-xs sm:text-sm shadow-sm hover:shadow-md">অন্য সাইটে কিনুন</button>
                         ` : `
-                            <button onclick="event.preventDefault(); addToCart('${book.id}', '${book.title}', ${currentPrice}, '${book.cover_url}')" class="w-full bg-green-50 text-green-700 border border-green-200 hover:bg-green-600 hover:text-white font-bold py-1.5 rounded transition text-[9px] sm:text-[10px]">কার্টে যোগ করুন</button>
+                            <button onclick="event.preventDefault(); addToCart('${book.id}', '${book.title}', ${currentPrice}, '${book.cover_url}')" class="w-full bg-emerald-600 text-white hover:bg-emerald-700 font-bold py-2 rounded-xl transition text-xs sm:text-sm shadow-sm hover:shadow-md flex items-center justify-center gap-1.5">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                                কার্টে যোগ করুন
+                            </button>
                         `)}
                     </div>
                 </div>
@@ -239,9 +244,11 @@
             if (bookError || !books) return;
             allBooksData = books;
 
-            const bestSellers = [...books].sort((a, b) => (b.sales_count || 0) - (a.sales_count || 0)).slice(0, 4); 
+            // ১. বেস্ট সেলার (সর্বোচ্চ ৩টি)
+            const bestSellers = [...books].sort((a, b) => (b.sales_count || 0) - (a.sales_count || 0)).slice(0, 3); 
             document.getElementById('bestSellerGrid').innerHTML = bestSellers.map(book => createBookCard(book)).join('');
 
+            // ২. ক্যাটাগরি স্লাইডার
             const { data: categories, error: catError } = await supabaseClient.from('categories').select('*').order('name');
             const dynamicContainer = document.getElementById('dynamicCategorySections');
             const categoryButtons = document.getElementById('categoryButtons');
@@ -253,26 +260,26 @@
                     if (catBooks.length === 0) return;
                     
                     dynamicContainer.insertAdjacentHTML('beforeend', `
-                        <section class="mb-10">
-                            <div class="flex justify-between items-end mb-4 border-b pb-2">
-                                <div class="flex items-center gap-1.5">
-                                    <span class="text-xl">📚</span>
-                                    <h2 class="text-lg sm:text-xl font-bold text-gray-800">${cat.name}</h2>
+                        <section class="mb-12">
+                            <div class="flex justify-between items-end mb-5 border-b pb-2">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-2xl">📚</span>
+                                    <h2 class="text-xl sm:text-2xl font-bold text-gray-800">${cat.name}</h2>
                                 </div>
-                                <a href="/category.html?cat=${encodeURIComponent(cat.name)}" class="text-blue-600 text-xs sm:text-sm font-semibold hover:underline flex items-center gap-0.5 group">
-                                    সব দেখুন 
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 group-hover:translate-x-0.5 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+                                <a href="/category.html?cat=${encodeURIComponent(cat.name)}" class="text-blue-600 text-xs sm:text-sm font-semibold hover:underline flex items-center gap-1 group">
+                                    সব বই দেখুন 
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 group-hover:translate-x-1 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
                                 </a>
                             </div>
                             
-                            <div class="grid grid-flow-col auto-cols-[calc(50%-0.5rem)] sm:auto-cols-[calc(33.33%-0.5rem)] md:auto-cols-[calc(25%-0.5rem)] gap-3 sm:gap-4 overflow-x-auto snap-x snap-mandatory hide-scrollbar pb-4 items-stretch">
+                            <div class="grid grid-flow-col auto-cols-[calc(50%-0.5rem)] sm:auto-cols-[calc(33.33%-1rem)] md:auto-cols-[calc(25%-1rem)] gap-4 sm:gap-6 overflow-x-auto snap-x snap-mandatory hide-scrollbar pb-6 items-stretch">
                                 ${catBooks.map(book => createBookCard(book)).join('')}
                             </div>
                         </section>
                     `);
                     
                     categoryButtons.insertAdjacentHTML('beforeend', `
-                        <button onclick="filterCategory('${cat.name}')" class="category-btn bg-white text-gray-700 border border-gray-200 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-semibold hover:bg-blue-50 hover:border-blue-300 transition shadow-sm">${cat.name}</button>
+                        <button onclick="filterCategory('${cat.name}')" class="category-btn bg-white text-gray-700 border border-gray-200 px-4 py-2 rounded-full text-xs sm:text-sm font-semibold hover:bg-blue-50 hover:border-blue-300 transition shadow-sm">${cat.name}</button>
                     `);
                 });
             }
