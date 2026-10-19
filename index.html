@@ -15,29 +15,33 @@
             -webkit-box-orient: vertical;
             overflow: hidden;
         }
+        /* চ্যাট অ্যানিমেশন */
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .chat-animate {
+            animation: slideUp 0.3s ease-out forwards;
+        }
     </style>
 </head>
 <body class="bg-gray-50 min-h-screen flex flex-col">
 
     <!-- নেভিগেশন বার -->
-    <nav class="bg-white shadow-sm sticky top-0 z-50">
+    <nav class="bg-white shadow-sm sticky top-0 z-40">
         <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
-            <!-- ডাইনামিক কোম্পানির নাম এবং লোগো -->
             <a href="/" class="flex items-center gap-2">
                 <img id="web_header_logo" src="" class="hidden h-10 w-auto max-w-[50px] object-contain">
                 <span id="web_header_name" class="text-2xl font-bold text-blue-600 tracking-tight">Boi Chokro</span>
             </a>
             
             <div class="flex items-center gap-4 sm:gap-6">
-                <!-- কার্ট আইকন -->
                 <a href="/cart.html" class="relative text-gray-600 hover:text-blue-600 transition">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
                     <span id="cartCount" class="absolute -top-1 -right-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">0</span>
                 </a>
-                
-                <!-- ইউজার অথ বাটন -->
                 <div id="authButtons" class="flex items-center gap-3">
                     <div class="animate-pulse bg-gray-200 h-8 w-16 rounded"></div>
                 </div>
@@ -45,7 +49,7 @@
         </div>
     </nav>
 
-    <!-- হিরো সেকশন (ডাইনামিক টাইটেল) -->
+    <!-- হিরো সেকশন -->
     <header class="bg-blue-600 text-white py-12 px-4 text-center">
         <h1 id="web_tagline" class="text-3xl md:text-5xl font-bold mb-4">আপনার পছন্দের বই, এক জায়গায়</h1>
         <p class="text-lg md:text-xl text-blue-100 max-w-2xl mx-auto">সেরা লেখকদের বইয়ের বিশাল সংগ্রহ। আজই আপনার প্রিয় বইটি খুঁজে নিন।</p>
@@ -53,48 +57,88 @@
 
     <!-- মেইন কন্টেন্ট -->
     <main class="flex-grow max-w-7xl mx-auto w-full px-4 py-8">
-        
-        <!-- ১. বেস্ট সেলার সেকশন -->
         <section class="mb-10">
-            <div class="flex items-center gap-2 mb-6">
-                <span class="text-3xl">🔥</span>
-                <h2 class="text-2xl font-bold text-gray-800">বেস্ট সেলার</h2>
-            </div>
-            <div id="bestSellerGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                <p class="text-gray-500 col-span-full">লোড হচ্ছে...</p>
-            </div>
+            <div class="flex items-center gap-2 mb-6"><span class="text-3xl">🔥</span><h2 class="text-2xl font-bold text-gray-800">বেস্ট সেলার</h2></div>
+            <div id="bestSellerGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"><p class="text-gray-500 col-span-full">লোড হচ্ছে...</p></div>
         </section>
 
         <hr class="border-gray-300 mb-8">
-
-        <!-- ২. ডাইনামিক ক্যাটাগরি স্লাইডার সেকশন -->
-        <div id="dynamicCategorySections">
-            <p class="text-gray-500 text-center py-10">ক্যাটাগরি লোড হচ্ছে...</p>
-        </div>
-
+        <div id="dynamicCategorySections"><p class="text-gray-500 text-center py-10">ক্যাটাগরি লোড হচ্ছে...</p></div>
         <hr class="border-gray-300 mb-8">
 
-        <!-- ৩. সব ক্যাটাগরি ফিল্টার ও সব বই -->
         <section>
             <h2 class="text-2xl font-bold text-gray-800 mb-4">সব ক্যাটাগরি</h2>
-            
-            <!-- ডাইনামিক ফিল্টার বাটন -->
             <div class="flex flex-wrap gap-2 mb-6" id="categoryButtons">
                 <button onclick="filterCategory('all')" class="category-btn bg-blue-600 text-white px-4 py-2 rounded-full text-sm font-semibold transition">সব বই</button>
-                <!-- বাকি বাটনগুলো জাভাস্ক্রিপ্ট দিয়ে লোড হবে -->
             </div>
-
-            <!-- সব বইয়ের গ্রিড -->
-            <div id="bookGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                <!-- সব বই লোড হবে -->
-            </div>
+            <div id="bookGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
         </section>
     </main>
 
-    <!-- ফুটার -->
     <footer class="bg-gray-800 text-gray-300 py-6 text-center mt-auto">
         <p id="web_footer_text">&copy; 2024 Boi Chokro. All rights reserved.</p>
     </footer>
+
+    <!-- ========================================== -->
+    <!-- চ্যাট উইজেট সেকশন শুরু -->
+    <!-- ========================================== -->
+    
+    <!-- চ্যাট উইজেট কন্টেইনার -->
+    <div class="fixed bottom-6 right-6 z-50 flex flex-col items-end">
+        
+        <!-- চ্যাট বক্স (প্রথমে হাইড থাকবে) -->
+        <div id="chatBox" class="hidden w-80 sm:w-96 bg-white rounded-2xl shadow-2xl border border-gray-200 flex-col overflow-hidden mb-4 chat-animate" style="height: 500px;">
+            
+            <!-- চ্যাট হেডার ও ট্যাব -->
+            <div class="bg-blue-600 text-white p-3 flex flex-col">
+                <div class="flex justify-between items-center mb-2">
+                    <div class="flex items-center gap-2">
+                        <div class="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
+                        <h3 class="font-bold">সাপোর্ট সেন্টার</h3>
+                    </div>
+                    <button onclick="toggleChat()" class="text-white hover:text-red-300">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                </div>
+                <!-- ট্যাব বাটন -->
+                <div class="flex bg-blue-700 rounded-lg p-1">
+                    <button id="tabBtnAI" onclick="switchChatTab('ai')" class="flex-1 text-sm font-semibold py-1 rounded-md bg-white text-blue-600 transition">🤖 AI চ্যাট</button>
+                    <button id="tabBtnLive" onclick="switchChatTab('live')" class="flex-1 text-sm font-semibold py-1 rounded-md text-blue-100 hover:text-white transition">🎧 লাইভ চ্যাট</button>
+                </div>
+            </div>
+
+            <!-- চ্যাট মেসেজ এরিয়া -->
+            <div id="chatMessages" class="flex-grow p-4 overflow-y-auto bg-gray-50 flex flex-col gap-3">
+                <!-- মেসেজগুলো এখানে আসবে -->
+            </div>
+
+            <!-- চ্যাট ইনপুট এরিয়া -->
+            <div class="p-3 bg-white border-t">
+                <div class="flex items-center gap-2">
+                    <input type="text" id="chatInput" placeholder="মেসেজ লিখুন..." class="flex-grow px-4 py-2 border rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" onkeypress="handleEnter(event)">
+                    <button onclick="sendMessage()" class="bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 transition">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 transform rotate-90" viewBox="0 0 20 20" fill="currentColor"><path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" /></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ফ্লোটিং চ্যাট বাটন -->
+        <button onclick="toggleChat()" class="bg-blue-600 text-white p-4 rounded-full shadow-lg hover:bg-blue-700 hover:scale-105 transition-all duration-300 flex items-center justify-center relative">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+            </svg>
+            <!-- নোটিফিকেশন ডট -->
+            <span id="chatNotifDot" class="absolute top-0 right-0 flex h-3 w-3">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+            </span>
+        </button>
+    </div>
+    <!-- ========================================== -->
+    <!-- চ্যাট উইজেট সেকশন শেষ -->
+    <!-- ========================================== -->
+
 
     <script>
         const SUPABASE_URL = 'https://jhbpaezbpkfwjfmazdcn.supabase.co';
@@ -103,40 +147,34 @@
 
         let currentUser = null;
         let allBooksData = []; 
+        let activeChatTab = 'ai'; // ডিফল্ট ট্যাব AI
+        let chatSubscription = null;
 
-        // কার্ট কাউন্ট আপডেট
+        // --- কার্ট ও অথ লজিক ---
         function updateCartCount() {
             const cart = JSON.parse(localStorage.getItem('boiChokroCart')) || [];
             document.getElementById('cartCount').innerText = cart.length;
         }
 
-        // ইউজার লগইন চেক
         async function checkAuth() {
             const { data: { session } } = await supabaseClient.auth.getSession();
             const authButtons = document.getElementById('authButtons');
 
             if (session) {
                 currentUser = session.user;
-                authButtons.innerHTML = `
-                    <button onclick="handleLogout()" class="bg-red-50 text-red-600 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-red-100 border border-red-200">লগআউট</button>
-                `;
+                authButtons.innerHTML = `<button onclick="handleLogout()" class="bg-red-50 text-red-600 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-red-100 border border-red-200">লগআউট</button>`;
             } else {
                 currentUser = null;
-                authButtons.innerHTML = `
-                    <a href="/login.html" class="text-blue-600 text-sm font-semibold hover:underline">লগইন</a>
-                `;
+                authButtons.innerHTML = `<a href="/login.html" class="text-blue-600 text-sm font-semibold hover:underline">লগইন</a>`;
             }
         }
 
-        // সাইট সেটিংস (লোগো, নাম, ফুটার, স্লোগান) লোড করা
         async function fetchSiteSettings() {
             const { data, error } = await supabaseClient.from('site_settings').select('*').limit(1).maybeSingle();
-            
             if (!error && data) {
                 document.getElementById('web_header_name').innerText = data.company_name || 'Boi Chokro';
                 if(data.tagline) document.getElementById('web_tagline').innerText = data.tagline;
                 if(data.footer_text) document.getElementById('web_footer_text').innerText = data.footer_text;
-
                 if (data.logo_url) {
                     const logo = document.getElementById('web_header_logo');
                     logo.src = data.logo_url;
@@ -145,48 +183,33 @@
             }
         }
 
-        // বইয়ের কার্ড তৈরির ফাংশন
+        // --- বই ও ক্যাটাগরি লজিক ---
         function createBookCard(book, isSlider = false) {
             const currentPrice = book.discount_price || book.original_price || 0;
             const hasDiscount = book.original_price && book.discount_price && book.original_price > book.discount_price;
             const widthClass = isSlider ? "min-w-[220px] max-w-[220px] snap-start" : "w-full";
-            
-            // ডিসকাউন্ট পার্সেন্টেজ বের করা
             let discountPercent = 0;
-            if (hasDiscount) {
-                discountPercent = Math.round(((book.original_price - book.discount_price) / book.original_price) * 100);
-            }
-
-            // স্টক চেক
+            if (hasDiscount) discountPercent = Math.round(((book.original_price - book.discount_price) / book.original_price) * 100);
             const isOutOfStock = (book.stock_quantity !== undefined && book.stock_quantity !== null) ? book.stock_quantity <= 0 : false;
 
             return `
             <div class="bg-white rounded-xl shadow-sm hover:shadow-xl transition duration-300 overflow-hidden flex flex-col border border-gray-100 relative ${widthClass}">
-                
                 <a href="/book-details.html?id=${book.id}" class="block h-56 bg-gray-100 overflow-hidden relative">
                     ${hasDiscount ? `<div class="absolute top-3 left-3 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded shadow z-10">${discountPercent}% ছাড়</div>` : ''}
                     ${isOutOfStock ? `<div class="absolute inset-0 bg-black/50 flex items-center justify-center z-10"><span class="bg-red-600 text-white font-bold px-3 py-1 rounded">স্টক নেই</span></div>` : ''}
                     <img src="${book.cover_url || 'https://via.placeholder.com/150'}" class="w-full h-full object-cover hover:scale-105 transition duration-500">
                 </a>
-                
                 <div class="p-4 flex flex-col flex-grow">
                     <span class="text-xs text-blue-600 font-semibold mb-1">${book.category || 'সাধারণ'}</span>
-                    <a href="/book-details.html?id=${book.id}">
-                        <h3 class="font-bold text-md text-gray-800 leading-tight mb-1 line-clamp-2 hover:text-blue-600 transition">${book.title}</h3>
-                    </a>
+                    <a href="/book-details.html?id=${book.id}"><h3 class="font-bold text-md text-gray-800 leading-tight mb-1 line-clamp-2 hover:text-blue-600 transition">${book.title}</h3></a>
                     <p class="text-xs text-gray-500 mb-2">লেখক: ${book.author}</p>
-                    
                     <div class="flex items-end gap-2 mb-2 mt-auto">
                         <span class="text-xl font-bold text-blue-600">৳ ${currentPrice}</span>
                         ${hasDiscount ? `<span class="text-gray-400 line-through text-xs mb-1">৳ ${book.original_price}</span>` : ''}
                     </div>
-
-                    <!-- স্টক স্ট্যাটাস -->
                     <p class="text-xs font-bold mb-3 ${isOutOfStock ? 'text-red-500' : 'text-green-600'}">
                         ${isOutOfStock ? '❌ স্টক নেই' : '✅ স্টকে আছে'}
                     </p>
-
-                    <!-- অ্যাকশন বাটন -->
                     ${isOutOfStock ? `
                         <button disabled class="w-full bg-gray-300 text-gray-500 font-bold py-1.5 rounded-lg text-sm cursor-not-allowed z-10 relative">স্টক নেই</button>
                     ` : (book.is_affiliate ? `
@@ -195,136 +218,232 @@
                         <button onclick="event.preventDefault(); addToCart('${book.id}', '${book.title}', ${currentPrice}, '${book.cover_url}')" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-1.5 rounded-lg transition flex justify-center items-center gap-1 text-sm z-10 relative">কার্টে যোগ করুন</button>
                     `)}
                 </div>
-            </div>
-            `;
+            </div>`;
         }
 
-        // মূল ফাংশন যা ডাটা লোড করবে
         async function loadHomePage() {
-            // ১. সব বই ডাটাবেস থেকে নিয়ে আসা
             const { data: books, error: bookError } = await supabaseClient.from('books').select('*').order('created_at', { ascending: false });
-            
-            if (bookError || !books) {
-                document.getElementById('bookGrid').innerHTML = `<p class="text-gray-500 col-span-full text-center">বই লোড করতে সমস্যা হয়েছে।</p>`;
-                return;
-            }
+            if (bookError || !books) return;
             allBooksData = books;
 
-            // ২. বেস্ট সেলার রেন্ডার
             const bestSellers = [...books].sort((a, b) => (b.sales_count || 0) - (a.sales_count || 0)).slice(0, 4);
             document.getElementById('bestSellerGrid').innerHTML = bestSellers.map(book => createBookCard(book)).join('');
 
-            // ৩. সব ক্যাটাগরি ডাটাবেস থেকে নিয়ে আসা
             const { data: categories, error: catError } = await supabaseClient.from('categories').select('*').order('name');
-            
             const dynamicContainer = document.getElementById('dynamicCategorySections');
             const categoryButtons = document.getElementById('categoryButtons');
 
             if (!catError && categories && categories.length > 0) {
                 dynamicContainer.innerHTML = ''; 
-                
-                // প্রতিটি ক্যাটাগরির জন্য লুপ চালানো
                 categories.forEach(cat => {
                     const catBooks = books.filter(b => b.category === cat.name).slice(0, 10);
                     if (catBooks.length === 0) return;
-
-                    // ডাইনামিক স্লাইডার সেকশন তৈরি
-                    const sectionHTML = `
+                    dynamicContainer.insertAdjacentHTML('beforeend', `
                         <section class="mb-10">
                             <div class="flex justify-between items-end mb-6">
-                                <div class="flex items-center gap-2">
-                                    <span class="text-3xl">📚</span>
-                                    <h2 class="text-2xl font-bold text-gray-800">${cat.name}</h2>
-                                </div>
-                                <a href="/category.html?cat=${encodeURIComponent(cat.name)}" class="text-blue-600 font-semibold hover:underline text-sm md:text-base flex items-center gap-1">
-                                    সব বই দেখুন 
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
-                                </a>
+                                <div class="flex items-center gap-2"><span class="text-3xl">📚</span><h2 class="text-2xl font-bold text-gray-800">${cat.name}</h2></div>
+                                <a href="/category.html?cat=${encodeURIComponent(cat.name)}" class="text-blue-600 font-semibold hover:underline text-sm md:text-base flex items-center gap-1">সব বই দেখুন <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg></a>
                             </div>
-                            <div class="flex overflow-x-auto gap-4 snap-x pb-4 hide-scrollbar">
-                                ${catBooks.map(book => createBookCard(book, true)).join('')}
-                            </div>
-                        </section>
-                        <hr class="border-gray-300 mb-8">
-                    `;
-                    dynamicContainer.insertAdjacentHTML('beforeend', sectionHTML);
-
-                    // নিচের ফিল্টার বাটনেও ক্যাটাগরিটি যোগ করা
-                    const btnHTML = `<button onclick="filterCategory('${cat.name}')" class="category-btn bg-white text-gray-700 border border-gray-300 px-4 py-2 rounded-full text-sm font-semibold hover:bg-blue-50 transition">${cat.name}</button>`;
-                    categoryButtons.insertAdjacentHTML('beforeend', btnHTML);
+                            <div class="flex overflow-x-auto gap-4 snap-x pb-4 hide-scrollbar">${catBooks.map(book => createBookCard(book, true)).join('')}</div>
+                        </section><hr class="border-gray-300 mb-8">`);
+                    categoryButtons.insertAdjacentHTML('beforeend', `<button onclick="filterCategory('${cat.name}')" class="category-btn bg-white text-gray-700 border border-gray-300 px-4 py-2 rounded-full text-sm font-semibold hover:bg-blue-50 transition">${cat.name}</button>`);
                 });
-            } else {
-                dynamicContainer.innerHTML = `<p class="text-gray-500 text-center">কোনো ক্যাটাগরি পাওয়া যায়নি।</p>`;
             }
-
-            // ৪. নিচের সব বই গ্রিড রেন্ডার
             renderFilteredBooks('all');
         }
 
-        // ক্যাটাগরি ফিল্টার লজিক
         window.filterCategory = (category) => {
-            const buttons = document.querySelectorAll('.category-btn');
-            buttons.forEach(btn => {
-                btn.classList.remove('bg-blue-600', 'text-white');
-                btn.classList.add('bg-white', 'text-gray-700', 'border-gray-300');
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.classList.remove('bg-blue-600', 'text-white'); btn.classList.add('bg-white', 'text-gray-700', 'border-gray-300');
             });
-            
-            const clickedBtn = Array.from(buttons).find(btn => btn.innerText.trim() === (category === 'all' ? 'সব বই' : category));
-            if (clickedBtn) {
-                clickedBtn.classList.remove('bg-white', 'text-gray-700', 'border-gray-300');
-                clickedBtn.classList.add('bg-blue-600', 'text-white');
-            }
+            const clickedBtn = Array.from(document.querySelectorAll('.category-btn')).find(btn => btn.innerText.trim() === (category === 'all' ? 'সব বই' : category));
+            if (clickedBtn) { clickedBtn.classList.remove('bg-white', 'text-gray-700', 'border-gray-300'); clickedBtn.classList.add('bg-blue-600', 'text-white'); }
             renderFilteredBooks(category);
         }
 
         function renderFilteredBooks(category) {
             const grid = document.getElementById('bookGrid');
             let filtered = allBooksData;
-            if (category !== 'all') {
-                filtered = allBooksData.filter(book => book.category === category);
-            }
-            if (filtered.length === 0) {
-                grid.innerHTML = `<p class="text-gray-500 col-span-full text-center py-10">এই ক্যাটাগরিতে কোনো বই পাওয়া যায়নি।</p>`;
-                return;
-            }
+            if (category !== 'all') filtered = allBooksData.filter(book => book.category === category);
+            if (filtered.length === 0) { grid.innerHTML = `<p class="text-gray-500 col-span-full text-center py-10">বই পাওয়া যায়নি।</p>`; return; }
             grid.innerHTML = filtered.map(book => createBookCard(book)).join('');
         }
 
-        // কার্টে যোগ করা
         window.addToCart = (id, title, price, image) => {
-            if (!currentUser) {
-                alert('কার্টে যোগ করতে অনুগ্রহ করে প্রথমে লগইন করুন!');
-                window.location.href = '/login.html'; return;
-            }
-            
-            // বর্তমান বইটির স্টক চেক (ঐচ্ছিক, তবে বাটন ডিজেবল থাকায় এটি মূলত সেফটি)
+            if (!currentUser) { alert('কার্টে যোগ করতে লগইন করুন!'); window.location.href = '/login.html'; return; }
             const book = allBooksData.find(b => b.id === id);
-            if (book && book.stock_quantity <= 0) {
-                alert('দুঃখিত, এই বইটি বর্তমানে স্টকে নেই!');
-                return;
-            }
-
+            if (book && book.stock_quantity <= 0) { alert('দুঃখিত, বইটি স্টকে নেই!'); return; }
             let cart = JSON.parse(localStorage.getItem('boiChokroCart')) || [];
-            if (cart.find(item => item.id === id)) {
-                alert('বইটি ইতিমধ্যে আপনার কার্টে আছে!'); return;
-            }
-            cart.push({ id, title, price, image });
-            localStorage.setItem('boiChokroCart', JSON.stringify(cart));
-            updateCartCount(); 
-            alert('সফলভাবে কার্টে যোগ হয়েছে!');
+            if (cart.find(item => item.id === id)) { alert('বইটি আগেই কার্টে আছে!'); return; }
+            cart.push({ id, title, price, image }); localStorage.setItem('boiChokroCart', JSON.stringify(cart));
+            updateCartCount(); alert('সফলভাবে কার্টে যোগ হয়েছে!');
         }
 
-        // অ্যাফিলিয়েট লিংকে যাওয়া
         window.handleAffiliateBuy = (link) => {
-            if (!currentUser) { alert('লিংকে যেতে প্রথমে লগইন করুন!'); window.location.href = '/login.html'; return; }
+            if (!currentUser) { alert('লিংকে যেতে লগইন করুন!'); window.location.href = '/login.html'; return; }
             if(link) window.open(link, '_blank');
         }
 
-        // লগআউট
-        window.handleLogout = async () => { 
-            await supabaseClient.auth.signOut(); 
-            checkAuth(); 
-            alert('লগআউট হয়েছে।');
+        window.handleLogout = async () => { await supabaseClient.auth.signOut(); checkAuth(); alert('লগআউট হয়েছে।'); }
+
+        // ==========================================
+        // চ্যাট সিস্টেম লজিক
+        // ==========================================
+
+        window.toggleChat = () => {
+            const chatBox = document.getElementById('chatBox');
+            const notifDot = document.getElementById('chatNotifDot');
+            
+            if (chatBox.classList.contains('hidden')) {
+                chatBox.classList.remove('hidden');
+                chatBox.classList.add('flex');
+                notifDot.style.display = 'none'; // ডট লুকানো
+                
+                // প্রথমবার ওপেন করলে AI ওয়েলকাম মেসেজ
+                if (document.getElementById('chatMessages').children.length === 0) {
+                    appendMessage('ai', 'আসসালামু আলাইকুম! আমি Boi Chokro-এর AI অ্যাসিস্ট্যান্ট। আপনাকে কীভাবে সাহায্য করতে পারি?');
+                }
+            } else {
+                chatBox.classList.add('hidden');
+                chatBox.classList.remove('flex');
+            }
+        };
+
+        window.switchChatTab = (tab) => {
+            activeChatTab = tab;
+            const btnAI = document.getElementById('tabBtnAI');
+            const btnLive = document.getElementById('tabBtnLive');
+            const chatMessages = document.getElementById('chatMessages');
+
+            if (tab === 'ai') {
+                btnAI.className = "flex-1 text-sm font-semibold py-1 rounded-md bg-white text-blue-600 transition";
+                btnLive.className = "flex-1 text-sm font-semibold py-1 rounded-md text-blue-100 hover:text-white transition";
+                chatMessages.innerHTML = ''; // ক্লিয়ার করা
+                appendMessage('ai', 'আসসালামু আলাইকুম! আমি Boi Chokro-এর AI অ্যাসিস্ট্যান্ট। আপনাকে কীভাবে সাহায্য করতে পারি?');
+                if(chatSubscription) chatSubscription.unsubscribe(); // লাইভ চ্যাট বন্ধ
+            } else {
+                btnLive.className = "flex-1 text-sm font-semibold py-1 rounded-md bg-white text-blue-600 transition";
+                btnAI.className = "flex-1 text-sm font-semibold py-1 rounded-md text-blue-100 hover:text-white transition";
+                chatMessages.innerHTML = ''; // ক্লিয়ার করা
+                
+                if(!currentUser) {
+                    appendMessage('ai', 'লাইভ চ্যাটে কথা বলতে অনুগ্রহ করে প্রথমে লগইন করুন।');
+                    return;
+                }
+                
+                appendMessage('admin', 'আপনি এখন লাইভ সাপোর্টে আছেন। আমাদের টিম শীঘ্রই আপনাকে উত্তর দেবে।');
+                loadLiveChatHistory();
+                subscribeToLiveChat();
+            }
+        };
+
+        function appendMessage(sender, text) {
+            const chatMessages = document.getElementById('chatMessages');
+            const isUser = sender === 'user';
+            const isAdmin = sender === 'admin';
+            
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `flex ${isUser ? 'justify-end' : 'justify-start'} mb-2`;
+            
+            let bubbleClass = "bg-gray-200 text-gray-800 rounded-tl-none";
+            if (isUser) bubbleClass = "bg-blue-600 text-white rounded-tr-none";
+            if (isAdmin) bubbleClass = "bg-green-600 text-white rounded-tl-none";
+
+            msgDiv.innerHTML = `
+                <div class="max-w-[80%] px-3 py-2 rounded-xl text-sm shadow-sm ${bubbleClass}">
+                    ${text}
+                </div>
+            `;
+            chatMessages.appendChild(msgDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight; // নিচে স্ক্রল
+        }
+
+        window.handleEnter = (e) => {
+            if (e.key === 'Enter') sendMessage();
+        };
+
+        window.sendMessage = async () => {
+            const input = document.getElementById('chatInput');
+            const text = input.value.trim();
+            if (!text) return;
+
+            // ইউজারের মেসেজ দেখানো
+            appendMessage('user', text);
+            input.value = '';
+
+            if (activeChatTab === 'ai') {
+                // AI চ্যাট লজিক (ডেমো)
+                const typingDiv = document.createElement('div');
+                typingDiv.id = 'typingIndicator';
+                typingDiv.className = "flex justify-start mb-2";
+                typingDiv.innerHTML = `<div class="bg-gray-200 text-gray-600 px-3 py-2 rounded-xl text-sm rounded-tl-none italic">টাইপ করছে...</div>`;
+                document.getElementById('chatMessages').appendChild(typingDiv);
+                document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight;
+
+                // ১.৫ সেকেন্ড পর AI এর উত্তর
+                setTimeout(() => {
+                    document.getElementById('typingIndicator').remove();
+                    let aiResponse = "দুঃখিত, আমি আপনার প্রশ্নটি বুঝতে পারিনি। আপনি বই, ডেলিভারি বা পেমেন্ট নিয়ে জিজ্ঞাসা করতে পারেন।";
+                    
+                    if (text.toLowerCase().includes('ডেলিভারি') || text.toLowerCase().includes('delivery')) {
+                        aiResponse = "ঢাকার ভেতরে ডেলিভারি চার্জ ৬০ টাকা এবং ঢাকার বাইরে ১২০ টাকা। ডেলিভারি পেতে ২-৩ দিন সময় লাগে।";
+                    } else if (text.toLowerCase().includes('বই') || text.toLowerCase().includes('book')) {
+                        aiResponse = "আমাদের স্টোরে বিভিন্ন ক্যাটাগরির বই পাওয়া যায়। আপনি উপরের মেনু থেকে আপনার পছন্দের ক্যাটাগরি বেছে নিতে পারেন।";
+                    } else if (text.toLowerCase().includes('পেমেন্ট') || text.toLowerCase().includes('payment')) {
+                        aiResponse = "আমরা বিকাশ এবং নগদে পেমেন্ট গ্রহণ করি। চেকআউট পেজে আপনি পেমেন্ট মেথড সিলেক্ট করতে পারবেন।";
+                    }
+                    
+                    appendMessage('ai', aiResponse);
+                }, 1500);
+
+            } else {
+                // লাইভ চ্যাট লজিক (Supabase)
+                if (!currentUser) return;
+
+                const { error } = await supabaseClient.from('chat_messages').insert([{
+                    user_id: currentUser.id,
+                    message: text
+                }]);
+
+                if (error) {
+                    console.error("Chat error: ", error);
+                    appendMessage('admin', 'মেসেজ পাঠানো যায়নি। দয়া করে আবার চেষ্টা করুন।');
+                }
+            }
+        };
+
+        // --- লাইভ চ্যাট সাবস্ক্রিপশন ---
+        async function loadLiveChatHistory() {
+            if (!currentUser) return;
+            const { data, error } = await supabaseClient
+                .from('chat_messages')
+                .select('*')
+                .eq('user_id', currentUser.id)
+                .order('created_at', { ascending: true });
+
+            if (!error && data) {
+                const chatMessages = document.getElementById('chatMessages');
+                chatMessages.innerHTML = ''; // ক্লিয়ার
+                data.forEach(msg => {
+                    appendMessage(msg.is_admin ? 'admin' : 'user', msg.message);
+                });
+            }
+        }
+
+        function subscribeToLiveChat() {
+            if (!currentUser) return;
+            if(chatSubscription) chatSubscription.unsubscribe();
+
+            chatSubscription = supabaseClient
+                .channel('public:chat_messages')
+                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages' }, payload => {
+                    const newMsg = payload.new;
+                    // যদি নতুন মেসেজ অ্যাডমিনের হয় এবং এই ইউজারের জন্য হয়
+                    if (newMsg.is_admin && newMsg.user_id === currentUser.id) {
+                        appendMessage('admin', newMsg.message);
+                    }
+                })
+                .subscribe();
         }
 
         // শুরু
@@ -334,4 +453,4 @@
         updateCartCount();
     </script>
 </body>
-    </html>
+</html>
