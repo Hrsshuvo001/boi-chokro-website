@@ -343,7 +343,7 @@
         </main>
     </div>
 
-    <!-- এডিট বুক মডাল (z-index বাড়িয়ে 100 করা হয়েছে) -->
+    <!-- এডিট বুক মডাল -->
     <div id="editBookModal" class="fixed inset-0 z-[100] hidden items-center justify-center modal-overlay p-4">
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <div class="p-4 border-b flex justify-between items-center bg-gray-50 sticky top-0 z-10">
@@ -416,7 +416,6 @@
         let myChart = null;
         let siteSettings = null; 
         let notifications = [];
-        let globalBooksData = []; 
         let mutedNotifications = JSON.parse(localStorage.getItem('muted_notifs')) || [];
 
         // --- টোস্ট নোটিফিকেশন ---
@@ -445,24 +444,19 @@
             showToast('সব নোটিফিকেশন মুছে ফেলা হয়েছে');
         };
 
-        // ৩ ডট মেনু ওপেন করা
         window.toggleNotifMenu = (id, event) => {
             event.stopPropagation();
-            // অন্য মেনুগুলো বন্ধ করা
             document.querySelectorAll('[id^="notif-menu-"]').forEach(el => el.classList.add('hidden'));
-            // ক্লিক করা মেনু টগল করা
             const menu = document.getElementById(`notif-menu-${id}`);
             if(menu) menu.classList.toggle('hidden');
         };
 
-        // নোটিফিকেশন মুছে ফেলা
         window.deleteNotification = (id, event) => {
             event.stopPropagation();
             notifications = notifications.filter(n => n.id !== id);
             renderNotifications();
         };
 
-        // নির্দিষ্ট নোটিফিকেশন মিউট (বন্ধ) করা
         window.muteNotification = (text, id, event) => {
             event.stopPropagation();
             if(!mutedNotifications.includes(text)) {
@@ -474,7 +468,6 @@
             showToast('এই নোটিফিকেশনটি বন্ধ করা হয়েছে।', true);
         };
 
-        // মেনুর বাইরে ক্লিক করলে মেনু বন্ধ হবে
         document.addEventListener('click', (e) => {
             if (!e.target.closest('#notif-dropdown') && !e.target.closest('button[onclick="toggleNotifications()"]')) {
                 document.getElementById('notif-dropdown').classList.add('hidden');
@@ -485,7 +478,6 @@
         });
 
         function addNotification(text, type, targetId = null) {
-            // যদি মিউট করা থাকে, তবে নোটিফিকেশন দেখাবে না
             if(mutedNotifications.includes(text)) return;
 
             const notifId = Date.now().toString() + Math.random().toString().slice(2,5);
@@ -516,12 +508,10 @@
                         <span class="text-red-500 mt-0.5">🔔</span>
                         <span class="pr-6">${n.text}</span>
                     </div>
-                    <!-- ৩ ডট মেনু বাটন -->
                     <div class="relative absolute top-2 right-2">
                         <button onclick="toggleNotifMenu('${n.id}', event)" class="text-gray-400 hover:text-gray-700 p-1 rounded-full hover:bg-gray-200 transition bg-white/80">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" /></svg>
                         </button>
-                        <!-- ৩ ডট মেনু ড্রপডাউন -->
                         <div id="notif-menu-${n.id}" class="hidden absolute right-0 top-full mt-1 w-40 bg-white rounded-md shadow-xl border border-gray-200 z-[60]">
                             <button onclick="deleteNotification('${n.id}', event)" class="block w-full text-left px-4 py-2 text-xs text-red-600 hover:bg-red-50 rounded-t-md border-b">মুছে ফেলুন</button>
                             <button onclick="muteNotification('${n.text}', '${n.id}', event)" class="block w-full text-left px-4 py-2 text-xs text-gray-700 hover:bg-gray-50 rounded-b-md">নোটিফিকেশন বন্ধ করুন</button>
@@ -561,19 +551,14 @@
         // --- লাইভ চ্যাট নোটিফিকেশন লিসেনার ---
         function listenForChatNotifications() {
             supabaseClient
-                .channel('admin_notif_channel') // চ্যানেলের নাম ইউনিক করা হলো
+                .channel('admin_notif_channel_new') // চ্যানেলের নাম ইউনিক করা হলো
                 .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages' }, payload => {
                     const newMsg = payload.new;
                     if (!newMsg.is_admin) {
-                        // নোটিফিকেশন যোগ করা
                         addNotification('💬 নতুন চ্যাট মেসেজ এসেছে!', 'chat');
                     }
                 })
-                .subscribe((status) => {
-                    if(status === 'SUBSCRIBED') {
-                        console.log('Chat Notification Realtime Connected!');
-                    }
-                });
+                .subscribe();
         }
 
         // --- সেকশন নেভিগেশন ---
@@ -638,13 +623,13 @@
         // ==========================================
         async function loadAllBooks() {
             const tbody = document.getElementById('allBooksTableBody');
+            // এবার সরাসরি ডাটাবেস থেকে ডাটা আনবো
             const { data: books, error } = await supabaseClient.from('books').select('*').order('created_at', { ascending: false });
             
             if (error || !books) {
                 tbody.innerHTML = `<tr><td colspan="6" class="text-center text-red-500 p-4">বই লোড ব্যর্থ!</td></tr>`;
                 return;
             }
-            globalBooksData = books; 
 
             if(books.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="6" class="text-center text-gray-500 p-4">কোনো বই নেই।</td></tr>`;
@@ -681,11 +666,12 @@
             `).join('');
         }
 
-        // এডিট মডাল ওপেন করার ফাংশন
+        // এডিট মডাল ওপেন করার ফাংশন (সরাসরি ডাটাবেস থেকে ডাটা আনবে)
         window.openEditModal = async (bookId) => {
-            // বুক ডাটা খোঁজা
-            const book = globalBooksData.find(b => b.id === bookId);
-            if(!book) {
+            // ডাটাবেস থেকে নির্দিষ্ট বইটি খুঁজে আনা
+            const { data: book, error } = await supabaseClient.from('books').select('*').eq('id', bookId).single();
+            
+            if (error || !book) {
                 showToast('বইটি খুঁজে পাওয়া যায়নি!', true);
                 return;
             }
@@ -705,7 +691,6 @@
             const authSelect = document.getElementById('edit_author');
             const pubSelect = document.getElementById('edit_publisher');
             
-            // ড্রপডাউন ফাঁকা থাকলে ডাটা লোড করা
             if (catSelect.options.length <= 1) {
                 const { data: cats } = await supabaseClient.from('categories').select('name');
                 const { data: auths } = await supabaseClient.from('authors').select('name');
@@ -721,7 +706,7 @@
             authSelect.value = book.author;
             if(book.publisher) pubSelect.value = book.publisher;
 
-            // মডাল ওপেন করা (hidden সরিয়ে flex দেওয়া)
+            // মডাল ওপেন করা
             const modal = document.getElementById('editBookModal');
             modal.classList.remove('hidden');
             modal.classList.add('flex');
@@ -1102,4 +1087,4 @@
         init();
     </script>
 </body>
-</html>
+                        </html>
