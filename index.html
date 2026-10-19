@@ -49,7 +49,7 @@
         </div>
     </nav>
 
-    <!-- হিরো সেকশন -->
+    <!-- হিরো সেকশন (ডাইনামিক) -->
     <header class="bg-blue-600 text-white py-12 px-4 text-center">
         <h1 id="web_tagline" class="text-3xl md:text-5xl font-bold mb-4">আপনার পছন্দের বই, এক জায়গায়</h1>
         <p class="text-lg md:text-xl text-blue-100 max-w-2xl mx-auto">সেরা লেখকদের বইয়ের বিশাল সংগ্রহ। আজই আপনার প্রিয় বইটি খুঁজে নিন।</p>
@@ -57,24 +57,42 @@
 
     <!-- মেইন কন্টেন্ট -->
     <main class="flex-grow max-w-7xl mx-auto w-full px-4 py-8">
+        
+        <!-- ১. বেস্ট সেলার -->
         <section class="mb-10">
-            <div class="flex items-center gap-2 mb-6"><span class="text-3xl">🔥</span><h2 class="text-2xl font-bold text-gray-800">বেস্ট সেলার</h2></div>
-            <div id="bestSellerGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"><p class="text-gray-500 col-span-full">লোড হচ্ছে...</p></div>
+            <div class="flex items-center gap-2 mb-6">
+                <span class="text-3xl">🔥</span>
+                <h2 class="text-2xl font-bold text-gray-800">বেস্ট সেলার</h2>
+            </div>
+            <div id="bestSellerGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                <p class="text-gray-500 col-span-full">লোড হচ্ছে...</p>
+            </div>
         </section>
 
         <hr class="border-gray-300 mb-8">
-        <div id="dynamicCategorySections"><p class="text-gray-500 text-center py-10">ক্যাটাগরি লোড হচ্ছে...</p></div>
+
+        <!-- ২. ডাইনামিক ক্যাটাগরি স্লাইডার -->
+        <div id="dynamicCategorySections">
+            <p class="text-gray-500 text-center py-10">ক্যাটাগরি লোড হচ্ছে...</p>
+        </div>
+
         <hr class="border-gray-300 mb-8">
 
+        <!-- ৩. সব ক্যাটাগরি ফিল্টার ও সব বই -->
         <section>
             <h2 class="text-2xl font-bold text-gray-800 mb-4">সব ক্যাটাগরি</h2>
+            
             <div class="flex flex-wrap gap-2 mb-6" id="categoryButtons">
                 <button onclick="filterCategory('all')" class="category-btn bg-blue-600 text-white px-4 py-2 rounded-full text-sm font-semibold transition">সব বই</button>
             </div>
-            <div id="bookGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
+
+            <div id="bookGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                <!-- সব বই লোড হবে -->
+            </div>
         </section>
     </main>
 
+    <!-- ফুটার -->
     <footer class="bg-gray-800 text-gray-300 py-6 text-center mt-auto">
         <p id="web_footer_text">&copy; 2024 Boi Chokro. All rights reserved.</p>
     </footer>
@@ -82,8 +100,6 @@
     <!-- ========================================== -->
     <!-- চ্যাট উইজেট সেকশন শুরু -->
     <!-- ========================================== -->
-    
-    <!-- চ্যাট উইজেট কন্টেইনার -->
     <div class="fixed bottom-6 right-6 z-50 flex flex-col items-end">
         
         <!-- চ্যাট বক্স (প্রথমে হাইড থাকবে) -->
@@ -128,7 +144,6 @@
             <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
             </svg>
-            <!-- নোটিফিকেশন ডট -->
             <span id="chatNotifDot" class="absolute top-0 right-0 flex h-3 w-3">
               <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
               <span class="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
@@ -138,7 +153,6 @@
     <!-- ========================================== -->
     <!-- চ্যাট উইজেট সেকশন শেষ -->
     <!-- ========================================== -->
-
 
     <script>
         const SUPABASE_URL = 'https://jhbpaezbpkfwjfmazdcn.supabase.co';
@@ -188,8 +202,10 @@
             const currentPrice = book.discount_price || book.original_price || 0;
             const hasDiscount = book.original_price && book.discount_price && book.original_price > book.discount_price;
             const widthClass = isSlider ? "min-w-[220px] max-w-[220px] snap-start" : "w-full";
+            
             let discountPercent = 0;
             if (hasDiscount) discountPercent = Math.round(((book.original_price - book.discount_price) / book.original_price) * 100);
+            
             const isOutOfStock = (book.stock_quantity !== undefined && book.stock_quantity !== null) ? book.stock_quantity <= 0 : false;
 
             return `
@@ -199,17 +215,25 @@
                     ${isOutOfStock ? `<div class="absolute inset-0 bg-black/50 flex items-center justify-center z-10"><span class="bg-red-600 text-white font-bold px-3 py-1 rounded">স্টক নেই</span></div>` : ''}
                     <img src="${book.cover_url || 'https://via.placeholder.com/150'}" class="w-full h-full object-cover hover:scale-105 transition duration-500">
                 </a>
+                
                 <div class="p-4 flex flex-col flex-grow">
                     <span class="text-xs text-blue-600 font-semibold mb-1">${book.category || 'সাধারণ'}</span>
-                    <a href="/book-details.html?id=${book.id}"><h3 class="font-bold text-md text-gray-800 leading-tight mb-1 line-clamp-2 hover:text-blue-600 transition">${book.title}</h3></a>
+                    <a href="/book-details.html?id=${book.id}">
+                        <h3 class="font-bold text-md text-gray-800 leading-tight mb-1 line-clamp-2 hover:text-blue-600 transition">${book.title}</h3>
+                    </a>
                     <p class="text-xs text-gray-500 mb-2">লেখক: ${book.author}</p>
+                    
                     <div class="flex items-end gap-2 mb-2 mt-auto">
                         <span class="text-xl font-bold text-blue-600">৳ ${currentPrice}</span>
                         ${hasDiscount ? `<span class="text-gray-400 line-through text-xs mb-1">৳ ${book.original_price}</span>` : ''}
                     </div>
+
+                    <!-- স্টক স্ট্যাটাস -->
                     <p class="text-xs font-bold mb-3 ${isOutOfStock ? 'text-red-500' : 'text-green-600'}">
                         ${isOutOfStock ? '❌ স্টক নেই' : '✅ স্টকে আছে'}
                     </p>
+
+                    <!-- অ্যাকশন বাটন -->
                     ${isOutOfStock ? `
                         <button disabled class="w-full bg-gray-300 text-gray-500 font-bold py-1.5 rounded-lg text-sm cursor-not-allowed z-10 relative">স্টক নেই</button>
                     ` : (book.is_affiliate ? `
@@ -291,6 +315,13 @@
         // ==========================================
 
         window.toggleChat = () => {
+            // চ্যাটে ঢোকার আগে লগইন চেক
+            if (!currentUser) {
+                alert('লাইভ চ্যাটে কথা বলতে অনুগ্রহ করে প্রথমে লগইন করুন!');
+                window.location.href = '/login.html';
+                return;
+            }
+
             const chatBox = document.getElementById('chatBox');
             const notifDot = document.getElementById('chatNotifDot');
             
