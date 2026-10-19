@@ -51,6 +51,7 @@
                 </div>
             </div>
 
+            <!-- চ্যাট মেসেজ কন্টেইনার -->
             <div id="adminChatMessages" class="flex-grow p-4 overflow-y-auto bg-gray-50 flex flex-col gap-3">
                 <div class="flex items-center justify-center h-full text-gray-400 flex-col">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mb-2 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
@@ -58,6 +59,7 @@
                 </div>
             </div>
 
+            <!-- ইনপুট এরিয়া -->
             <div class="p-3 bg-white border-t">
                 <div class="flex items-center gap-2">
                     <input type="text" id="adminChatInput" placeholder="রিপ্লাই লিখুন..." class="flex-grow px-4 py-2 border rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" disabled onkeypress="handleAdminEnter(event)">
@@ -204,12 +206,12 @@
             const chatContainer = document.getElementById('adminChatMessages');
             chatContainer.innerHTML = `<p class="text-center text-gray-500 text-sm mt-4">মেসেজ লোড হচ্ছে...</p>`;
 
-            // নতুন মেসেজ সবার উপরে থাকবে
+            // মেসেজগুলোকে পুরনো থেকে নতুন (ascending: true) সাজানো হচ্ছে, যাতে নতুন মেসেজ নিচে আসে
             const { data, error } = await supabaseClient
                 .from('chat_messages')
                 .select('*')
                 .eq('user_id', userId)
-                .order('created_at', { ascending: false }); 
+                .order('created_at', { ascending: true }); 
 
             if (error || !data) {
                 chatContainer.innerHTML = `<p class="text-center text-red-500 text-sm mt-4">মেসেজ লোড ব্যর্থ হয়েছে।</p>`;
@@ -227,7 +229,6 @@
                 const isAdmin = msg.is_admin;
                 const bubbleClass = isAdmin ? "bg-blue-600 text-white rounded-tr-none" : "bg-gray-200 text-gray-800 rounded-tl-none";
                 const senderLabel = isAdmin ? 'Admin' : selectedUserName;
-                // সিন / আনসিন স্টেটাস
                 const seenStatus = isAdmin ? `<span id="tick-${msg.id}" class="text-[10px] ml-1 ${msg.is_read ? 'text-blue-200' : 'text-gray-400'}">${msg.is_read ? '✔✔ Seen' : '✔ Sent'}</span>` : '';
 
                 const msgDiv = document.createElement('div');
@@ -239,8 +240,9 @@
                         ${seenStatus}
                     </div>
                 `;
-                chatContainer.appendChild(msgDiv);
+                chatContainer.appendChild(msgDiv); // নিচে যোগ করা হচ্ছে
             });
+            chatContainer.scrollTop = chatContainer.scrollHeight; // স্ক্রল সবার নিচে রাখা
         }
 
         window.sendAdminReply = async () => {
@@ -249,20 +251,6 @@
             if (!text || !selectedUserId) return;
 
             input.value = '';
-
-            // লোকালি উপরে দেখানোর জন্য (Prepend)
-            const chatContainer = document.getElementById('adminChatMessages');
-            const tempId = 'temp-' + Date.now();
-            const msgDiv = document.createElement('div');
-            msgDiv.className = `flex flex-col items-end mb-2`;
-            msgDiv.innerHTML = `
-                <span class="text-[10px] text-gray-500 mb-0.5 px-1">Admin</span>
-                <div class="max-w-[75%] px-4 py-2 rounded-xl text-sm shadow-sm bg-blue-600 text-white rounded-tr-none flex items-center gap-1">
-                    ${text}
-                    <span id="tick-${tempId}" class="text-[10px] text-gray-400 ml-1">✔ Sent</span>
-                </div>
-            `;
-            chatContainer.prepend(msgDiv); // সবার উপরে যোগ করা হলো
 
             // ডাটাবেসে সেভ
             const { data, error } = await supabaseClient.from('chat_messages').insert([{
@@ -275,9 +263,19 @@
             if (error) {
                 alert('মেসেজ পাঠানো যায়নি! ' + error.message);
             } else {
-                // টেম্পোরারি আইডির বদলে আসল আইডি বসানো
-                const tickEl = document.getElementById(`tick-${tempId}`);
-                if (tickEl) tickEl.id = `tick-${data.id}`;
+                // লোকালি নিচে দেখানোর জন্য (append)
+                const chatContainer = document.getElementById('adminChatMessages');
+                const msgDiv = document.createElement('div');
+                msgDiv.className = `flex flex-col items-end mb-2`;
+                msgDiv.innerHTML = `
+                    <span class="text-[10px] text-gray-500 mb-0.5 px-1">Admin</span>
+                    <div class="max-w-[75%] px-4 py-2 rounded-xl text-sm shadow-sm bg-blue-600 text-white rounded-tr-none flex items-center gap-1">
+                        ${text}
+                        <span id="tick-${data.id}" class="text-[10px] text-gray-400 ml-1">✔ Sent</span>
+                    </div>
+                `;
+                chatContainer.appendChild(msgDiv); // নিচে যোগ করা হলো
+                chatContainer.scrollTop = chatContainer.scrollHeight; // নিচে স্ক্রল করা
             }
         };
 
@@ -302,11 +300,12 @@
                                 ${newMsg.message}
                             </div>
                         `;
-                        chatContainer.prepend(msgDiv); // নতুন মেসেজ সবার উপরে
+                        chatContainer.appendChild(msgDiv); // নতুন মেসেজ নিচে
+                        chatContainer.scrollTop = chatContainer.scrollHeight;
                         markMessagesAsRead(userId); 
                     }
                 })
-                // সিন (Seen) আপডেট লিসেনার (যখন কাস্টমার মেসেজ পড়বে)
+                // সিন (Seen) আপডেট লিসেনার
                 .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'chat_messages', filter: `user_id=eq.${userId}` }, payload => {
                     const updatedMsg = payload.new;
                     if (updatedMsg.is_admin && updatedMsg.is_read) {
@@ -314,7 +313,7 @@
                         if (tickEl) {
                             tickEl.innerHTML = '✔✔ Seen';
                             tickEl.classList.remove('text-gray-400');
-                            tickEl.classList.add('text-blue-200'); // হাইলাইট
+                            tickEl.classList.add('text-blue-200');
                         }
                     }
                 })
@@ -334,4 +333,4 @@
         checkAdminAuth();
     </script>
 </body>
-</html>
+    </html>
