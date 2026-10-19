@@ -26,7 +26,7 @@
 
     <div class="flex-1 flex h-full overflow-hidden bg-white">
         
-        <!-- কাস্টমার লিস্ট -->
+        <!-- কাস্টমার লিস্ট (কালো দাগের অংশ) -->
         <div class="w-full md:w-80 border-r border-gray-200 flex flex-col flex-shrink-0 absolute md:relative z-20 bg-white h-full transition-transform -translate-x-full md:translate-x-0" id="userListPanel">
             <div class="p-4 bg-blue-600 text-white shadow-md">
                 <h2 class="text-xl font-bold">কাস্টমার লিস্ট</h2>
@@ -37,7 +37,7 @@
             </div>
         </div>
 
-        <!-- চ্যাট বক্স -->
+        <!-- চ্যাট বক্স (লাল দাগের অংশ) -->
         <div class="flex-1 flex flex-col h-full w-full relative">
             <div class="bg-white border-b p-4 flex justify-between items-center shadow-sm z-10">
                 <div class="flex items-center gap-3">
@@ -51,7 +51,7 @@
                 </div>
             </div>
 
-            <!-- চ্যাট মেসেজ কন্টেইনার -->
+            <!-- মেসেজ বডি -->
             <div id="adminChatMessages" class="flex-grow p-4 overflow-y-auto bg-gray-50 flex flex-col gap-3">
                 <div class="flex items-center justify-center h-full text-gray-400 flex-col">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mb-2 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
@@ -104,26 +104,37 @@
             listenForGlobalNewMessages();
         }
 
+        // ========================================================
+        // কাস্টমার লিস্ট আপডেট এবং সর্ট করার ফাংশন (কালো দাগ)
+        // ========================================================
         async function loadChatUsers() {
             const userListDiv = document.getElementById('userList');
             
+            // সব মেসেজ আনা (সর্বশেষ মেসেজের সময় অনুযায়ী)
             const { data: messages, error } = await supabaseClient
                 .from('chat_messages')
-                .select('user_id, is_read')
-                .eq('is_admin', false)
-                .order('created_at', { ascending: false });
+                .select('user_id, is_read, created_at')
+                .order('created_at', { ascending: false }); // নতুন মেসেজ আগে
 
             if (error || !messages) {
                 userListDiv.innerHTML = `<p class="p-4 text-center text-red-500 text-sm">লিস্ট লোড করতে সমস্যা হয়েছে।</p>`;
                 return;
             }
 
+            // ইউজার ম্যাপ তৈরি (আনরিড কাউন্ট এবং সর্বশেষ মেসেজের সময় সহ)
             const userMap = {};
             messages.forEach(msg => {
+                // যদি এই ইউজারের প্রথম মেসেজ হয়, তবে এটাই তার সর্বশেষ মেসেজ (যেহেতু descending order)
                 if(!userMap[msg.user_id]) {
-                    userMap[msg.user_id] = { unread: 0 };
+                    userMap[msg.user_id] = { 
+                        unread: 0,
+                        latest_time: new Date(msg.created_at).getTime() 
+                    };
                 }
-                if(!msg.is_read) userMap[msg.user_id].unread += 1;
+                // কাস্টমারের পাঠানো আনরিড মেসেজ কাউন্ট করা
+                if(!msg.is_read && !msg.is_admin) { // is_admin চেক করা হলো যেন অ্যাডমিনের মেসেজ আনরিড হিসেবে না দেখায়
+                    userMap[msg.user_id].unread += 1;
+                }
             });
 
             const uniqueUserIds = Object.keys(userMap);
@@ -133,6 +144,7 @@
                 return;
             }
 
+            // প্রোফাইল ডাটা আনা
             const { data: profiles } = await supabaseClient
                 .from('profiles')
                 .select('id, email, full_name')
@@ -145,6 +157,14 @@
                  return;
             }
 
+            // ========================================================
+            // মূল কাজ: প্রোফাইলগুলোকে লেটেস্ট মেসেজের সময় দিয়ে সর্ট করা
+            // ========================================================
+            profiles.sort((a, b) => {
+                return userMap[b.id].latest_time - userMap[a.id].latest_time;
+            });
+
+            // সর্ট করা লিস্ট রেন্ডার করা
             profiles.forEach(profile => {
                 const unreadCount = userMap[profile.id].unread;
                 const div = document.createElement('div');
@@ -152,6 +172,11 @@
                 div.onclick = () => selectUser(profile.id, profile.full_name || profile.email, div);
                 
                 const displayName = profile.full_name || (profile.email ? profile.email.split('@')[0] : 'Unknown');
+                
+                // হাইলাইট করা যদি সে সিলেক্টেড থাকে
+                if(selectedUserId === profile.id) {
+                    div.classList.add('bg-blue-100', 'border-l-4', 'border-blue-600');
+                }
                 
                 div.innerHTML = `
                     <div class="flex items-center gap-3">
@@ -173,6 +198,7 @@
             selectedUserId = userId;
             selectedUserName = name;
             
+            // UI হাইলাইট আপডেট
             const allUsers = document.getElementById('userList').children;
             for(let child of allUsers) child.classList.remove('bg-blue-100', 'border-l-4', 'border-blue-600');
             if(element) element.classList.add('bg-blue-100', 'border-l-4', 'border-blue-600');
@@ -192,6 +218,7 @@
         };
 
         async function markMessagesAsRead(userId) {
+            // কাস্টমারের পাঠানো মেসেজগুলো পড়া হয়েছে বলে মার্ক করা
             const { error } = await supabaseClient
                 .from('chat_messages')
                 .update({ is_read: true })
@@ -199,14 +226,17 @@
                 .eq('is_admin', false)
                 .eq('is_read', false);
                 
-            if(!error) loadChatUsers(); 
+            if(!error) loadChatUsers(); // লিস্ট আপডেট করা (আনরিড কাউন্ট কমিয়ে)
         }
 
+        // ========================================================
+        // মেসেজ বডি (লাল দাগ) - এখানে কোনো পরিবর্তন নেই, নতুন মেসেজ নিচে আসবে
+        // ========================================================
         async function loadChatHistory(userId) {
             const chatContainer = document.getElementById('adminChatMessages');
             chatContainer.innerHTML = `<p class="text-center text-gray-500 text-sm mt-4">মেসেজ লোড হচ্ছে...</p>`;
 
-            // মেসেজগুলোকে পুরনো থেকে নতুন (ascending: true) সাজানো হচ্ছে, যাতে নতুন মেসেজ নিচে আসে
+            // ascending: true মানে পুরনো মেসেজ আগে, নতুন মেসেজ পরে (নিচে)
             const { data, error } = await supabaseClient
                 .from('chat_messages')
                 .select('*')
@@ -240,9 +270,10 @@
                         ${seenStatus}
                     </div>
                 `;
-                chatContainer.appendChild(msgDiv); // নিচে যোগ করা হচ্ছে
+                chatContainer.appendChild(msgDiv); // মেসেজ নিচে যোগ হবে
             });
-            chatContainer.scrollTop = chatContainer.scrollHeight; // স্ক্রল সবার নিচে রাখা
+            
+            chatContainer.scrollTop = chatContainer.scrollHeight; // স্ক্রল একদম নিচে রাখবে
         }
 
         window.sendAdminReply = async () => {
@@ -263,7 +294,7 @@
             if (error) {
                 alert('মেসেজ পাঠানো যায়নি! ' + error.message);
             } else {
-                // লোকালি নিচে দেখানোর জন্য (append)
+                // লোকালি মেসেজ বডিতে নিচে দেখানোর জন্য (append)
                 const chatContainer = document.getElementById('adminChatMessages');
                 const msgDiv = document.createElement('div');
                 msgDiv.className = `flex flex-col items-end mb-2`;
@@ -274,8 +305,11 @@
                         <span id="tick-${data.id}" class="text-[10px] text-gray-400 ml-1">✔ Sent</span>
                     </div>
                 `;
-                chatContainer.appendChild(msgDiv); // নিচে যোগ করা হলো
-                chatContainer.scrollTop = chatContainer.scrollHeight; // নিচে স্ক্রল করা
+                chatContainer.appendChild(msgDiv); // মেসেজ নিচে
+                chatContainer.scrollTop = chatContainer.scrollHeight; // নিচে স্ক্রল
+
+                // রিপ্লাই দেওয়ার পর কাস্টমার লিস্ট রিফ্রেশ করা, যাতে সে সবার উপরে চলে আসে
+                loadChatUsers();
             }
         };
 
@@ -290,6 +324,7 @@
                 .channel('admin_chat_user_' + userId)
                 .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages', filter: `user_id=eq.${userId}` }, payload => {
                     const newMsg = payload.new;
+                    // যদি কাস্টমার নতুন মেসেজ পাঠায়
                     if (!newMsg.is_admin) {
                         const chatContainer = document.getElementById('adminChatMessages');
                         const msgDiv = document.createElement('div');
@@ -300,8 +335,8 @@
                                 ${newMsg.message}
                             </div>
                         `;
-                        chatContainer.appendChild(msgDiv); // নতুন মেসেজ নিচে
-                        chatContainer.scrollTop = chatContainer.scrollHeight;
+                        chatContainer.appendChild(msgDiv); // মেসেজ নিচে
+                        chatContainer.scrollTop = chatContainer.scrollHeight; // নিচে স্ক্রল
                         markMessagesAsRead(userId); 
                     }
                 })
@@ -320,12 +355,15 @@
                 .subscribe();
         }
 
+        // গ্লোবাল লিসেনার (যখন অন্য কেউ মেসেজ দেয়, তখন লিস্টে তাকে উপরে আনবে)
         function listenForGlobalNewMessages() {
             globalChatSubscription = supabaseClient
                 .channel('global_chat_list_new')
                 .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages' }, payload => {
                     const newMsg = payload.new;
-                    if (!newMsg.is_admin) loadChatUsers();
+                    if (!newMsg.is_admin) {
+                        loadChatUsers(); // লিস্ট রিফ্রেশ করলে নতুন মেসেজদাতা সবার উপরে চলে আসবে
+                    }
                 })
                 .subscribe();
         }
@@ -333,4 +371,4 @@
         checkAdminAuth();
     </script>
 </body>
-    </html>
+</html>
