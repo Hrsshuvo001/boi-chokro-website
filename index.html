@@ -59,10 +59,13 @@
                 </div>
             </div>
 
-            <!-- সার্চ বার (ডেস্কটপ) - oninput ব্যবহার করা হয়েছে -->
+            <!-- সার্চ বার (ডেস্কটপ) -->
             <div class="w-full md:w-1/3 relative group">
-                <input type="text" id="searchInput" placeholder="বই, লেখক বা প্রকাশনী খুঁজুন..." class="w-full pl-10 pr-4 py-2.5 bg-gray-100 border-transparent rounded-full focus:outline-none focus:bg-white focus:ring-2 focus:ring-blue-500 transition shadow-inner text-sm" oninput="handleSearch('desktop')">
+                <input type="text" id="searchInput" placeholder="বই, লেখক বা প্রকাশনী খুঁজুন..." class="w-full pl-10 pr-4 py-2.5 bg-gray-100 border-transparent rounded-full focus:outline-none focus:bg-white focus:ring-2 focus:ring-blue-500 transition shadow-inner text-sm" oninput="handleSearch('desktop')" onfocus="handleSearch('desktop')">
                 <svg xmlns="http://www.w3.org/2000/svg" class="absolute left-3.5 top-3 h-5 w-5 text-gray-400 group-focus-within:text-blue-500 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                
+                <!-- ডেস্কটপ সার্চ ড্রপডাউন -->
+                <div id="searchResultsDropdown" class="hidden absolute top-full left-0 w-full mt-2 bg-white rounded-xl shadow-2xl border border-gray-100 z-[100] max-h-96 overflow-y-auto"></div>
             </div>
 
             <!-- ডেস্কটপ কার্ট ও অথ বাটন -->
@@ -80,24 +83,27 @@
     </nav>
 
     <!-- হিরো সেকশন -->
-    <header id="heroSection" class="bg-gradient-to-br from-blue-900 via-blue-700 to-blue-500 text-white pt-12 pb-20 px-4 text-center rounded-b-[2rem] shadow-inner relative overflow-hidden transition-all duration-300">
+    <header id="heroSection" class="bg-gradient-to-br from-blue-900 via-blue-700 to-blue-500 text-white pt-12 pb-20 px-4 text-center rounded-b-[2rem] shadow-inner relative overflow-visible">
         <div class="absolute -top-10 -left-10 w-40 h-40 bg-white opacity-10 rounded-full blur-2xl"></div>
         <div class="absolute -bottom-10 -right-10 w-52 h-52 bg-white opacity-10 rounded-full blur-2xl"></div>
         
         <h1 id="web_tagline" class="text-3xl sm:text-4xl lg:text-5xl font-extrabold mb-4 leading-tight tracking-tight drop-shadow-md relative z-10">আপনার পছন্দের বই, এক জায়গায়</h1>
         <p class="text-sm sm:text-base lg:text-lg text-blue-100 max-w-2xl mx-auto font-medium mb-8 relative z-10">সেরা লেখকদের বইয়ের বিশাল সংগ্রহ। আজই আপনার প্রিয় বইটি খুঁজে নিন।</p>
         
-        <!-- মোবাইল সার্চ বার - oninput ব্যবহার করা হয়েছে -->
-        <div class="md:hidden max-w-md mx-auto relative group z-10">
-            <input type="text" id="searchInputMobile" placeholder="বই খুঁজুন..." class="w-full pl-10 pr-4 py-3 bg-white/20 backdrop-blur-md border border-white/30 text-white placeholder-blue-100 rounded-full focus:outline-none focus:bg-white focus:text-gray-800 transition shadow-lg text-sm" oninput="handleSearch('mobile')">
+        <!-- মোবাইল সার্চ বার -->
+        <div class="md:hidden max-w-md mx-auto relative group z-20">
+            <input type="text" id="searchInputMobile" placeholder="বই খুঁজুন..." class="w-full pl-10 pr-4 py-3 bg-white/20 backdrop-blur-md border border-white/30 text-white placeholder-blue-100 rounded-full focus:outline-none focus:bg-white focus:text-gray-800 transition shadow-lg text-sm" oninput="handleSearch('mobile')" onfocus="handleSearch('mobile')">
             <svg xmlns="http://www.w3.org/2000/svg" class="absolute left-3.5 top-3 h-5 w-5 text-blue-100 group-focus-within:text-gray-500 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+            
+            <!-- মোবাইল সার্চ ড্রপডাউন -->
+            <div id="searchResultsDropdownMobile" class="hidden absolute top-full left-0 w-full mt-2 bg-white rounded-xl shadow-2xl border border-gray-100 z-[100] max-h-80 overflow-y-auto text-left"></div>
         </div>
     </header>
 
     <!-- মেইন কন্টেন্ট -->
-    <main class="flex-grow max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 -mt-10 relative z-20 pb-16">
+    <main class="flex-grow max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 -mt-10 relative z-30 pb-16">
         
-        <!-- টপ সেকশন (ফ্ল্যাশ ডিল ও বেস্ট সেলার) - সার্চ করলে এটি হাইড হয়ে যাবে -->
+        <!-- টপ সেকশন -->
         <div id="topSections">
             <!-- ফ্ল্যাশ ডিল -->
             <section class="bg-white rounded-2xl shadow-lg p-4 sm:p-6 mb-12 flex flex-col md:flex-row items-center justify-between gap-4 border border-gray-100">
@@ -189,7 +195,6 @@
         let activeChatTab = 'ai'; 
         let chatSubscription = null;
         let currentCategoryFilter = 'all';
-        let currentSearchQuery = '';
 
         function updateCartCount() {
             const cart = JSON.parse(localStorage.getItem('boiChokroCart')) || [];
@@ -308,17 +313,93 @@
             document.getElementById('allBooksSection').scrollIntoView({ behavior: 'smooth' });
         }
 
-        // সার্চ হ্যান্ডেল করার ফাংশন (অটো)
+        // ==========================================
+        // আধুনিক সার্চ ড্রপডাউন লজিক
+        // ==========================================
         window.handleSearch = (source) => {
+            const desktopInput = document.getElementById('searchInput');
+            const mobileInput = document.getElementById('searchInputMobile');
+            const desktopDropdown = document.getElementById('searchResultsDropdown');
+            const mobileDropdown = document.getElementById('searchResultsDropdownMobile');
+
+            let query = '';
+            let dropdown = null;
+
             if (source === 'desktop') {
-                currentSearchQuery = document.getElementById('searchInput').value;
-                document.getElementById('searchInputMobile').value = currentSearchQuery; // Sync
+                query = desktopInput.value;
+                mobileInput.value = query; // Sync
+                dropdown = desktopDropdown;
+                mobileDropdown.classList.add('hidden');
             } else {
-                currentSearchQuery = document.getElementById('searchInputMobile').value;
-                document.getElementById('searchInput').value = currentSearchQuery; // Sync
+                query = mobileInput.value;
+                desktopInput.value = query; // Sync
+                dropdown = mobileDropdown;
+                desktopDropdown.classList.add('hidden');
             }
-            filterAndRenderBooks();
+
+            if (!query || query.trim() === '') {
+                dropdown.classList.add('hidden');
+                return;
+            }
+
+            const q = query.trim().toLowerCase();
+            const matches = allBooksData.filter(book => {
+                const title = (book.title || '').toLowerCase();
+                const author = (book.author || '').toLowerCase();
+                const publisher = (book.publisher || '').toLowerCase();
+                return title.includes(q) || author.includes(q) || publisher.includes(q);
+            });
+
+            dropdown.classList.remove('hidden');
+
+            if (matches.length === 0) {
+                dropdown.innerHTML = `<div class="p-4 text-center text-sm text-gray-500 font-medium">কোনো বই পাওয়া যায়নি</div>`;
+                return;
+            }
+
+            // ড্রপডাউনে সর্বোচ্চ ৫টি বই দেখাবে
+            const topMatches = matches.slice(0, 5);
+            
+            dropdown.innerHTML = topMatches.map(book => `
+                <a href="/book-details.html?id=${book.id}" class="flex items-center gap-3 p-3 hover:bg-blue-50 transition border-b border-gray-100 last:border-0">
+                    <img src="${book.cover_url || 'https://via.placeholder.com/50'}" class="w-10 h-14 object-cover rounded shadow-sm shrink-0">
+                    <div class="flex-grow overflow-hidden">
+                        <h4 class="text-sm font-bold text-gray-800 truncate">${book.title}</h4>
+                        <p class="text-xs text-gray-500 truncate">${book.author}</p>
+                    </div>
+                    <div class="text-sm font-bold text-blue-600 shrink-0">৳ ${book.discount_price || book.original_price}</div>
+                </a>
+            `).join('');
+
+            if (matches.length > 5) {
+                dropdown.innerHTML += `
+                    <div onclick="showAllSearchResults(event)" class="p-3 text-center text-sm text-blue-600 font-bold hover:bg-blue-50 cursor-pointer bg-gray-50 rounded-b-xl border-t border-gray-200">
+                        সব রেজাল্ট দেখুন (${matches.length} টি বই)
+                    </div>
+                `;
+            }
         }
+
+        // সার্চ ড্রপডাউনের বাইরে ক্লিক করলে ড্রপডাউন বন্ধ হবে
+        document.addEventListener('click', (e) => {
+            const desktopSearchArea = document.getElementById('searchInput')?.parentElement;
+            const mobileSearchArea = document.getElementById('searchInputMobile')?.parentElement;
+            
+            if (desktopSearchArea && !desktopSearchArea.contains(e.target)) {
+                document.getElementById('searchResultsDropdown')?.classList.add('hidden');
+            }
+            if (mobileSearchArea && !mobileSearchArea.contains(e.target)) {
+                document.getElementById('searchResultsDropdownMobile')?.classList.add('hidden');
+            }
+        });
+
+        window.showAllSearchResults = (event) => {
+            event.preventDefault();
+            document.getElementById('searchResultsDropdown').classList.add('hidden');
+            document.getElementById('searchResultsDropdownMobile').classList.add('hidden');
+            document.getElementById('allBooksSection').scrollIntoView({ behavior: 'smooth' });
+        }
+
 
         window.filterCategory = (category) => {
             currentCategoryFilter = category;
@@ -339,50 +420,14 @@
 
         function filterAndRenderBooks() {
             const grid = document.getElementById('bookGrid');
-            const topSections = document.getElementById('topSections');
-            const sectionTitle = document.getElementById('sectionTitle');
-            const allBooksSection = document.getElementById('allBooksSection');
-
             let filtered = allBooksData;
 
-            // ১. ক্যাটাগরি ফিল্টার
             if (currentCategoryFilter !== 'all') {
                 filtered = filtered.filter(book => book.category === currentCategoryFilter);
             }
-
-            // ২. সার্চ ফিল্টার (নিরাপদ ও বাগমুক্ত)
-            if (currentSearchQuery && currentSearchQuery.trim() !== '') {
-                const query = currentSearchQuery.trim().toLowerCase();
-                filtered = filtered.filter(book => {
-                    const title = (book.title || '').toLowerCase();
-                    const author = (book.author || '').toLowerCase();
-                    const publisher = (book.publisher || '').toLowerCase();
-                    return title.includes(query) || author.includes(query) || publisher.includes(query);
-                });
-
-                // সার্চ করলে টপ সেকশন হাইড করে দেব
-                topSections.classList.add('hidden');
-                sectionTitle.innerText = `"${currentSearchQuery}" এর সার্চ রেজাল্ট:`;
-                
-                // অটোমেটিক্যালি স্ক্রল করে বইয়ের সেকশনে নিয়ে আসবে
-                allBooksSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
-            } else {
-                // সার্চ খালি থাকলে টপ সেকশন আবার দেখাবে
-                topSections.classList.remove('hidden');
-                sectionTitle.innerText = 'সব বই';
-            }
             
             if (filtered.length === 0) { 
-                grid.innerHTML = `
-                    <div class="col-span-full flex flex-col items-center justify-center py-16 text-center">
-                        <div class="bg-gray-100 p-4 rounded-full mb-4">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-                        </div>
-                        <h3 class="text-lg font-bold text-gray-800 mb-1">কোনো বই পাওয়া যায়নি!</h3>
-                        <p class="text-sm text-gray-500">আপনার সার্চ বা ফিল্টারের সাথে মিলে এমন কোনো বই নেই।</p>
-                    </div>
-                `; 
+                grid.innerHTML = `<p class="text-gray-500 col-span-full text-center py-12 font-medium text-sm">এই ক্যাটাগরিতে কোনো বই পাওয়া যায়নি।</p>`; 
                 return; 
             }
             grid.innerHTML = filtered.map(book => createBookCard(book)).join('');
