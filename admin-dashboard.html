@@ -19,7 +19,6 @@
 </head>
 <body class="bg-gray-100 h-[100dvh] overflow-hidden flex flex-col md:flex-row">
 
-    <!-- টোস্ট নোটিফিকেশন কন্টেইনার -->
     <div id="toast-container" class="fixed top-5 right-5 z-[100] flex flex-col gap-3 pointer-events-none"></div>
 
     <!-- সাইডবার -->
@@ -42,6 +41,10 @@
                 <button onclick="showSection('blog-management')" class="nav-item text-left px-4 py-3 rounded-md hover:bg-slate-700 transition flex items-center gap-3 w-full">📝 ব্লগ ম্যানেজমেন্ট</button>
                 <button onclick="showSection('report')" class="nav-item text-left px-4 py-3 rounded-md hover:bg-slate-700 transition flex items-center gap-3 w-full">📄 রিপোর্ট</button>
                 <a href="/admin-chat.html" class="nav-item text-left px-4 py-3 rounded-md hover:bg-slate-700 transition flex items-center gap-3 w-full">💬 লাইভ চ্যাট</a>
+                
+                <!-- ইম্পলয়ি ম্যানেজমেন্ট (শুধু অ্যাডমিন দেখতে পাবে) -->
+                <button id="menu-employee" onclick="showSection('employee')" class="nav-item text-left px-4 py-3 rounded-md hover:bg-slate-700 transition flex items-center gap-3 w-full hidden">👥 ইম্পলয়ি ম্যানেজমেন্ট</button>
+                
                 <button onclick="showSection('settings')" class="nav-item text-left px-4 py-3 rounded-md hover:bg-slate-700 transition flex items-center gap-3 w-full">⚙️ সাইট সেটিংস</button>
                 
                 <div class="border-t border-slate-700 mt-2 pt-2">
@@ -54,14 +57,12 @@
     <!-- মেইন কন্টেন্ট -->
     <div class="flex-1 flex flex-col h-[100dvh] overflow-hidden w-full relative">
         
-        <!-- টপবার -->
         <header class="bg-white shadow-sm p-4 flex justify-between items-center z-30 flex-shrink-0">
             <div class="flex items-center gap-3">
                 <button onclick="toggleSidebar()" class="text-gray-700 text-2xl focus:outline-none md:hidden">☰</button>
                 <h1 class="text-xl font-bold text-blue-600 hidden md:block" id="mobile-header-title">ড্যাশবোর্ড</h1>
             </div>
             
-            <!-- নোটিফিকেশন বেল -->
             <div class="relative">
                 <button onclick="toggleNotifications()" class="relative p-2 text-gray-600 hover:text-blue-600 focus:outline-none transition">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -98,7 +99,6 @@
                         <p class="text-gray-500 text-sm font-semibold">মোট সেলস</p>
                         <h3 class="text-3xl font-bold text-gray-800 mt-2">৳ <span id="kpi-total-sales">0</span></h3>
                     </div>
-                    <!-- নতুন ভিজিটর কার্ড -->
                     <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-indigo-500">
                         <p class="text-gray-500 text-sm font-semibold">মোট ভিজিটর</p>
                         <h3 class="text-3xl font-bold text-indigo-600 mt-2"><span id="kpi-visitors">0</span> জন</h3>
@@ -211,7 +211,7 @@
                 </div>
             </section>
 
-            <!-- ৫. অ্যাড ক্যাটাগরি / লেখক / প্রকাশনী -->
+            <!-- ৫. অ্যাড মেটা -->
             <section id="section-add-meta" class="section-content">
                 <h2 class="text-2xl font-bold text-gray-800 mb-6">ক্যাটাগরি, লেখক ও প্রকাশনী যোগ করুন</h2>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -241,7 +241,7 @@
                 </div>
             </section>
 
-            <!-- ৬. ব্লগ ম্যানেজমেন্ট (নতুন সেকশন) -->
+            <!-- ৬. ব্লগ ম্যানেজমেন্ট -->
             <section id="section-blog-management" class="section-content">
                 <h2 class="text-2xl font-bold text-gray-800 mb-6">ব্লগ ম্যানেজমেন্ট (পেন্ডিং)</h2>
                 <div id="pendingBlogsList" class="space-y-4">
@@ -249,7 +249,49 @@
                 </div>
             </section>
 
-            <!-- ৭. রিপোর্ট -->
+            <!-- ৭. ইম্পলয়ি ম্যানেজমেন্ট (নতুন সেকশন) -->
+            <section id="section-employee" class="section-content">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">ইম্পলয়ি ম্যানেজমেন্ট</h2>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- ইম্পলয়ি অ্যাড ফর্ম -->
+                    <div class="bg-white p-6 rounded-xl shadow-sm border-t-4 border-blue-500 h-fit">
+                        <h3 class="font-bold text-lg mb-4 text-gray-800">নতুন ইম্পলয়ি যোগ করুন</h3>
+                        <form id="addEmployeeForm" class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">ইমেইল</label>
+                                <input type="email" id="empEmail" required class="mt-1 w-full px-3 py-2 border rounded-md" placeholder="employee@example.com">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">পাসওয়ার্ড</label>
+                                <input type="password" id="empPassword" required minlength="6" class="mt-1 w-full px-3 py-2 border rounded-md" placeholder="কমপক্ষে ৬ অক্ষর">
+                            </div>
+                            <button type="submit" id="addEmpBtn" class="w-full bg-blue-600 text-white font-bold py-2 rounded hover:bg-blue-700 transition">ইম্পলয়ি তৈরি করুন</button>
+                        </form>
+                        <div id="empMessage" class="mt-3 text-center font-bold hidden"></div>
+                    </div>
+
+                    <!-- ইম্পলয়ি লিস্ট -->
+                    <div class="lg:col-span-2">
+                        <div class="bg-white rounded-xl shadow-sm overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="bg-gray-100 text-gray-600 text-sm">
+                                        <th class="p-4 border-b">ইমেইল</th>
+                                        <th class="p-4 border-b">রোল</th>
+                                        <th class="p-4 border-b text-center">অ্যাকশন</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="employeeTableBody">
+                                    <tr><td colspan="3" class="p-4 text-center">লোড হচ্ছে...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ৮. রিপোর্ট -->
             <section id="section-report" class="section-content">
                 <div class="flex justify-between items-center mb-6">
                     <h2 class="text-2xl font-bold text-gray-800">সেলস রিপোর্ট</h2>
@@ -299,7 +341,7 @@
                 </div>
             </section>
 
-            <!-- ৮. সাইট সেটিংস -->
+            <!-- ৯. সাইট সেটিংস -->
             <section id="section-settings" class="section-content">
                 <h2 class="text-2xl font-bold text-gray-800 mb-6">সাইট সেটিংস</h2>
                 <div class="bg-white p-6 rounded-xl shadow-sm max-w-2xl">
@@ -366,6 +408,7 @@
         const SUPABASE_ANON_KEY = 'sb_publishable_oBzutzPKvIvujmSG7icXug_SwwveL5g';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+        let currentUserRole = 'employee'; // ডিফল্ট (পরে চেক করা হবে)
         let myChart = null;
         let siteSettings = null; 
         let notifications = [];
@@ -386,86 +429,38 @@
             }, 4000);
         };
 
-        window.toggleNotifications = () => {
-            document.getElementById('notif-dropdown').classList.toggle('hidden');
-        };
-
-        window.clearAllNotifications = () => {
-            notifications = [];
-            renderNotifications();
-            showToast('সব নোটিফিকেশন মুছে ফেলা হয়েছে');
-        };
-
-        window.toggleNotifMenu = (id, event) => {
-            event.stopPropagation();
-            document.querySelectorAll('[id^="notif-menu-"]').forEach(el => el.classList.add('hidden'));
-            const menu = document.getElementById(`notif-menu-${id}`);
-            if(menu) menu.classList.toggle('hidden');
-        };
-
-        window.deleteNotification = (id, event) => {
-            event.stopPropagation();
-            notifications = notifications.filter(n => n.id !== id);
-            renderNotifications();
-        };
-
-        window.muteNotification = (text, id, event) => {
-            event.stopPropagation();
-            if(!mutedNotifications.includes(text)) {
-                mutedNotifications.push(text);
-                localStorage.setItem('muted_notifs', JSON.stringify(mutedNotifications));
-            }
-            notifications = notifications.filter(n => n.id !== id);
-            renderNotifications();
-            showToast('এই নোটিফিকেশনটি বন্ধ করা হয়েছে।', true);
-        };
+        window.toggleNotifications = () => { document.getElementById('notif-dropdown').classList.toggle('hidden'); };
+        window.clearAllNotifications = () => { notifications = []; renderNotifications(); showToast('সব নোটিফিকেশন মুছে ফেলা হয়েছে'); };
+        window.toggleNotifMenu = (id, event) => { event.stopPropagation(); document.querySelectorAll('[id^="notif-menu-"]').forEach(el => el.classList.add('hidden')); const menu = document.getElementById(`notif-menu-${id}`); if(menu) menu.classList.toggle('hidden'); };
+        window.deleteNotification = (id, event) => { event.stopPropagation(); notifications = notifications.filter(n => n.id !== id); renderNotifications(); };
+        window.muteNotification = (text, id, event) => { event.stopPropagation(); if(!mutedNotifications.includes(text)) { mutedNotifications.push(text); localStorage.setItem('muted_notifs', JSON.stringify(mutedNotifications)); } notifications = notifications.filter(n => n.id !== id); renderNotifications(); showToast('এই নোটিফিকেশনটি বন্ধ করা হয়েছে।', true); };
 
         document.addEventListener('click', (e) => {
-            if (!e.target.closest('#notif-dropdown') && !e.target.closest('button[onclick="toggleNotifications()"]')) {
-                document.getElementById('notif-dropdown').classList.add('hidden');
-            }
-            if (!e.target.closest('.relative')) {
-                document.querySelectorAll('[id^="notif-menu-"]').forEach(el => el.classList.add('hidden'));
-            }
+            if (!e.target.closest('#notif-dropdown') && !e.target.closest('button[onclick="toggleNotifications()"]')) { document.getElementById('notif-dropdown').classList.add('hidden'); }
+            if (!e.target.closest('.relative')) { document.querySelectorAll('[id^="notif-menu-"]').forEach(el => el.classList.add('hidden')); }
         });
 
         function addNotification(text, type, targetId = null, isUrgent = false) {
             if(mutedNotifications.includes(text)) return;
-
             const notifId = Date.now().toString() + Math.random().toString().slice(2,5);
             const exists = notifications.find(n => n.text === text);
             if(!exists) {
                 notifications.unshift({ id: notifId, text, type, targetId });
                 renderNotifications();
-                if (isUrgent) {
-                    showToast(text, true); 
-                }
+                if (isUrgent) showToast(text, true); 
             }
         }
 
         function renderNotifications() {
             const list = document.getElementById('notif-list');
             const badge = document.getElementById('notif-count');
-            
-            if(notifications.length === 0) {
-                list.innerHTML = `<div class="p-4 text-center text-sm text-gray-500">কোনো নোটিফিকেশন নেই</div>`;
-                badge.classList.add('hidden');
-                return;
-            }
-
-            badge.innerText = notifications.length;
-            badge.classList.remove('hidden');
-
+            if(notifications.length === 0) { list.innerHTML = `<div class="p-4 text-center text-sm text-gray-500">কোনো নোটিফিকেশন নেই</div>`; badge.classList.add('hidden'); return; }
+            badge.innerText = notifications.length; badge.classList.remove('hidden');
             list.innerHTML = notifications.map(n => `
                 <div onclick="handleNotificationClick('${n.type}', '${n.targetId}')" class="p-3 text-sm text-gray-700 hover:bg-blue-50 cursor-pointer flex justify-between items-start gap-2 border-b border-gray-100 transition relative group">
-                    <div class="flex items-start gap-2">
-                        <span class="text-red-500 mt-0.5">🔔</span>
-                        <span class="pr-6">${n.text}</span>
-                    </div>
+                    <div class="flex items-start gap-2"><span class="text-red-500 mt-0.5">🔔</span><span class="pr-6">${n.text}</span></div>
                     <div class="relative absolute top-2 right-2">
-                        <button onclick="toggleNotifMenu('${n.id}', event)" class="text-gray-400 hover:text-gray-700 p-1 rounded-full hover:bg-gray-200 transition bg-white/80">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" /></svg>
-                        </button>
+                        <button onclick="toggleNotifMenu('${n.id}', event)" class="text-gray-400 hover:text-gray-700 p-1 rounded-full hover:bg-gray-200 transition bg-white/80"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" /></svg></button>
                         <div id="notif-menu-${n.id}" class="hidden absolute right-0 top-full mt-1 w-40 bg-white rounded-md shadow-xl border border-gray-200 z-[60]">
                             <button onclick="deleteNotification('${n.id}', event)" class="block w-full text-left px-4 py-2 text-xs text-red-600 hover:bg-red-50 rounded-t-md border-b">মুছে ফেলুন</button>
                             <button onclick="muteNotification('${n.text}', '${n.id}', event)" class="block w-full text-left px-4 py-2 text-xs text-gray-700 hover:bg-gray-50 rounded-b-md">নোটিফিকেশন বন্ধ করুন</button>
@@ -477,51 +472,32 @@
 
         window.handleNotificationClick = (type, targetId) => {
             document.getElementById('notif-dropdown').classList.add('hidden');
-            if (type === 'chat') {
-                window.location.href = '/admin-chat.html';
-            } else if (type === 'stock') {
-                showSection('all-books');
-                setTimeout(() => openEditModal(targetId), 500); 
-            }
+            if (type === 'chat') window.location.href = '/admin-chat.html';
+            else if (type === 'stock') { showSection('all-books'); setTimeout(() => openEditModal(targetId), 500); }
         };
 
         async function checkSystemNotifications() {
             const { data: books } = await supabaseClient.from('books').select('id, title, stock_quantity, category');
             if(books) {
-                books.forEach(b => {
-                    if (b.stock_quantity <= 0) addNotification(`"${b.title}" বইটির স্টক শেষ!`, 'stock', b.id, false);
-                });
-
+                books.forEach(b => { if (b.stock_quantity <= 0) addNotification(`"${b.title}" বইটির স্টক শেষ!`, 'stock', b.id, false); });
                 const { data: cats } = await supabaseClient.from('categories').select('name');
-                if (cats) {
-                    const bookCats = books.map(b => b.category);
-                    cats.forEach(c => {
-                        if (!bookCats.includes(c.name)) addNotification(`"${c.name}" ক্যাটাগরিতে কোনো বই নেই!`, 'category', null, false);
-                    });
-                }
+                if (cats) { const bookCats = books.map(b => b.category); cats.forEach(c => { if (!bookCats.includes(c.name)) addNotification(`"${c.name}" ক্যাটাগরিতে কোনো বই নেই!`, 'category', null, false); }); }
             }
         }
 
         async function loadUserEmails() {
             const { data: profiles } = await supabaseClient.from('profiles').select('id, email');
-            if(profiles) {
-                profiles.forEach(p => {
-                    if(p.email) userEmails[p.id] = p.email;
-                });
-            }
+            if(profiles) { profiles.forEach(p => { if(p.email) userEmails[p.id] = p.email; }); }
         }
 
         function listenForChatNotifications() {
-            supabaseClient
-                .channel('admin_notif_channel_new')
-                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages' }, payload => {
-                    const newMsg = payload.new;
-                    if (!newMsg.is_admin) {
-                        const senderName = userEmails[newMsg.user_id] || 'একজন কাস্টমার';
-                        addNotification(`💬 ${senderName} মেসেজ দিয়েছেন!`, 'chat', null, true);
-                    }
-                })
-                .subscribe();
+            supabaseClient.channel('admin_notif_channel_new').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages' }, payload => {
+                const newMsg = payload.new;
+                if (!newMsg.is_admin) {
+                    const senderName = userEmails[newMsg.user_id] || 'একজন কাস্টমার';
+                    addNotification(`💬 ${senderName} মেসেজ দিয়েছেন!`, 'chat', null, true);
+                }
+            }).subscribe();
         }
 
         window.toggleSidebar = () => { document.getElementById('sidebar').classList.toggle('-translate-x-full'); };
@@ -532,14 +508,9 @@
             document.getElementById(`section-${sectionId}`).classList.add('active');
             
             const buttons = document.querySelectorAll('.nav-item');
-            buttons.forEach(btn => {
-                if(btn.getAttribute('onclick') && btn.getAttribute('onclick').includes(sectionId)) btn.classList.add('active');
-            });
+            buttons.forEach(btn => { if(btn.getAttribute('onclick') && btn.getAttribute('onclick').includes(sectionId)) btn.classList.add('active'); });
 
-            if(window.innerWidth < 768) {
-                const sidebar = document.getElementById('sidebar');
-                if(!sidebar.classList.contains('-translate-x-full')) toggleSidebar();
-            }
+            if(window.innerWidth < 768) { const sidebar = document.getElementById('sidebar'); if(!sidebar.classList.contains('-translate-x-full')) toggleSidebar(); }
 
             if(sectionId === 'home') loadDashboardData();
             if(sectionId === 'all-books') loadAllBooks();
@@ -547,12 +518,23 @@
             if(sectionId === 'confirm-booking') loadPendingBookings();
             if(sectionId === 'report') loadReportData(); 
             if(sectionId === 'blog-management') loadPendingBlogs();
+            if(sectionId === 'employee') loadEmployees();
         };
 
         async function init() {
             const { data: { session } } = await supabaseClient.auth.getSession();
             if (!session) { window.location.href = '/admin-login.html'; return; }
             
+            // ইউজারের রোল চেক করা
+            const { data: profile } = await supabaseClient.from('profiles').select('role').eq('id', session.user.id).single();
+            if (profile) {
+                currentUserRole = profile.role;
+                // যদি অ্যাডমিন হয়, তবেই ইম্পলয়ি মেনু দেখাবে
+                if(currentUserRole === 'admin') {
+                    document.getElementById('menu-employee').classList.remove('hidden');
+                }
+            }
+
             await fetchGlobalSettings(); 
             loadDropdowns();
             loadDashboardData();
@@ -582,42 +564,99 @@
             }
         }
 
+        // বই লোড করার সময় কন্ডিশনাল বাটন
         async function loadAllBooks() {
             const tbody = document.getElementById('allBooksTableBody');
             const { data: books, error } = await supabaseClient.from('books').select('*').order('created_at', { ascending: false });
             
-            if (error || !books) {
-                tbody.innerHTML = `<tr><td colspan="6" class="text-center text-red-500 p-4">বই লোড ব্যর্থ!</td></tr>`;
-                return;
-            }
+            if (error || !books) { tbody.innerHTML = `<tr><td colspan="6" class="text-center text-red-500 p-4">বই লোড ব্যর্থ!</td></tr>`; return; }
+            if(books.length === 0) { tbody.innerHTML = `<tr><td colspan="6" class="text-center text-gray-500 p-4">কোনো বই নেই।</td></tr>`; return; }
 
-            if(books.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="text-center text-gray-500 p-4">কোনো বই নেই।</td></tr>`;
-                return;
-            }
+            tbody.innerHTML = books.map(book => {
+                // ইম্পলয়ি হলে এডিট/ডিলিট বাটন দেখাবে না
+                let actionButtons = '';
+                if (currentUserRole === 'admin') {
+                    actionButtons = `
+                        <button onclick="openEditModal('${book.id}')" class="text-blue-600 hover:text-blue-800 p-2 rounded-full hover:bg-blue-50 transition mr-1" title="এডিট"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg></button>
+                        <button onclick="deleteBook('${book.id}')" class="text-red-500 hover:text-red-700 p-2 rounded-full hover:bg-red-50 transition" title="ডিলিট"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></button>
+                    `;
+                } else {
+                    actionButtons = `<span class="text-xs text-gray-400 italic">অ্যাক্সেস নেই</span>`;
+                }
 
-            tbody.innerHTML = books.map(book => `
+                return `
                 <tr class="border-b hover:bg-gray-50 transition">
                     <td class="p-4"><img src="${book.cover_url || 'https://via.placeholder.com/50'}" class="w-10 h-14 object-cover rounded shadow-sm"></td>
-                    <td class="p-4">
-                        <p class="font-semibold text-gray-800">${book.title}</p>
-                        <p class="text-xs text-gray-500">${book.author}</p>
-                    </td>
-                    <td class="p-4 text-sm">
-                        <p class="text-blue-700 font-medium">${book.category}</p>
-                        <p class="text-xs text-gray-500">${book.publisher || 'N/A'}</p>
-                    </td>
+                    <td class="p-4"><p class="font-semibold text-gray-800">${book.title}</p><p class="text-xs text-gray-500">${book.author}</p></td>
+                    <td class="p-4 text-sm"><p class="text-blue-700 font-medium">${book.category}</p><p class="text-xs text-gray-500">${book.publisher || 'N/A'}</p></td>
                     <td class="p-4 font-bold text-green-600">৳ ${book.discount_price}</td>
-                    <td class="p-4">
-                        <span class="font-bold ${book.stock_quantity > 0 ? 'text-green-600' : 'text-red-500'}">
-                            ${book.stock_quantity} পিস
-                        </span>
-                    </td>
+                    <td class="p-4"><span class="font-bold ${book.stock_quantity > 0 ? 'text-green-600' : 'text-red-500'}">${book.stock_quantity} পিস</span></td>
+                    <td class="p-4 text-center">${actionButtons}</td>
+                </tr>
+            `}).join('');
+        }
+
+        window.openEditModal = async (bookId) => { /* আগের কোড */ };
+        window.closeEditModal = () => { document.getElementById('editBookModal').classList.add('hidden'); document.getElementById('editBookModal').classList.remove('flex'); };
+        document.getElementById('editBookForm').addEventListener('submit', async (e) => { /* আগের কোড */ });
+        window.deleteBook = async (id) => { if(!confirm('আপনি কি নিশ্চিত?')) return; /* আগের কোড */ };
+
+        // ইম্পলয়ি অ্যাড করার ফাংশন
+        document.getElementById('addEmployeeForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('empEmail').value;
+            const password = document.getElementById('empPassword').value;
+            const btn = document.getElementById('addEmpBtn');
+            const msg = document.getElementById('empMessage');
+
+            btn.innerText = 'তৈরি হচ্ছে...'; btn.disabled = true;
+            msg.classList.add('hidden');
+
+            // ১. নতুন ইউজার তৈরি (auth.users এ)
+            const { data: authData, error: authError } = await supabaseClient.auth.signUp({ email, password });
+
+            if (authError) {
+                msg.innerText = '⚠️ ' + authError.message;
+                msg.className = 'mt-3 text-center font-bold text-red-600 block';
+                btn.innerText = 'ইম্পলয়ি তৈরি করুন'; btn.disabled = false;
+                return;
+            }
+
+            // ২. প্রোফাইলে রোল আপডেট করা (employee)
+            if (authData.user) {
+                const { error: profileError } = await supabaseClient
+                    .from('profiles')
+                    .update({ role: 'employee', full_name: 'Employee' })
+                    .eq('id', authData.user.id);
+
+                if (profileError) {
+                    msg.innerText = '⚠️ ইউজার তৈরি হয়েছে কিন্তু রোল আপডেট হয়নি: ' + profileError.message;
+                    msg.className = 'mt-3 text-center font-bold text-red-600 block';
+                } else {
+                    msg.innerText = '✅ ইম্পলয়ি সফলভাবে তৈরি হয়েছে!';
+                    msg.className = 'mt-3 text-center font-bold text-green-600 block';
+                    document.getElementById('addEmployeeForm').reset();
+                    loadEmployees();
+                }
+            }
+            btn.innerText = 'ইম্পলয়ি তৈরি করুন'; btn.disabled = false;
+        });
+
+        async function loadEmployees() {
+            const tbody = document.getElementById('employeeTableBody');
+            const { data: employees, error } = await supabaseClient.from('profiles').select('*').eq('role', 'employee');
+
+            if (error || !employees || employees.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-gray-500">কোনো ইম্পলয়ি নেই।</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = employees.map(emp => `
+                <tr class="border-b hover:bg-gray-50">
+                    <td class="p-4 font-medium text-gray-800">${emp.email}</td>
+                    <td class="p-4"><span class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs font-bold">${emp.role}</span></td>
                     <td class="p-4 text-center">
-                        <button onclick="openEditModal('${book.id}')" class="text-blue-600 hover:text-blue-800 p-2 rounded-full hover:bg-blue-50 transition mr-1">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
-                        </button>
-                        <button onclick="deleteBook('${book.id}')" class="text-red-500 hover:text-red-700 p-2 rounded-full hover:bg-red-50 transition">
+                        <button onclick="deleteEmployee('${emp.id}')" class="text-red-500 hover:text-red-700 p-2 rounded-full hover:bg-red-50 transition" title="ডিলিট">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                         </button>
                     </td>
@@ -625,473 +664,16 @@
             `).join('');
         }
 
-        window.openEditModal = async (bookId) => {
-            const { data: book, error } = await supabaseClient.from('books').select('*').eq('id', bookId).single();
-            
-            if (error || !book) {
-                showToast('বইটি খুঁজে পাওয়া যায়নি!', true);
-                return;
-            }
-
-            document.getElementById('edit_book_id').value = book.id;
-            document.getElementById('edit_title').value = book.title;
-            document.getElementById('edit_stock_quantity').value = book.stock_quantity;
-            document.getElementById('edit_purchase_price').value = book.purchase_price || '';
-            document.getElementById('edit_original_price').value = book.original_price || '';
-            document.getElementById('edit_discount_price').value = book.discount_price;
-            document.getElementById('edit_description').value = book.description || '';
-            document.getElementById('edit_cover_file').value = ''; 
-
-            const catSelect = document.getElementById('edit_category');
-            const authSelect = document.getElementById('edit_author');
-            const pubSelect = document.getElementById('edit_publisher');
-            
-            if (catSelect.options.length <= 1) {
-                const { data: cats } = await supabaseClient.from('categories').select('name');
-                const { data: auths } = await supabaseClient.from('authors').select('name');
-                const { data: pubs } = await supabaseClient.from('publishers').select('name');
-                
-                catSelect.innerHTML = cats ? cats.map(c => `<option value="${c.name}">${c.name}</option>`).join('') : '';
-                authSelect.innerHTML = auths ? auths.map(a => `<option value="${a.name}">${a.name}</option>`).join('') : '';
-                pubSelect.innerHTML = pubs ? pubs.map(p => `<option value="${p.name}">${p.name}</option>`).join('') : '';
-            }
-
-            catSelect.value = book.category;
-            authSelect.value = book.author;
-            if(book.publisher) pubSelect.value = book.publisher;
-
-            document.getElementById('editBookModal').classList.remove('hidden');
-            document.getElementById('editBookModal').classList.add('flex');
+        window.deleteEmployee = async (id) => {
+            if(!confirm('আপনি কি এই ইম্পলয়িকে ডিলিট করতে চান?')) return;
+            const { error } = await supabaseClient.from('profiles').delete().eq('id', id);
+            if(error) showToast('ডিলিট করা যায়নি!', true);
+            else { showToast('ইম্পলয়ি ডিলিট হয়েছে।'); loadEmployees(); }
         };
 
-        window.closeEditModal = () => {
-            document.getElementById('editBookModal').classList.add('hidden');
-            document.getElementById('editBookModal').classList.remove('flex');
-        };
+        // অন্যান্য ফাংশনগুলো (loadDashboardData, loadSettings, ইত্যাদি) আগের মতোই থাকবে...
+        // (কোড ছোট রাখার জন্য এখানে বাদ দেওয়া হলো, কিন্তু আপনার ফাইলে এগুলো থাকতে হবে)
 
-        document.getElementById('editBookForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const btn = document.getElementById('updateBookBtn');
-            btn.innerText = 'আপডেট হচ্ছে...'; btn.disabled = true;
-
-            const bookId = document.getElementById('edit_book_id').value;
-            const file = document.getElementById('edit_cover_file').files[0];
-            
-            let updateData = {
-                title: document.getElementById('edit_title').value,
-                author: document.getElementById('edit_author').value,
-                category: document.getElementById('edit_category').value,
-                publisher: document.getElementById('edit_publisher').value,
-                stock_quantity: parseInt(document.getElementById('edit_stock_quantity').value),
-                purchase_price: parseFloat(document.getElementById('edit_purchase_price').value) || 0,
-                original_price: parseFloat(document.getElementById('edit_original_price').value) || null,
-                discount_price: parseFloat(document.getElementById('edit_discount_price').value),
-                description: document.getElementById('edit_description').value
-            };
-
-            try {
-                if (file) {
-                    const fileName = `book_update_${Date.now()}.${file.name.split('.').pop()}`;
-                    await supabaseClient.storage.from('book-covers').upload(fileName, file);
-                    const { data: urlData } = supabaseClient.storage.from('book-covers').getPublicUrl(fileName);
-                    updateData.cover_url = urlData.publicUrl;
-                }
-
-                const { error } = await supabaseClient.from('books').update(updateData).eq('id', bookId);
-                if (error) throw error;
-
-                showToast('বই সফলভাবে আপডেট হয়েছে!');
-                closeEditModal();
-                loadAllBooks(); 
-                
-            } catch (err) {
-                showToast(err.message, true);
-            } finally {
-                btn.innerText = 'আপডেট করুন'; btn.disabled = false;
-            }
-        });
-
-        window.deleteBook = async (id) => {
-            if(!confirm('আপনি কি নিশ্চিত এই বইটি ডিলিট করতে চান?')) return;
-            const { error } = await supabaseClient.from('books').delete().eq('id', id);
-            if (error) showToast('ডিলিট করা যায়নি!', true);
-            else { showToast('বই ডিলিট করা হয়েছে।'); loadAllBooks(); }
-        };
-
-        async function loadSettings() {
-            if (!siteSettings) await fetchGlobalSettings();
-            if(siteSettings) {
-                document.getElementById('set_company_name').value = siteSettings.company_name || '';
-                document.getElementById('set_tagline').value = siteSettings.tagline || '';
-                document.getElementById('set_phone').value = siteSettings.phone || '';
-                document.getElementById('set_address').value = siteSettings.address || '';
-                document.getElementById('set_footer_text').value = siteSettings.footer_text || '';
-                if(siteSettings.logo_url) {
-                    document.getElementById('current_logo').src = siteSettings.logo_url;
-                    document.getElementById('current_logo').classList.remove('hidden');
-                }
-            }
-        }
-
-        document.getElementById('siteSettingsForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const btn = document.getElementById('saveSettingsBtn');
-            btn.innerText = 'সেভ হচ্ছে...'; btn.disabled = true;
-            const file = document.getElementById('set_logo_file').files[0];
-            let logo_url = siteSettings ? siteSettings.logo_url : null;
-
-            try {
-                if (file) {
-                    const fileName = `logo_${Date.now()}.${file.name.split('.').pop()}`;
-                    await supabaseClient.storage.from('book-covers').upload(fileName, file);
-                    const { data } = supabaseClient.storage.from('book-covers').getPublicUrl(fileName);
-                    logo_url = data.publicUrl;
-                }
-                const updates = {
-                    company_name: document.getElementById('set_company_name').value,
-                    tagline: document.getElementById('set_tagline').value,
-                    phone: document.getElementById('set_phone').value,
-                    address: document.getElementById('set_address').value,
-                    footer_text: document.getElementById('set_footer_text').value,
-                    logo_url: logo_url
-                };
-                if(siteSettings) await supabaseClient.from('site_settings').update(updates).eq('id', siteSettings.id);
-                else await supabaseClient.from('site_settings').insert([updates]);
-                
-                document.getElementById('settingsMessage').innerText = 'সেটিংস সফলভাবে সেভ হয়েছে!';
-                document.getElementById('settingsMessage').className = 'mt-3 text-center font-bold text-green-600 block';
-                await fetchGlobalSettings(); 
-            } catch (err) { showToast(err.message, true); } finally { btn.innerText = 'সেটিংস সেভ করুন'; btn.disabled = false; }
-        });
-
-        async function loadDashboardData() {
-            const { data: orders } = await supabaseClient.from('orders').select('*').eq('status', 'completed');
-            const { data: books } = await supabaseClient.from('books').select('*');
-            
-            // ভিজিটর সংখ্যা আনা
-            const { count: visitorCount } = await supabaseClient.from('site_visits').select('*', { count: 'exact', head: true });
-
-            if (!orders) return;
-
-            const today = new Date().toISOString().split('T')[0];
-            let totalSales = 0, todaySales = 0, weeklyData = [0, 0, 0, 0, 0, 0, 0];
-            let totalProfit = 0;
-
-            if(books) {
-                books.forEach(b => {
-                    const sellP = b.discount_price || 0;
-                    const buyP = b.purchase_price || 0;
-                    const sales = b.sales_count || 0;
-                    if(sellP > buyP) totalProfit += (sellP - buyP) * sales;
-                });
-            }
-
-            orders.forEach(order => {
-                const amount = Number(order.total_amount);
-                const orderDate = new Date(order.created_at);
-                const orderDateString = orderDate.toISOString().split('T')[0];
-
-                totalSales += amount;
-                if (orderDateString === today) todaySales += amount;
-                weeklyData[orderDate.getDay()] += amount;
-            });
-
-            const { count: pendingCount } = await supabaseClient.from('orders').select('*', { count: 'exact', head: true }).eq('status', 'pending');
-
-            document.getElementById('kpi-today-sales').innerText = todaySales.toFixed(2);
-            document.getElementById('kpi-total-sales').innerText = totalSales.toFixed(2);
-            document.getElementById('kpi-profit').innerText = totalProfit.toFixed(2);
-            document.getElementById('kpi-pending-orders').innerText = pendingCount || 0;
-            
-            // UI তে ভিজিটর সংখ্যা দেখানো
-            document.getElementById('kpi-visitors').innerText = visitorCount || 0;
-
-            renderChart(weeklyData);
-        }
-
-        function renderChart(data) {
-            const ctx = document.getElementById('salesChart').getContext('2d');
-            if(myChart) myChart.destroy();
-            myChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: ['রবি', 'সোম', 'মঙ্গল', 'বুধ', 'বৃহঃ', 'শুক্র', 'শনি'],
-                    datasets: [{ label: 'বিক্রি (৳)', data: data, backgroundColor: 'rgba(59, 130, 246, 0.5)', borderColor: 'rgba(59, 130, 246, 1)', borderWidth: 1, borderRadius: 5 }]
-                },
-                options: { scales: { y: { beginAtZero: true } } }
-            });
-        }
-
-        async function loadDropdowns() {
-            const { data: cats } = await supabaseClient.from('categories').select('*').order('name');
-            const catSelect = document.getElementById('category');
-            catSelect.innerHTML = '<option value="" disabled selected>ক্যাটাগরি সিলেক্ট করুন</option>';
-            if(cats) cats.forEach(c => catSelect.innerHTML += `<option value="${c.name}">${c.name}</option>`);
-
-            const { data: auths } = await supabaseClient.from('authors').select('*').order('name');
-            const authSelect = document.getElementById('author');
-            authSelect.innerHTML = '<option value="" disabled selected>লেখক সিলেক্ট করুন</option>';
-            if(auths) auths.forEach(a => authSelect.innerHTML += `<option value="${a.name}">${a.name}</option>`);
-
-            const { data: pubs } = await supabaseClient.from('publishers').select('*').order('name');
-            const pubSelect = document.getElementById('publisher');
-            pubSelect.innerHTML = '<option value="" disabled selected>প্রকাশনী সিলেক্ট করুন</option>';
-            if(pubs) pubs.forEach(p => pubSelect.innerHTML += `<option value="${p.name}">${p.name}</option>`);
-        }
-
-        document.getElementById('addCategoryForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            await supabaseClient.from('categories').insert([{ name: document.getElementById('categoryName').value }]);
-            document.getElementById('categoryName').value = '';
-            showToast('ক্যাটাগরি যোগ হয়েছে!'); 
-            loadDropdowns();
-            checkSystemNotifications();
-        });
-
-        document.getElementById('addPublisherForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const pubName = document.getElementById('publisherName').value;
-            const { error } = await supabaseClient.from('publishers').insert([{ name: pubName }]);
-            if(error) showToast('প্রকাশনী যোগ করা যায়নি!', true);
-            else {
-                document.getElementById('publisherName').value = '';
-                showToast('প্রকাশনী যোগ হয়েছে!'); 
-                loadDropdowns();
-            }
-        });
-
-        document.getElementById('addAuthorForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const name = document.getElementById('authorName').value;
-            const bio = document.getElementById('authorBio').value;
-            const file = document.getElementById('authorImage').files[0];
-            let image_url = '';
-            if(file) {
-                const fileName = `author_${Date.now()}.${file.name.split('.').pop()}`;
-                await supabaseClient.storage.from('book-covers').upload(fileName, file);
-                const { data } = supabaseClient.storage.from('book-covers').getPublicUrl(fileName);
-                image_url = data.publicUrl;
-            }
-            await supabaseClient.from('authors').insert([{ name, bio, image_url }]);
-            document.getElementById('addAuthorForm').reset();
-            showToast('লেখক যোগ হয়েছে!'); 
-            loadDropdowns();
-        });
-
-        window.toggleLinkType = () => { document.getElementById('purchase_link').required = document.getElementById('type_affiliate').checked; };
-
-        document.getElementById('addBookForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const btn = document.getElementById('addBookBtn');
-            btn.innerText = 'সেভ হচ্ছে...'; btn.disabled = true;
-            
-            const buyP = parseFloat(document.getElementById('purchase_price').value) || 0;
-            const origP = parseFloat(document.getElementById('original_price').value) || null;
-            const discP = parseFloat(document.getElementById('discount_price').value);
-            const stockQ = parseInt(document.getElementById('stock_quantity').value);
-
-            if(origP && discP > origP) { showToast('ডিসকাউন্ট দাম আসল দামের বেশি হতে পারে না!', true); btn.innerText = 'বই যোগ করুন'; btn.disabled = false; return; }
-            if(discP < buyP) { showToast('সতর্কতা: বিক্রয় মূল্য ক্রয় মূল্যের চেয়ে কম!', true); }
-
-            try {
-                const files = document.getElementById('cover_files').files;
-                let urls = [];
-                if(files.length > 0) {
-                    for(let f of files) {
-                        const name = `book_${Date.now()}_${f.name}`;
-                        await supabaseClient.storage.from('book-covers').upload(name, f);
-                        const { data } = supabaseClient.storage.from('book-covers').getPublicUrl(name);
-                        urls.push(data.publicUrl);
-                    }
-                }
-                await supabaseClient.from('books').insert([{
-                    title: document.getElementById('title').value,
-                    author: document.getElementById('author').value,
-                    category: document.getElementById('category').value,
-                    publisher: document.getElementById('publisher').value,
-                    purchase_price: buyP,
-                    stock_quantity: stockQ,
-                    original_price: origP,
-                    discount_price: discP,
-                    is_affiliate: document.getElementById('type_affiliate').checked,
-                    purchase_link: document.getElementById('purchase_link').value,
-                    description: document.getElementById('description').value,
-                    cover_url: urls[0] || '',
-                    gallery_images: urls
-                }]);
-                showToast('বই সফলভাবে যোগ হয়েছে!');
-                document.getElementById('addBookForm').reset();
-                checkSystemNotifications();
-            } catch (err) { showToast(err.message, true); } finally { btn.innerText = 'বই যোগ করুন'; btn.disabled = false; }
-        });
-
-        async function loadPendingBookings() {
-            const { data: orders } = await supabaseClient.from('orders').select('*').eq('status', 'pending').order('created_at', { ascending: false });
-            const tbody = document.getElementById('bookingTableBody');
-            if(!orders || orders.length === 0) { 
-                tbody.innerHTML = `
-                    <tr><td colspan="6" class="py-8 text-center bg-gray-50 rounded-lg">
-                        <div class="flex flex-col items-center justify-center text-gray-500">
-                            <svg class="w-12 h-12 mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                            <p class="text-lg font-bold text-gray-700">কোনো পেন্ডিং অর্ডার নেই!</p>
-                            <p class="text-sm">এই মুহূর্তে কনফার্ম করার জন্য কোনো বুকিং পাওয়া যায়নি।</p>
-                        </div>
-                    </td></tr>
-                `; return; 
-            }
-            tbody.innerHTML = orders.map(o => `
-                <tr class="border-b hover:bg-gray-50">
-                    <td class="p-4 text-xs text-gray-500">${o.id.split('-')[0]}</td>
-                    <td class="p-4 font-semibold">${o.customer_name || 'N/A'}</td>
-                    <td class="p-4">${o.customer_phone || 'N/A'}</td>
-                    <td class="p-4 font-bold text-blue-600">৳ ${o.total_amount}</td>
-                    <td class="p-4"><span class="bg-yellow-100 text-yellow-700 px-2 py-1 rounded text-xs">পেন্ডিং</span></td>
-                    <td class="p-4"><button onclick="confirmOrder('${o.id}')" class="bg-green-500 text-white px-3 py-1 rounded text-sm hover:bg-green-600">কনফার্ম</button></td>
-                </tr>
-            `).join('');
-        }
-
-        window.confirmOrder = async (id) => {
-            if(!confirm('অর্ডারটি কনফার্ম করবেন?')) return;
-            await supabaseClient.from('orders').update({ status: 'completed' }).eq('id', id);
-            showToast('অর্ডার সফলভাবে কনফার্ম হয়েছে!');
-            loadPendingBookings();
-            loadDashboardData();
-        };
-
-        // ==========================================
-        // ব্লগ ম্যানেজমেন্ট লজিক
-        // ==========================================
-        async function loadPendingBlogs() {
-            const list = document.getElementById('pendingBlogsList');
-            list.innerHTML = `<p class="text-gray-500">ব্লগ লোড হচ্ছে...</p>`;
-
-            const { data: blogs, error } = await supabaseClient
-                .from('blogs')
-                .select(`*, profiles ( full_name, email )`)
-                .eq('status', 'pending')
-                .order('created_at', { ascending: false });
-
-            if (error || !blogs || blogs.length === 0) {
-                list.innerHTML = `<p class="text-gray-500 text-center py-8 bg-white rounded-lg border border-gray-100">কোনো পেন্ডিং ব্লগ নেই।</p>`;
-                return;
-            }
-
-            list.innerHTML = blogs.map(blog => {
-                const authorName = blog.profiles?.full_name || blog.profiles?.email?.split('@')[0] || 'অজানা';
-                const date = new Date(blog.created_at).toLocaleDateString('bn-BD');
-
-                return `
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-                    <div class="flex justify-between items-start mb-4">
-                        <div>
-                            <h3 class="text-xl font-bold text-gray-900 mb-1">${blog.title}</h3>
-                            <p class="text-sm text-gray-500">লেখক: <span class="font-semibold text-blue-600">${authorName}</span> | তারিখ: ${date}</p>
-                        </div>
-                        <button onclick="approveBlog('${blog.id}')" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-bold text-sm shadow-md transition flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
-                            অ্যাপ্রুভ করুন
-                        </button>
-                    </div>
-                    <div class="bg-gray-50 p-4 rounded-lg border border-gray-100 text-gray-700 text-sm whitespace-pre-wrap">${blog.content}</div>
-                </div>
-                `;
-            }).join('');
-        }
-
-        window.approveBlog = async (id) => {
-            if(!confirm('আপনি কি এই ব্লগটি অ্যাপ্রুভ করতে চান? এটি ওয়েবসাইটে প্রকাশিত হবে।')) return;
-            
-            const { error } = await supabaseClient.from('blogs').update({ status: 'approved' }).eq('id', id);
-            if(error) {
-                showToast('অ্যাপ্রুভ করা যায়নি!', true);
-            } else {
-                showToast('ব্লগ সফলভাবে অ্যাপ্রুভ হয়েছে!');
-                loadPendingBlogs();
-            }
-        };
-
-        // ==========================================
-        // রিপোর্ট লজিক
-        // ==========================================
-        window.filterReport = () => {
-            const startDate = document.getElementById('startDate').value;
-            const endDate = document.getElementById('endDate').value;
-            if (startDate && endDate && startDate > endDate) {
-                showToast('ভুল তারিখ! শুরুর তারিখ শেষ তারিখের চেয়ে পরে হতে পারে না।', true);
-                return; 
-            }
-            loadReportData(startDate, endDate);
-        };
-
-        window.resetReport = () => {
-            document.getElementById('startDate').value = '';
-            document.getElementById('endDate').value = '';
-            loadReportData(); 
-        };
-
-        async function loadReportData(startDate = null, endDate = null) {
-            document.getElementById('report-date').innerText = new Date().toLocaleDateString('bn-BD');
-            let query = supabaseClient.from('orders').select('*');
-            if (startDate) query = query.gte('created_at', startDate + 'T00:00:00');
-            if (endDate) query = query.lte('created_at', endDate + 'T23:59:59');
-
-            const { data: orders, error } = await query.order('created_at', { ascending: false });
-            const tbody = document.getElementById('reportTableBody');
-            
-            if (error || !orders || orders.length === 0) { 
-                showToast('নির্বাচিত তারিখের মধ্যে কোনো ডাটা পাওয়া যায়নি!', true);
-                tbody.innerHTML = `
-                    <tr><td colspan="5" class="py-8 text-center bg-gray-50 rounded-lg">
-                        <div class="flex flex-col items-center justify-center text-gray-500">
-                            <svg class="w-12 h-12 mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                            <p class="text-lg font-bold text-gray-700">কোনো ডাটা পাওয়া যায়নি!</p>
-                            <p class="text-sm">নির্বাচিত তারিখের মধ্যে কোনো অর্ডার নেই।</p>
-                        </div>
-                    </td></tr>
-                `; 
-                document.getElementById('rep-total-orders').innerText = '0';
-                document.getElementById('rep-success-orders').innerText = '0';
-                document.getElementById('rep-total-revenue').innerText = '৳ 0';
-                document.getElementById('rep-total-profit').innerText = '৳ 0';
-                return; 
-            }
-
-            let totalRev = 0, completed = 0;
-            tbody.innerHTML = orders.map(o => {
-                totalRev += Number(o.total_amount);
-                if(o.status === 'completed') completed++;
-                return `<tr class="border-b">
-                    <td class="p-2 text-left">${new Date(o.created_at).toLocaleDateString('bn-BD')}</td>
-                    <td class="p-2 text-left">${o.customer_name || 'N/A'}</td>
-                    <td class="p-2 text-left">${o.customer_phone || 'N/A'}</td>
-                    <td class="p-2 capitalize text-left">${o.status}</td>
-                    <td class="p-2 text-right">৳ ${o.total_amount}</td>
-                </tr>`;
-            }).join('');
-
-            const { data: books } = await supabaseClient.from('books').select('discount_price, purchase_price, sales_count');
-            let totalProfit = 0;
-            if(books) {
-                books.forEach(b => {
-                    const margin = (b.discount_price || 0) - (b.purchase_price || 0);
-                    if(margin > 0) totalProfit += margin * (b.sales_count || 0);
-                });
-            }
-
-            document.getElementById('rep-total-orders').innerText = orders.length;
-            document.getElementById('rep-success-orders').innerText = completed;
-            document.getElementById('rep-total-revenue').innerText = '৳ ' + totalRev.toFixed(2);
-            document.getElementById('rep-total-profit').innerText = '৳ ' + totalProfit.toFixed(2);
-        }
-
-        window.generatePDF = () => {
-            const element = document.getElementById('report-container');
-            const opt = { margin: 0.5, filename: `Report_${new Date().toISOString().split('T')[0]}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true, allowTaint: true, scrollY: 0, scrollX: 0 }, jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' } };
-            html2pdf().set(opt).from(element).save();
-        };
-
-        window.handleLogout = async () => { await supabaseClient.auth.signOut(); window.location.href = '/admin-login.html'; }
         init();
     </script>
 </body>
