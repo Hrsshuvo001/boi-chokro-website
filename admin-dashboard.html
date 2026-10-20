@@ -19,8 +19,10 @@
 </head>
 <body class="bg-gray-100 h-[100dvh] overflow-hidden flex flex-col md:flex-row">
 
+    <!-- টোস্ট নোটিফিকেশন কন্টেইনার -->
     <div id="toast-container" class="fixed top-5 right-5 z-[100] flex flex-col gap-3 pointer-events-none"></div>
 
+    <!-- সাইডবার -->
     <aside id="sidebar" class="fixed md:sticky top-0 left-0 z-40 h-[100dvh] w-64 bg-slate-800 text-slate-300 flex flex-col shadow-xl transition-transform duration-300 transform -translate-x-full md:translate-x-0 flex-shrink-0">
         <div class="p-4 border-b border-slate-700 flex justify-between items-center flex-shrink-0">
             <div class="flex items-center gap-2">
@@ -37,6 +39,7 @@
                 <button onclick="showSection('add-book')" class="nav-item text-left px-4 py-3 rounded-md hover:bg-slate-700 transition flex items-center gap-3 w-full">➕ অ্যাড নিউ বুক</button>
                 <button onclick="showSection('confirm-booking')" class="nav-item text-left px-4 py-3 rounded-md hover:bg-slate-700 transition flex items-center gap-3 w-full">✅ কনফার্ম বুকিং</button>
                 <button onclick="showSection('add-meta')" class="nav-item text-left px-4 py-3 rounded-md hover:bg-slate-700 transition flex items-center gap-3 w-full">🏷️ ক্যাটাগরি/লেখক/প্রকাশনী</button>
+                <button onclick="showSection('blog-management')" class="nav-item text-left px-4 py-3 rounded-md hover:bg-slate-700 transition flex items-center gap-3 w-full">📝 ব্লগ ম্যানেজমেন্ট</button>
                 <button onclick="showSection('report')" class="nav-item text-left px-4 py-3 rounded-md hover:bg-slate-700 transition flex items-center gap-3 w-full">📄 রিপোর্ট</button>
                 <a href="/admin-chat.html" class="nav-item text-left px-4 py-3 rounded-md hover:bg-slate-700 transition flex items-center gap-3 w-full">💬 লাইভ চ্যাট</a>
                 <button onclick="showSection('settings')" class="nav-item text-left px-4 py-3 rounded-md hover:bg-slate-700 transition flex items-center gap-3 w-full">⚙️ সাইট সেটিংস</button>
@@ -48,14 +51,17 @@
         </nav>
     </aside>
 
+    <!-- মেইন কন্টেন্ট -->
     <div class="flex-1 flex flex-col h-[100dvh] overflow-hidden w-full relative">
         
+        <!-- টপবার -->
         <header class="bg-white shadow-sm p-4 flex justify-between items-center z-30 flex-shrink-0">
             <div class="flex items-center gap-3">
                 <button onclick="toggleSidebar()" class="text-gray-700 text-2xl focus:outline-none md:hidden">☰</button>
                 <h1 class="text-xl font-bold text-blue-600 hidden md:block" id="mobile-header-title">ড্যাশবোর্ড</h1>
             </div>
             
+            <!-- নোটিফিকেশন বেল -->
             <div class="relative">
                 <button onclick="toggleNotifications()" class="relative p-2 text-gray-600 hover:text-blue-600 focus:outline-none transition">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -92,9 +98,10 @@
                         <p class="text-gray-500 text-sm font-semibold">মোট সেলস</p>
                         <h3 class="text-3xl font-bold text-gray-800 mt-2">৳ <span id="kpi-total-sales">0</span></h3>
                     </div>
-                    <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-orange-500">
-                        <p class="text-gray-500 text-sm font-semibold">পেন্ডিং অর্ডার</p>
-                        <h3 class="text-3xl font-bold text-gray-800 mt-2"><span id="kpi-pending-orders">0</span> টি</h3>
+                    <!-- নতুন ভিজিটর কার্ড -->
+                    <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-indigo-500">
+                        <p class="text-gray-500 text-sm font-semibold">মোট ভিজিটর</p>
+                        <h3 class="text-3xl font-bold text-indigo-600 mt-2"><span id="kpi-visitors">0</span> জন</h3>
                     </div>
                 </div>
                 <div class="bg-white p-6 rounded-xl shadow-sm">
@@ -204,7 +211,7 @@
                 </div>
             </section>
 
-            <!-- ৫. অ্যাড মেটা -->
+            <!-- ৫. অ্যাড ক্যাটাগরি / লেখক / প্রকাশনী -->
             <section id="section-add-meta" class="section-content">
                 <h2 class="text-2xl font-bold text-gray-800 mb-6">ক্যাটাগরি, লেখক ও প্রকাশনী যোগ করুন</h2>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -234,7 +241,15 @@
                 </div>
             </section>
 
-            <!-- ৬. রিপোর্ট -->
+            <!-- ৬. ব্লগ ম্যানেজমেন্ট (নতুন সেকশন) -->
+            <section id="section-blog-management" class="section-content">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">ব্লগ ম্যানেজমেন্ট (পেন্ডিং)</h2>
+                <div id="pendingBlogsList" class="space-y-4">
+                    <p class="text-gray-500">ব্লগ লোড হচ্ছে...</p>
+                </div>
+            </section>
+
+            <!-- ৭. রিপোর্ট -->
             <section id="section-report" class="section-content">
                 <div class="flex justify-between items-center mb-6">
                     <h2 class="text-2xl font-bold text-gray-800">সেলস রিপোর্ট</h2>
@@ -284,7 +299,7 @@
                 </div>
             </section>
 
-            <!-- ৭. সাইট সেটিংস -->
+            <!-- ৮. সাইট সেটিংস -->
             <section id="section-settings" class="section-content">
                 <h2 class="text-2xl font-bold text-gray-800 mb-6">সাইট সেটিংস</h2>
                 <div class="bg-white p-6 rounded-xl shadow-sm max-w-2xl">
@@ -355,7 +370,7 @@
         let siteSettings = null; 
         let notifications = [];
         let mutedNotifications = JSON.parse(localStorage.getItem('muted_notifs')) || [];
-        let userEmails = {}; // নোটিফিকেশনে নাম দেখানোর জন্য
+        let userEmails = {}; 
 
         window.showToast = (message, isError = false) => {
             const container = document.getElementById('toast-container');
@@ -487,7 +502,6 @@
             }
         }
 
-        // কাস্টমারদের ইমেইল লোড করা (নোটিফিকেশনে দেখানোর জন্য)
         async function loadUserEmails() {
             const { data: profiles } = await supabaseClient.from('profiles').select('id, email');
             if(profiles) {
@@ -532,6 +546,7 @@
             if(sectionId === 'settings') loadSettings();
             if(sectionId === 'confirm-booking') loadPendingBookings();
             if(sectionId === 'report') loadReportData(); 
+            if(sectionId === 'blog-management') loadPendingBlogs();
         };
 
         async function init() {
@@ -542,7 +557,7 @@
             loadDropdowns();
             loadDashboardData();
             checkSystemNotifications();
-            await loadUserEmails(); // ইউজার ইমেইল লোড করো
+            await loadUserEmails(); 
             listenForChatNotifications(); 
         }
 
@@ -752,6 +767,10 @@
         async function loadDashboardData() {
             const { data: orders } = await supabaseClient.from('orders').select('*').eq('status', 'completed');
             const { data: books } = await supabaseClient.from('books').select('*');
+            
+            // ভিজিটর সংখ্যা আনা
+            const { count: visitorCount } = await supabaseClient.from('site_visits').select('*', { count: 'exact', head: true });
+
             if (!orders) return;
 
             const today = new Date().toISOString().split('T')[0];
@@ -783,6 +802,9 @@
             document.getElementById('kpi-total-sales').innerText = totalSales.toFixed(2);
             document.getElementById('kpi-profit').innerText = totalProfit.toFixed(2);
             document.getElementById('kpi-pending-orders').innerText = pendingCount || 0;
+            
+            // UI তে ভিজিটর সংখ্যা দেখানো
+            document.getElementById('kpi-visitors').innerText = visitorCount || 0;
 
             renderChart(weeklyData);
         }
@@ -937,6 +959,61 @@
             loadDashboardData();
         };
 
+        // ==========================================
+        // ব্লগ ম্যানেজমেন্ট লজিক
+        // ==========================================
+        async function loadPendingBlogs() {
+            const list = document.getElementById('pendingBlogsList');
+            list.innerHTML = `<p class="text-gray-500">ব্লগ লোড হচ্ছে...</p>`;
+
+            const { data: blogs, error } = await supabaseClient
+                .from('blogs')
+                .select(`*, profiles ( full_name, email )`)
+                .eq('status', 'pending')
+                .order('created_at', { ascending: false });
+
+            if (error || !blogs || blogs.length === 0) {
+                list.innerHTML = `<p class="text-gray-500 text-center py-8 bg-white rounded-lg border border-gray-100">কোনো পেন্ডিং ব্লগ নেই।</p>`;
+                return;
+            }
+
+            list.innerHTML = blogs.map(blog => {
+                const authorName = blog.profiles?.full_name || blog.profiles?.email?.split('@')[0] || 'অজানা';
+                const date = new Date(blog.created_at).toLocaleDateString('bn-BD');
+
+                return `
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-900 mb-1">${blog.title}</h3>
+                            <p class="text-sm text-gray-500">লেখক: <span class="font-semibold text-blue-600">${authorName}</span> | তারিখ: ${date}</p>
+                        </div>
+                        <button onclick="approveBlog('${blog.id}')" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-bold text-sm shadow-md transition flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                            অ্যাপ্রুভ করুন
+                        </button>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-lg border border-gray-100 text-gray-700 text-sm whitespace-pre-wrap">${blog.content}</div>
+                </div>
+                `;
+            }).join('');
+        }
+
+        window.approveBlog = async (id) => {
+            if(!confirm('আপনি কি এই ব্লগটি অ্যাপ্রুভ করতে চান? এটি ওয়েবসাইটে প্রকাশিত হবে।')) return;
+            
+            const { error } = await supabaseClient.from('blogs').update({ status: 'approved' }).eq('id', id);
+            if(error) {
+                showToast('অ্যাপ্রুভ করা যায়নি!', true);
+            } else {
+                showToast('ব্লগ সফলভাবে অ্যাপ্রুভ হয়েছে!');
+                loadPendingBlogs();
+            }
+        };
+
+        // ==========================================
+        // রিপোর্ট লজিক
+        // ==========================================
         window.filterReport = () => {
             const startDate = document.getElementById('startDate').value;
             const endDate = document.getElementById('endDate').value;
@@ -1018,4 +1095,4 @@
         init();
     </script>
 </body>
-                        </html>
+</html>
