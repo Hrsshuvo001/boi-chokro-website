@@ -1,55 +1,69 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="bn" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>চেকআউট - Boi Chokro</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { darkMode: 'class' }
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Hind Siliguri', sans-serif; }
+    </style>
 </head>
-<body class="bg-gray-50 min-h-screen py-10 px-4">
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 transition-colors min-h-screen py-10 px-4">
 
-    <!-- লোডিং স্ক্রিন -->
-    <div id="loadingScreen" class="fixed inset-0 bg-white z-50 flex items-center justify-center">
-        <p class="text-xl font-bold text-blue-600">লোড হচ্ছে...</p>
+    <div id="loadingScreen" class="fixed inset-0 bg-white dark:bg-gray-900 z-50 flex items-center justify-center">
+        <p class="text-xl font-bold text-blue-600 dark:text-blue-400">লোড হচ্ছে...</p>
     </div>
 
-    <div id="checkoutContent" class="max-w-2xl mx-auto bg-white p-8 rounded-xl shadow-lg hidden">
-        <h2 class="text-2xl font-bold text-gray-800 mb-6 border-b pb-2">চেকআউট</h2>
+    <div id="checkoutContent" class="max-w-2xl mx-auto bg-white dark:bg-gray-800 p-6 md:p-8 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 hidden">
+        <h2 class="text-2xl font-bold text-gray-800 dark:text-white mb-6 border-b dark:border-gray-700 pb-4">চেকআউট</h2>
         
         <form id="checkoutForm" class="space-y-6">
             <div>
-                <h3 class="text-lg font-semibold text-gray-700 mb-3">ডেলিভারি তথ্য</h3>
+                <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-3">ডেলিভারি তথ্য</h3>
                 <div class="space-y-3">
-                    <input type="text" id="cus_name" placeholder="আপনার নাম" required class="w-full px-4 py-2 border rounded-md">
-                    <input type="text" id="cus_phone" placeholder="মোবাইল নম্বর" required class="w-full px-4 py-2 border rounded-md">
-                    <textarea id="cus_address" placeholder="সম্পূর্ণ ঠিকানা" required rows="2" class="w-full px-4 py-2 border rounded-md"></textarea>
+                    <input type="text" id="cus_name" placeholder="আপনার পুরো নাম" required class="w-full px-4 py-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    <input type="text" id="cus_phone" placeholder="মোবাইল নম্বর" required class="w-full px-4 py-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    <textarea id="cus_address" placeholder="সম্পূর্ণ ঠিকানা" required rows="2" class="w-full px-4 py-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 focus:outline-none"></textarea>
+                </div>
+            </div>
+
+            <!-- অর্ডার সামারি (রিড-অনলি) -->
+            <div class="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg border border-gray-200 dark:border-gray-600">
+                <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-3">অর্ডার সামারি</h3>
+                <div class="space-y-2 text-sm">
+                    <div class="flex justify-between"><span>সাবটোটাল:</span> <span id="sumSubtotal">৳ 0</span></div>
+                    <div class="flex justify-between"><span>ডেলিভারি চার্জ:</span> <span id="sumDelivery">৳ 0</span></div>
+                    <div class="flex justify-between text-red-500"><span>ডিসকাউন্ট:</span> <span id="sumDiscount">- ৳ 0</span></div>
+                    <div class="flex justify-between font-bold text-lg border-t dark:border-gray-600 pt-2 mt-2 text-blue-600 dark:text-blue-400">
+                        <span>সর্বমোট:</span> <span id="sumGrandTotal">৳ 0</span>
+                    </div>
                 </div>
             </div>
 
             <div>
-                <h3 class="text-lg font-semibold text-gray-700 mb-3">পেমেন্ট মেথড</h3>
-                <div class="space-y-2 border p-4 rounded-md bg-gray-50">
+                <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-3">পেমেন্ট মেথড (ডেমো)</h3>
+                <div class="space-y-2 border p-4 rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600">
                     <label class="flex items-center space-x-3 cursor-pointer">
                         <input type="radio" name="payment" value="bkash" checked class="w-4 h-4 text-blue-600">
                         <span class="font-bold text-pink-600">বিকাশ (bKash)</span>
                     </label>
                     <label class="flex items-center space-x-3 cursor-pointer">
-                        <input type="radio" name="payment" value="nagad" class="w-4 h-4 text-blue-600">
-                        <span class="font-bold text-orange-500">নগদ (Nagad)</span>
-                    </label>
-                    <label class="flex items-center space-x-3 cursor-pointer">
-                        <input type="radio" name="payment" value="sslcommerz" class="w-4 h-4 text-blue-600">
-                        <span class="font-bold text-blue-600">কার্ড / SSLCommerz</span>
+                        <input type="radio" name="payment" value="cod" class="w-4 h-4 text-blue-600">
+                        <span class="font-bold text-gray-700 dark:text-gray-300">ক্যাশ অন ডেলিভারি</span>
                     </label>
                 </div>
             </div>
 
-            <button type="submit" id="payBtn" class="w-full bg-green-600 text-white font-bold py-3 rounded-lg hover:bg-green-700 transition text-lg">
-                পেমেন্ট করুন
+            <button type="submit" id="payBtn" class="w-full bg-green-600 text-white font-bold py-3 rounded-lg hover:bg-green-700 transition text-lg shadow-md">
+                অর্ডার কনফার্ম করুন
             </button>
         </form>
-        <p class="text-xs text-gray-500 mt-4 text-center">* এটি একটি ডেমো চেকআউট। আসল পেমেন্টের জন্য SSLCommerz API ব্যাকএন্ডে যুক্ত করতে হবে।</p>
     </div>
 
     <script>
@@ -57,45 +71,95 @@
         const SUPABASE_ANON_KEY = 'sb_publishable_oBzutzPKvIvujmSG7icXug_SwwveL5g';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        async function checkAuth() {
-            // সেশন চেক করা
-            const { data: { session }, error } = await supabaseClient.auth.getSession();
+        let currentUser = null;
+        let cartItems = [];
+        let deliveryCharge = 0;
+        let discountPercent = 0;
+        let grandTotal = 0;
+
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        }
+
+        async function checkAuthAndLoadCart() {
+            const { data: { session } } = await supabaseClient.auth.getSession();
             
-            if (error || !session) {
-                alert('পেমেন্ট করার জন্য অনুগ্রহ করে প্রথমে লগইন করুন!');
-                window.location.href = '/login.html'; // লগইন না থাকলে লগইন পেজে যাবে
-                return;
+            if (!session) {
+                alert('অর্ডার করতে অনুগ্রহ করে প্রথমে লগইন করুন!');
+                window.location.href = '/login.html'; return;
+            }
+            currentUser = session.user;
+
+            // কার্ট ও সেটিংস ডাটা রিড করা
+            cartItems = JSON.parse(localStorage.getItem('boiChokroCart')) || [];
+            deliveryCharge = Number(localStorage.getItem('checkout_delivery')) || 60;
+            discountPercent = Number(localStorage.getItem('checkout_discount')) || 0;
+
+            if(cartItems.length === 0) {
+                alert('আপনার কার্ট খালি!'); window.location.href = '/index.html'; return;
             }
 
-            // কার্ট খালি কি না চেক করা
-            const cart = JSON.parse(localStorage.getItem('boiChokroCart')) || [];
-            if(cart.length === 0) {
-                alert('আপনার কার্ট খালি!');
-                window.location.href = '/index.html';
-                return;
+            // হিসাব করা
+            let subtotal = cartItems.reduce((sum, item) => sum + Number(item.price), 0);
+            let discountAmount = (subtotal * discountPercent) / 100;
+            grandTotal = subtotal + deliveryCharge - discountAmount;
+
+            // UI তে দেখানো
+            document.getElementById('sumSubtotal').innerText = `৳ ${subtotal.toFixed(2)}`;
+            document.getElementById('sumDelivery').innerText = `৳ ${deliveryCharge.toFixed(2)}`;
+            document.getElementById('sumDiscount').innerText = `- ৳ ${discountAmount.toFixed(2)}`;
+            document.getElementById('sumGrandTotal').innerText = `৳ ${grandTotal.toFixed(2)}`;
+
+            // ইউজারের প্রোফাইল থেকে নাম-ফোন অটো ফিল (যদি থাকে)
+            const { data: profile } = await supabaseClient.from('profiles').select('full_name, phone, address').eq('id', currentUser.id).single();
+            if(profile) {
+                if(profile.full_name) document.getElementById('cus_name').value = profile.full_name;
+                if(profile.phone) document.getElementById('cus_phone').value = profile.phone;
+                if(profile.address) document.getElementById('cus_address').value = profile.address;
             }
 
-            // লোডিং শেষ করে কন্টেন্ট দেখানো
             document.getElementById('loadingScreen').classList.add('hidden');
             document.getElementById('checkoutContent').classList.remove('hidden');
         }
 
-        document.getElementById('checkoutForm').addEventListener('submit', (e) => {
+        document.getElementById('checkoutForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('payBtn');
-            btn.innerText = 'প্রসেস হচ্ছে...';
-            btn.disabled = true;
+            btn.innerText = 'অর্ডার প্রসেস হচ্ছে...'; btn.disabled = true;
 
-            // ব্যাকএন্ড পেমেন্ট গেটওয়ে ইন্টিগ্রেশন এখানে হবে
-            setTimeout(() => {
-                alert('ডেমো পেমেন্ট সফল হয়েছে! (ব্যাকএন্ড ইন্টিগ্রেশন প্রয়োজন)');
-                localStorage.removeItem('boiChokroCart'); // কার্ট খালি করা
-                window.location.href = '/index.html';
-            }, 1500);
+            const name = document.getElementById('cus_name').value;
+            const phone = document.getElementById('cus_phone').value;
+            const address = document.getElementById('cus_address').value;
+
+            // ডাটাবেসে অর্ডার ইনসার্ট
+            const { data: order, error } = await supabaseClient.from('orders').insert([{
+                user_id: currentUser.id,
+                customer_name: name,
+                customer_phone: phone,
+                address: address,
+                total_amount: grandTotal,
+                delivery_charge: deliveryCharge,
+                discount_amount: (cartItems.reduce((sum, item) => sum + Number(item.price), 0) * discountPercent) / 100,
+                cart_items: cartItems, // JSON আকারে সেভ হচ্ছে
+                status: 'pending'
+            }]).select().single();
+
+            if (error) {
+                alert('অর্ডার করতে সমস্যা হয়েছে: ' + error.message);
+                btn.innerText = 'অর্ডার কনফার্ম করুন'; btn.disabled = false;
+                return;
+            }
+
+            // সফল হলে কার্ট খালি করা এবং প্রোফাইলে পাঠানো
+            localStorage.removeItem('boiChokroCart');
+            localStorage.removeItem('checkout_delivery');
+            localStorage.removeItem('checkout_discount');
+            
+            alert('🎉 আপনার অর্ডারটি সফলভাবে জমা হয়েছে! অ্যাডমিন কনফার্ম করলে আপনি নোটিফিকেশন পাবেন।');
+            window.location.href = '/profile.html';
         });
 
-        // শুরুতে চেকঅথ কল করা
-        checkAuth();
+        checkAuthAndLoadCart();
     </script>
 </body>
 </html>
