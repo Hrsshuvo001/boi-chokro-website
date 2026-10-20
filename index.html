@@ -26,7 +26,6 @@
         }
         .chat-animate { animation: slideUp 0.3s ease-out forwards; }
 
-        /* প্রফেশনাল কার্ড শ্যাডো */
         .card-shadow {
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
         }
@@ -60,9 +59,9 @@
                 </div>
             </div>
 
-            <!-- সার্চ বার (ডেস্কটপ) -->
+            <!-- সার্চ বার (ডেস্কটপ) - oninput ব্যবহার করা হয়েছে -->
             <div class="w-full md:w-1/3 relative group">
-                <input type="text" id="searchInput" placeholder="বই, লেখক বা প্রকাশনী খুঁজুন..." class="w-full pl-10 pr-4 py-2.5 bg-gray-100 border-transparent rounded-full focus:outline-none focus:bg-white focus:ring-2 focus:ring-blue-500 transition shadow-inner text-sm" onkeyup="handleSearch('desktop')">
+                <input type="text" id="searchInput" placeholder="বই, লেখক বা প্রকাশনী খুঁজুন..." class="w-full pl-10 pr-4 py-2.5 bg-gray-100 border-transparent rounded-full focus:outline-none focus:bg-white focus:ring-2 focus:ring-blue-500 transition shadow-inner text-sm" oninput="handleSearch('desktop')">
                 <svg xmlns="http://www.w3.org/2000/svg" class="absolute left-3.5 top-3 h-5 w-5 text-gray-400 group-focus-within:text-blue-500 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
             </div>
 
@@ -81,16 +80,16 @@
     </nav>
 
     <!-- হিরো সেকশন -->
-    <header class="bg-gradient-to-br from-blue-900 via-blue-700 to-blue-500 text-white pt-12 pb-20 px-4 text-center rounded-b-[2rem] shadow-inner relative overflow-hidden">
+    <header id="heroSection" class="bg-gradient-to-br from-blue-900 via-blue-700 to-blue-500 text-white pt-12 pb-20 px-4 text-center rounded-b-[2rem] shadow-inner relative overflow-hidden transition-all duration-300">
         <div class="absolute -top-10 -left-10 w-40 h-40 bg-white opacity-10 rounded-full blur-2xl"></div>
         <div class="absolute -bottom-10 -right-10 w-52 h-52 bg-white opacity-10 rounded-full blur-2xl"></div>
         
         <h1 id="web_tagline" class="text-3xl sm:text-4xl lg:text-5xl font-extrabold mb-4 leading-tight tracking-tight drop-shadow-md relative z-10">আপনার পছন্দের বই, এক জায়গায়</h1>
         <p class="text-sm sm:text-base lg:text-lg text-blue-100 max-w-2xl mx-auto font-medium mb-8 relative z-10">সেরা লেখকদের বইয়ের বিশাল সংগ্রহ। আজই আপনার প্রিয় বইটি খুঁজে নিন।</p>
         
-        <!-- মোবাইল সার্চ বার -->
+        <!-- মোবাইল সার্চ বার - oninput ব্যবহার করা হয়েছে -->
         <div class="md:hidden max-w-md mx-auto relative group z-10">
-            <input type="text" id="searchInputMobile" placeholder="বই খুঁজুন..." class="w-full pl-10 pr-4 py-3 bg-white/20 backdrop-blur-md border border-white/30 text-white placeholder-blue-100 rounded-full focus:outline-none focus:bg-white focus:text-gray-800 transition shadow-lg text-sm" onkeyup="handleSearch('mobile')">
+            <input type="text" id="searchInputMobile" placeholder="বই খুঁজুন..." class="w-full pl-10 pr-4 py-3 bg-white/20 backdrop-blur-md border border-white/30 text-white placeholder-blue-100 rounded-full focus:outline-none focus:bg-white focus:text-gray-800 transition shadow-lg text-sm" oninput="handleSearch('mobile')">
             <svg xmlns="http://www.w3.org/2000/svg" class="absolute left-3.5 top-3 h-5 w-5 text-blue-100 group-focus-within:text-gray-500 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
         </div>
     </header>
@@ -98,38 +97,41 @@
     <!-- মেইন কন্টেন্ট -->
     <main class="flex-grow max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 -mt-10 relative z-20 pb-16">
         
-        <!-- ফ্ল্যাশ ডিল -->
-        <section class="bg-white rounded-2xl shadow-lg p-4 sm:p-6 mb-12 flex flex-col md:flex-row items-center justify-between gap-4 border border-gray-100">
-            <div class="flex items-center gap-4">
-                <div class="bg-red-100 text-red-600 p-3 rounded-full hidden sm:block">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+        <!-- টপ সেকশন (ফ্ল্যাশ ডিল ও বেস্ট সেলার) - সার্চ করলে এটি হাইড হয়ে যাবে -->
+        <div id="topSections">
+            <!-- ফ্ল্যাশ ডিল -->
+            <section class="bg-white rounded-2xl shadow-lg p-4 sm:p-6 mb-12 flex flex-col md:flex-row items-center justify-between gap-4 border border-gray-100">
+                <div class="flex items-center gap-4">
+                    <div class="bg-red-100 text-red-600 p-3 rounded-full hidden sm:block">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-gray-800">আজকের ফ্ল্যাশ ডিল!</h3>
+                        <p class="text-sm text-gray-500">সীমিত সময়ের জন্য বিশেষ ছাড়ে বই কিনুন।</p>
+                    </div>
                 </div>
-                <div>
-                    <h3 class="text-lg font-bold text-gray-800">আজকের ফ্ল্যাশ ডিল!</h3>
-                    <p class="text-sm text-gray-500">সীমিত সময়ের জন্য বিশেষ ছাড়ে বই কিনুন।</p>
-                </div>
-            </div>
-            <button onclick="scrollToBooks()" class="bg-red-600 text-white font-semibold px-6 py-2 rounded-full hover:bg-red-700 transition shadow-md w-full md:w-auto text-sm">এখনই দেখুন</button>
-        </section>
+                <button onclick="scrollToBooks()" class="bg-red-600 text-white font-semibold px-6 py-2 rounded-full hover:bg-red-700 transition shadow-md w-full md:w-auto text-sm">এখনই দেখুন</button>
+            </section>
 
-        <!-- ১. বেস্ট সেলার -->
-        <section class="mb-14">
-            <div class="flex items-center justify-between mb-6">
-                <div class="flex items-center gap-2">
-                    <span class="text-2xl">🔥</span>
-                    <h2 class="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight">বেস্ট সেলার</h2>
+            <!-- বেস্ট সেলার -->
+            <section class="mb-14">
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center gap-2">
+                        <span class="text-2xl">🔥</span>
+                        <h2 class="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight">বেস্ট সেলার</h2>
+                    </div>
                 </div>
-            </div>
-            
-            <div id="bestSellerGrid" class="grid grid-flow-col auto-cols-[calc(70%-0.5rem)] sm:auto-cols-[calc(45%-1rem)] md:auto-cols-[calc(33.33%-1rem)] lg:auto-cols-[calc(25%-1rem)] xl:auto-cols-[calc(20%-1rem)] gap-4 sm:gap-6 overflow-x-auto snap-x snap-mandatory hide-scrollbar pb-6 items-stretch">
-                <p class="text-gray-500 col-span-full text-center py-10 text-sm">লোড হচ্ছে...</p>
-            </div>
-        </section>
+                
+                <div id="bestSellerGrid" class="grid grid-flow-col auto-cols-[calc(70%-0.5rem)] sm:auto-cols-[calc(45%-1rem)] md:auto-cols-[calc(33.33%-1rem)] lg:auto-cols-[calc(25%-1rem)] xl:auto-cols-[calc(20%-1rem)] gap-4 sm:gap-6 overflow-x-auto snap-x snap-mandatory hide-scrollbar pb-6 items-stretch">
+                    <p class="text-gray-500 col-span-full text-center py-10 text-sm">লোড হচ্ছে...</p>
+                </div>
+            </section>
+        </div>
 
         <!-- ২. ক্যাটাগরি ও সব বই -->
-        <section id="allBooksSection" class="mt-8">
+        <section id="allBooksSection" class="mt-8 transition-all duration-300">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 border-b pb-4 gap-4">
-                <h2 class="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight">সব বই</h2>
+                <h2 id="sectionTitle" class="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight">সব বই</h2>
                 
                 <div class="flex flex-wrap gap-2" id="categoryButtons">
                     <button onclick="filterCategory('all')" class="category-btn bg-blue-600 text-white px-4 py-1.5 rounded-full text-xs sm:text-sm font-semibold transition shadow-sm">সব বই</button>
@@ -306,16 +308,14 @@
             document.getElementById('allBooksSection').scrollIntoView({ behavior: 'smooth' });
         }
 
-        // সার্চ ও ক্যাটাগরি হ্যান্ডেল করার ফাংশন
+        // সার্চ হ্যান্ডেল করার ফাংশন (অটো)
         window.handleSearch = (source) => {
             if (source === 'desktop') {
                 currentSearchQuery = document.getElementById('searchInput').value;
-                // মোবাইল ইনপুটেও ভ্যালু সিঙ্ক করা
-                document.getElementById('searchInputMobile').value = currentSearchQuery;
+                document.getElementById('searchInputMobile').value = currentSearchQuery; // Sync
             } else {
                 currentSearchQuery = document.getElementById('searchInputMobile').value;
-                // ডেস্কটপ ইনপুটেও ভ্যালু সিঙ্ক করা
-                document.getElementById('searchInput').value = currentSearchQuery;
+                document.getElementById('searchInput').value = currentSearchQuery; // Sync
             }
             filterAndRenderBooks();
         }
@@ -339,6 +339,10 @@
 
         function filterAndRenderBooks() {
             const grid = document.getElementById('bookGrid');
+            const topSections = document.getElementById('topSections');
+            const sectionTitle = document.getElementById('sectionTitle');
+            const allBooksSection = document.getElementById('allBooksSection');
+
             let filtered = allBooksData;
 
             // ১. ক্যাটাগরি ফিল্টার
@@ -355,6 +359,18 @@
                     const publisher = (book.publisher || '').toLowerCase();
                     return title.includes(query) || author.includes(query) || publisher.includes(query);
                 });
+
+                // সার্চ করলে টপ সেকশন হাইড করে দেব
+                topSections.classList.add('hidden');
+                sectionTitle.innerText = `"${currentSearchQuery}" এর সার্চ রেজাল্ট:`;
+                
+                // অটোমেটিক্যালি স্ক্রল করে বইয়ের সেকশনে নিয়ে আসবে
+                allBooksSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+            } else {
+                // সার্চ খালি থাকলে টপ সেকশন আবার দেখাবে
+                topSections.classList.remove('hidden');
+                sectionTitle.innerText = 'সব বই';
             }
             
             if (filtered.length === 0) { 
