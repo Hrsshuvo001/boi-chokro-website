@@ -1,62 +1,124 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="bn" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>আমার কার্ট - Boi Chokro</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { darkMode: 'class', theme: { extend: { colors: { primary: '#2563eb' } } } }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Hind Siliguri', sans-serif; }
+    </style>
 </head>
-<body class="bg-gray-50 min-h-screen flex flex-col">
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 transition-colors duration-300 min-h-screen flex flex-col">
 
-    <nav class="bg-white shadow-sm p-4 flex justify-between items-center">
-        <a href="/index.html" class="text-xl font-bold text-blue-600">&larr; হোমে ফিরে যান</a>
-        <h1 class="text-xl font-bold text-gray-800">আমার কার্ট</h1>
+    <nav class="bg-white dark:bg-gray-800 shadow-sm p-4 flex justify-between items-center transition-colors">
+        <a href="/index.html" class="text-xl font-bold text-blue-600 dark:text-blue-400">&larr; হোমে ফিরে যান</a>
+        <h1 class="text-xl font-bold text-gray-800 dark:text-white">আমার কার্ট</h1>
     </nav>
 
-    <main class="flex-grow max-w-4xl mx-auto w-full p-4 mt-8">
-        <div class="bg-white rounded-xl shadow-md overflow-hidden">
-            <div id="cartItems" class="divide-y divide-gray-200">
+    <main class="flex-grow max-w-6xl mx-auto w-full p-4 mt-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        <!-- বাম দিক: কার্ট আইটেম -->
+        <div class="lg:col-span-2 space-y-4">
+            <div id="cartItems" class="space-y-4">
                 <!-- কার্ট আইটেম লোড হবে -->
             </div>
-            
-            <div class="p-6 bg-gray-50 border-t border-gray-200">
-                <div class="flex justify-between items-center mb-4">
-                    <span class="text-lg font-semibold text-gray-700">সর্বমোট:</span>
-                    <span id="cartTotal" class="text-2xl font-bold text-blue-600">৳ 0</span>
+        </div>
+
+        <!-- ডান দিক: চেকআউট সামারি -->
+        <div class="lg:col-span-1">
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 sticky top-24 border border-gray-100 dark:border-gray-700">
+                <h2 class="text-xl font-bold mb-4 border-b dark:border-gray-700 pb-2">অর্ডার সামারি</h2>
+                
+                <div class="space-y-3 mb-6">
+                    <div class="flex justify-between text-gray-600 dark:text-gray-300">
+                        <span>সাবটোটাল:</span>
+                        <span id="cartSubtotal" class="font-semibold">৳ 0</span>
+                    </div>
+                    
+                    <!-- কুপন অপশন -->
+                    <div class="pt-2">
+                        <label class="block text-sm font-semibold mb-1">কুপন কোড</label>
+                        <div class="flex gap-2">
+                            <input type="text" id="couponInput" placeholder="যেমন: BOI50" class="w-full px-3 py-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 uppercase text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
+                            <button onclick="applyCoupon()" class="bg-gray-800 dark:bg-gray-600 text-white px-4 py-2 rounded-md text-sm hover:bg-black transition">অ্যাপ্লাই</button>
+                        </div>
+                        <p id="couponMessage" class="text-xs mt-1 hidden"></p>
+                    </div>
+
+                    <!-- ডেলিভারি এরিয়া -->
+                    <div class="pt-2">
+                        <label class="block text-sm font-semibold mb-1">ডেলিভারি এরিয়া</label>
+                        <select id="deliveryArea" onchange="calculateTotal()" class="w-full px-3 py-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
+                            <option value="60">ঢাকার ভেতরে (৬০ টাকা)</option>
+                            <option value="120">ঢাকার বাইরে (১২০ টাকা)</option>
+                        </select>
+                    </div>
+
+                    <div class="flex justify-between text-gray-600 dark:text-gray-300 pt-2 border-t dark:border-gray-700">
+                        <span>ডেলিভারি চার্জ:</span>
+                        <span id="deliveryCharge" class="font-semibold">৳ 60</span>
+                    </div>
+                    <div class="flex justify-between text-gray-600 dark:text-gray-300">
+                        <span>ডিসকাউন্ট:</span>
+                        <span id="discountAmount" class="font-semibold text-red-500">- ৳ 0</span>
+                    </div>
                 </div>
-                <button onclick="proceedToCheckout()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 transition">চেকআউট করুন</button>
+                
+                <div class="flex justify-between items-center mb-6 border-t dark:border-gray-700 pt-4">
+                    <span class="text-lg font-bold text-gray-900 dark:text-white">সর্বমোট:</span>
+                    <span id="grandTotal" class="text-2xl font-extrabold text-blue-600 dark:text-blue-400">৳ 0</span>
+                </div>
+
+                <button onclick="proceedToCheckout()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 transition shadow-lg text-lg">চেকআউট করুন</button>
             </div>
         </div>
     </main>
 
     <script>
+        const SUPABASE_URL = 'https://jhbpaezbpkfwjfmazdcn.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_oBzutzPKvIvujmSG7icXug_SwwveL5g';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // ডার্ক মোড
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        }
+
+        let appliedDiscount = 0; // কুপনের ডিসকাউন্ট পার্সেন্টেজ
+
         function loadCart() {
             const cart = JSON.parse(localStorage.getItem('boiChokroCart')) || [];
             const cartDiv = document.getElementById('cartItems');
-            const totalDiv = document.getElementById('cartTotal');
 
             if (cart.length === 0) {
-                cartDiv.innerHTML = `<div class="p-10 text-center text-gray-500">আপনার কার্ট বর্তমানে খালি আছে।</div>`;
-                totalDiv.innerText = '৳ 0';
+                cartDiv.innerHTML = `<div class="p-10 text-center bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
+                    <p class="text-gray-500 text-lg mb-4">আপনার কার্ট বর্তমানে খালি আছে।</p>
+                    <a href="/index.html" class="text-blue-600 hover:underline">বই কিনতে এখানে ক্লিক করুন</a>
+                </div>`;
+                calculateTotal();
                 return;
             }
 
-            let total = 0;
-            cartDiv.innerHTML = cart.map((item, index) => {
-                total += item.price;
-                return `
-                    <div class="flex items-center p-4 gap-4">
-                        <img src="${item.image || 'https://via.placeholder.com/80'}" class="w-20 h-24 object-cover rounded">
-                        <div class="flex-grow">
-                            <h3 class="font-bold text-gray-800">${item.title}</h3>
-                            <p class="text-blue-600 font-bold mt-1">৳ ${item.price}</p>
-                        </div>
-                        <button onclick="removeItem(${index})" class="text-red-500 hover:text-red-700 font-semibold text-sm border border-red-200 px-3 py-1 rounded">বাদ দিন</button>
+            cartDiv.innerHTML = cart.map((item, index) => `
+                <div class="flex items-center p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 gap-4">
+                    <img src="${item.image || 'https://via.placeholder.com/80'}" class="w-20 h-24 object-cover rounded shadow-sm">
+                    <div class="flex-grow">
+                        <h3 class="font-bold text-gray-800 dark:text-white text-sm sm:text-base line-clamp-2">${item.title}</h3>
+                        <p class="text-blue-600 font-bold mt-1">৳ ${item.price}</p>
                     </div>
-                `;
-            }).join('');
+                    <button onclick="removeItem(${index})" class="text-red-500 hover:text-red-700 p-2 rounded-full hover:bg-red-50 dark:hover:bg-gray-700 transition" title="বাদ দিন">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                    </button>
+                </div>
+            `).join('');
 
-            totalDiv.innerText = '৳ ' + total;
+            calculateTotal();
         }
 
         window.removeItem = (index) => {
@@ -66,13 +128,60 @@
             loadCart();
         }
 
+        // কুপন অ্যাপ্লাই করা
+        window.applyCoupon = async () => {
+            const code = document.getElementById('couponInput').value.trim().toUpperCase();
+            const msg = document.getElementById('couponMessage');
+            
+            if(!code) return;
+
+            const { data, error } = await supabaseClient.from('coupons').select('*').eq('code', code).eq('is_active', true).single();
+
+            if(data) {
+                appliedDiscount = data.discount_percent;
+                msg.innerText = `✅ কুপন অ্যাপ্লাইড! আপনি ${appliedDiscount}% ছাড় পেয়েছেন।`;
+                msg.className = 'text-xs mt-1 text-green-600 block';
+            } else {
+                appliedDiscount = 0;
+                msg.innerText = `❌ ভুল বা মেয়াদোত্তীর্ণ কুপন কোড।`;
+                msg.className = 'text-xs mt-1 text-red-600 block';
+            }
+            calculateTotal();
+        }
+
+        // মোট হিসাব করা
+        function calculateTotal() {
+            const cart = JSON.parse(localStorage.getItem('boiChokroCart')) || [];
+            let subtotal = cart.reduce((sum, item) => sum + Number(item.price), 0);
+            
+            const deliveryCharge = Number(document.getElementById('deliveryArea').value);
+            
+            // ডিসকাউন্ট হিসাব (শুধু সাবটোটালের উপর)
+            let discountAmount = (subtotal * appliedDiscount) / 100;
+            
+            // গ্র্যান্ড টোটাল = সাবটোটাল + ডেলিভারি - ডিসকাউন্ট
+            let grandTotal = subtotal + deliveryCharge - discountAmount;
+
+            if(cart.length === 0) {
+                grandTotal = 0;
+                discountAmount = 0;
+            }
+
+            document.getElementById('cartSubtotal').innerText = `৳ ${subtotal.toFixed(2)}`;
+            document.getElementById('deliveryCharge').innerText = `৳ ${deliveryCharge.toFixed(2)}`;
+            document.getElementById('discountAmount').innerText = `- ৳ ${discountAmount.toFixed(2)}`;
+            document.getElementById('grandTotal').innerText = `৳ ${grandTotal.toFixed(2)}`;
+        }
+
         window.proceedToCheckout = () => {
             const cart = JSON.parse(localStorage.getItem('boiChokroCart')) || [];
-            if (cart.length === 0) {
-                alert('কার্টে কোনো বই নেই!');
-                return;
-            }
-            window.location.href = '/checkout.html'; // চেকআউট পেজে যাবে
+            if (cart.length === 0) { alert('কার্টে কোনো বই নেই!'); return; }
+            
+            // ডেলিভারি চার্জ ও ডিসকাউন্ট চেকআউট পেজের জন্য লোকাল স্টোরেজে সেভ করে রাখি
+            localStorage.setItem('checkout_delivery', document.getElementById('deliveryArea').value);
+            localStorage.setItem('checkout_discount', appliedDiscount);
+            
+            window.location.href = '/checkout.html'; 
         }
 
         loadCart();
