@@ -6,37 +6,92 @@
     <title>বইয়ের বিবরণ - Boi Chokro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Hind Siliguri', sans-serif; }
+    </style>
 </head>
 <body class="bg-gray-50 min-h-screen flex flex-col text-gray-800">
 
+    <!-- নেভিগেশন বার -->
     <nav class="bg-white shadow-sm sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
             <a href="/index.html" class="text-2xl font-bold text-blue-600 tracking-tight">Boi Chokro</a>
             <div class="flex items-center gap-4 sm:gap-6">
-                <a href="/cart.html" class="relative text-gray-600 hover:text-blue-600">
+                <a href="/cart.html" class="relative text-gray-600 hover:text-blue-600 transition">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
                     <span id="cartCount" class="absolute -top-1 -right-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">0</span>
                 </a>
-                <div id="authButtons"></div>
+                <div id="authButtons" class="flex items-center gap-3"></div>
             </div>
         </div>
     </nav>
 
+    <!-- মেইন কন্টেন্ট -->
     <main class="flex-grow max-w-7xl mx-auto w-full px-4 py-8">
+        
+        <!-- বইয়ের ডিটেইলস -->
         <div id="bookDetailsContainer" class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-10 mb-12">
             <p class="text-center text-gray-500 py-10">বইয়ের তথ্য লোড হচ্ছে...</p>
         </div>
 
+        <!-- রিভিউ সেকশন -->
+        <section class="mb-12 bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6 border-b pb-4 flex items-center gap-2">
+                <span class="text-3xl">⭐</span> কাস্টমার রিভিউ
+            </h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- বাম দিক: রিভিউ লেখার ফর্ম -->
+                <div class="md:col-span-1">
+                    <div class="bg-gray-50 p-5 rounded-xl border border-gray-200 sticky top-24">
+                        <h3 class="font-bold text-lg mb-2 text-gray-800">রিভিউ দিন</h3>
+                        <p class="text-xs text-gray-500 mb-4">* আপনার রিভিউটি অ্যাডমিন অ্যাপ্রুভ করার পর ওয়েবসাইটে প্রকাশিত হবে।</p>
+                        
+                        <form id="reviewForm" class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">রেটিং দিন</label>
+                                <select id="reviewRating" required class="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white">
+                                    <option value="5">⭐⭐⭐⭐⭐ (৫ স্টার - অসাধারণ)</option>
+                                    <option value="4">⭐⭐⭐⭐ (৪ স্টার - ভালো)</option>
+                                    <option value="3">⭐⭐⭐ (৩ স্টার - মাঝারি)</option>
+                                    <option value="2">⭐⭐ (২ স্টার - খারাপ)</option>
+                                    <option value="1">⭐ (১ স্টার - খুব খারাপ)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">আপনার মতামত</label>
+                                <textarea id="reviewComment" required rows="3" placeholder="বইটি সম্পর্কে আপনার মতামত লিখুন..." class="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white"></textarea>
+                            </div>
+                            <button type="submit" id="submitReviewBtn" class="w-full bg-blue-600 text-white font-bold py-2 rounded-lg hover:bg-blue-700 transition shadow-md">
+                                রিভিউ সাবমিট করুন
+                            </button>
+                        </form>
+                        <div id="reviewMessage" class="mt-3 text-sm text-center font-bold hidden"></div>
+                    </div>
+                </div>
+
+                <!-- ডান দিক: অন্যান্য কাস্টমারদের রিভিউ -->
+                <div class="md:col-span-2">
+                    <div id="reviewsList" class="space-y-4">
+                        <p class="text-gray-500 text-center py-10">রিভিউ লোড হচ্ছে...</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- রিকমেন্ডেশন সেকশন -->
         <section class="mt-12">
-            <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
                 <span class="text-3xl">💡</span> আপনার পছন্দ হতে পারে
             </h2>
             <div id="recommendGrid" class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6"></div>
         </section>
     </main>
 
-    <footer class="bg-gray-800 text-gray-300 py-6 text-center mt-auto">
-        <p>&copy; 2024 Boi Chokro. All rights reserved.</p>
+    <!-- ফুটার -->
+    <footer class="bg-gray-900 text-gray-400 py-6 text-center mt-auto">
+        <p class="text-sm font-medium">&copy; 2024 Boi Chokro. All rights reserved.</p>
     </footer>
 
     <script>
@@ -45,8 +100,9 @@
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let currentUser = null;
+        let currentBookId = null;
         const urlParams = new URLSearchParams(window.location.search);
-        const bookId = urlParams.get('id');
+        currentBookId = urlParams.get('id');
 
         function updateCartCount() {
             const cart = JSON.parse(localStorage.getItem('boiChokroCart')) || [];
@@ -58,20 +114,26 @@
             const authButtons = document.getElementById('authButtons');
             if (session) {
                 currentUser = session.user;
-                authButtons.innerHTML = `<button onclick="handleLogout()" class="bg-red-50 text-red-600 px-4 py-2 rounded-lg text-sm font-semibold border border-red-200">লগআউট</button>`;
+                authButtons.innerHTML = `
+                    <a href="/profile.html" class="bg-gray-100 text-gray-700 px-3 py-1.5 rounded-lg text-sm font-semibold hover:bg-gray-200 transition">প্রোফাইল</a>
+                    <button onclick="handleLogout()" class="bg-red-50 text-red-600 px-3 py-1.5 rounded-lg text-sm font-semibold border border-red-200 hover:bg-red-100 transition">লগআউট</button>
+                `;
             } else {
                 currentUser = null;
-                authButtons.innerHTML = `<a href="/login.html" class="text-blue-600 text-sm font-semibold hover:underline">লগইন</a>`;
+                authButtons.innerHTML = `<a href="/login.html" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700 transition">লগইন</a>`;
             }
         }
 
+        // ==========================================
+        // ১. বইয়ের ডিটেইলস লোড করা
+        // ==========================================
         async function loadBookDetails() {
-            if (!bookId) {
+            if (!currentBookId) {
                 document.getElementById('bookDetailsContainer').innerHTML = `<p class="text-red-500 text-center">বই খুঁজে পাওয়া যায়নি!</p>`;
                 return;
             }
 
-            const { data: book, error } = await supabaseClient.from('books').select('*').eq('id', bookId).single();
+            const { data: book, error } = await supabaseClient.from('books').select('*').eq('id', currentBookId).single();
             if (error || !book) {
                 document.getElementById('bookDetailsContainer').innerHTML = `<p class="text-red-500 text-center">বইটি ডাটাবেসে নেই!</p>`;
                 return;
@@ -79,36 +141,36 @@
 
             const currentPrice = book.discount_price || book.original_price || 0;
             const hasDiscount = book.original_price && book.discount_price && book.original_price > book.discount_price;
+            const isOutOfStock = (book.stock_quantity !== undefined && book.stock_quantity !== null) ? book.stock_quantity <= 0 : false;
             
             let discountPercent = 0;
             if (hasDiscount) discountPercent = Math.round(((book.original_price - book.discount_price) / book.original_price) * 100);
 
-            // এখানে প্রকাশনীর লিংক যোগ করা হয়েছে
             document.getElementById('bookDetailsContainer').innerHTML = `
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
                     <!-- বাম দিক: ছবি -->
                     <div class="bg-gray-50 rounded-xl overflow-hidden p-4 flex items-center justify-center border relative h-96 md:h-[500px]">
                         ${hasDiscount ? `<div class="absolute top-4 left-4 bg-red-500 text-white font-bold px-3 py-1 rounded shadow z-10">${discountPercent}% ছাড়</div>` : ''}
+                        ${isOutOfStock ? `<div class="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-10"><span class="bg-red-600 text-white font-bold px-4 py-2 rounded-lg text-lg">স্টক নেই</span></div>` : ''}
                         <img src="${book.cover_url || 'https://via.placeholder.com/300'}" class="max-h-full w-auto object-contain drop-shadow-xl">
                     </div>
                     
                     <!-- ডান দিক: তথ্য ও বাটন -->
                     <div class="flex flex-col">
-                        <!-- ক্যাটাগরিতে ক্লিক করলে ঐ ক্যাটাগরির সব বই দেখাবে -->
                         <a href="/category.html?cat=${encodeURIComponent(book.category)}" class="text-sm font-bold text-blue-600 tracking-wider mb-2 uppercase hover:underline w-fit">${book.category || 'সাধারণ'}</a>
-                        
                         <h1 class="text-3xl md:text-4xl font-extrabold text-gray-900 leading-tight mb-2">${book.title}</h1>
                         
-                        <!-- লেখকের নামে ক্লিক করলে লেখকের প্রোফাইলে যাবে -->
                         <p class="text-lg text-gray-600 mb-1">লেখক: <a href="/author.html?name=${encodeURIComponent(book.author)}" class="font-semibold text-blue-600 hover:underline">${book.author}</a></p>
-                        
-                        <!-- প্রকাশনীর নামে ক্লিক করলে প্রকাশনীর সব বই দেখাবে (নতুন যোগ করা হলো) -->
                         <p class="text-lg text-gray-600 mb-4">প্রকাশনী: <a href="/publisher.html?pub=${encodeURIComponent(book.publisher)}" class="font-semibold text-blue-600 hover:underline">${book.publisher || 'অজানা'}</a></p>
                         
-                        <div class="flex items-end gap-3 mb-6 bg-gray-50 p-4 rounded-lg w-fit">
+                        <div class="flex items-end gap-3 mb-4 bg-gray-50 p-4 rounded-lg w-fit border border-gray-200">
                             <span class="text-4xl font-bold text-green-600">৳ ${currentPrice}</span>
                             ${hasDiscount ? `<span class="text-gray-400 line-through text-lg mb-1">৳ ${book.original_price}</span>` : ''}
                         </div>
+
+                        <p class="text-sm font-bold mb-6 ${isOutOfStock ? 'text-red-500' : 'text-green-600'}">
+                            ${isOutOfStock ? '❌ বর্তমানে স্টকে নেই' : `✅ স্টকে আছে (${book.stock_quantity} কপি)`}
+                        </p>
 
                         <div class="prose text-gray-600 mb-8 line-clamp-6">
                             <h3 class="text-sm font-bold text-gray-900 mb-1">বইয়ের বিবরণ:</h3>
@@ -116,28 +178,115 @@
                         </div>
 
                         <div class="mt-auto pt-6 border-t flex flex-col gap-3">
-                            ${book.is_affiliate ? `
-                                <button onclick="handleAffiliateBuy('${book.purchase_link}')" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3.5 rounded-xl transition text-lg flex justify-center items-center gap-2">
-                                    অন্য সাইট থেকে কিনুন
-                                </button>
+                            ${isOutOfStock ? `
+                                <button disabled class="w-full bg-gray-200 text-gray-500 font-bold py-3.5 rounded-xl text-lg cursor-not-allowed">স্টক নেই</button>
+                            ` : (book.is_affiliate ? `
+                                <button onclick="handleAffiliateBuy('${book.purchase_link}')" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3.5 rounded-xl transition text-lg flex justify-center items-center gap-2 shadow-lg">অন্য সাইট থেকে কিনুন</button>
                             ` : `
                                 <div class="grid grid-cols-2 gap-3">
                                     <button onclick="addToCart('${book.id}', '${book.title}', ${currentPrice}, '${book.cover_url}', false)" class="w-full bg-green-100 text-green-700 hover:bg-green-200 border border-green-300 font-bold py-3.5 rounded-xl transition text-lg flex justify-center items-center gap-2">
                                         কার্টে যোগ করুন
                                     </button>
-                                    <button onclick="addToCart('${book.id}', '${book.title}', ${currentPrice}, '${book.cover_url}', true)" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3.5 rounded-xl transition text-lg flex justify-center items-center gap-2">
+                                    <button onclick="addToCart('${book.id}', '${book.title}', ${currentPrice}, '${book.cover_url}', true)" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3.5 rounded-xl transition text-lg flex justify-center items-center gap-2 shadow-lg">
                                         বায় নাও
                                     </button>
                                 </div>
-                            `}
+                            `)}
                         </div>
                     </div>
                 </div>
             `;
 
+            loadReviews();
             loadRecommendations(book);
         }
 
+        // ==========================================
+        // ২. রিভিউ লোড করা (শুধুমাত্র Approved)
+        // ==========================================
+        async function loadReviews() {
+            const list = document.getElementById('reviewsList');
+            list.innerHTML = `<p class="text-gray-500 text-center py-4">রিভিউ লোড হচ্ছে...</p>`;
+
+            // এখানে .eq('status', 'approved') দেওয়া হয়েছে, তাই শুধু অ্যাডমিনের অ্যাপ্রুভ করা রিভিউ দেখাবে
+            const { data: reviews, error } = await supabaseClient
+                .from('reviews')
+                .select(`*, profiles ( full_name, email )`)
+                .eq('book_id', currentBookId)
+                .eq('status', 'approved') 
+                .order('created_at', { ascending: false });
+
+            if (error || !reviews || reviews.length === 0) {
+                list.innerHTML = `<div class="text-center py-10 bg-gray-50 rounded-xl border border-gray-100"><p class="text-gray-500">এই বইয়ের জন্য এখনো কোনো রিভিউ নেই।</p><p class="text-sm text-gray-400 mt-1">আপনি প্রথম রিভিউটি দিতে পারেন!</p></div>`;
+                return;
+            }
+
+            list.innerHTML = reviews.map(rev => {
+                const userName = rev.profiles?.full_name || rev.profiles?.email?.split('@')[0] || 'একজন পাঠক';
+                const date = new Date(rev.created_at).toLocaleDateString('bn-BD');
+                const stars = Array(rev.rating).fill('<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>`).join('');
+
+                return `
+                <div class="border border-gray-100 rounded-xl p-4 bg-white shadow-sm">
+                    <div class="flex justify-between items-start mb-2">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-blue-100 text-blue-700 rounded-full flex items-center justify-center font-bold text-lg uppercase">
+                                ${userName.charAt(0)}
+                            </div>
+                            <div>
+                                <p class="font-bold text-gray-800 text-sm">${userName}</p>
+                                <p class="text-xs text-gray-500">${date}</p>
+                            </div>
+                        </div>
+                        <div class="flex text-yellow-400">${stars}</div>
+                    </div>
+                    <p class="text-gray-600 text-sm mt-2">${rev.comment}</p>
+                </div>
+                `;
+            }).join('');
+        }
+
+        // ==========================================
+        // ৩. নতুন রিভিউ সাবমিট করা (Pending হিসেবে সেভ হবে)
+        // ==========================================
+        document.getElementById('reviewForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!currentUser) {
+                alert('রিভিউ দিতে অনুগ্রহ করে প্রথমে লগইন করুন!');
+                window.location.href = '/login.html';
+                return;
+            }
+
+            const btn = document.getElementById('submitReviewBtn');
+            const msg = document.getElementById('reviewMessage');
+            const rating = parseInt(document.getElementById('reviewRating').value);
+            const comment = document.getElementById('reviewComment').value;
+
+            btn.innerText = 'সাবমিট হচ্ছে...'; btn.disabled = true;
+            msg.classList.add('hidden');
+
+            const { error } = await supabaseClient.from('reviews').insert([{
+                book_id: currentBookId,
+                user_id: currentUser.id,
+                rating: rating,
+                comment: comment,
+                status: 'pending' // ডিফল্টভাবে পেন্ডিং থাকবে
+            }]);
+
+            if (error) {
+                msg.innerText = '⚠️ সমস্যা হয়েছে: ' + error.message;
+                msg.className = 'mt-3 text-sm text-center font-bold text-red-600 block';
+            } else {
+                msg.innerText = '✅ আপনার রিভিউটি সফলভাবে জমা হয়েছে। অ্যাডমিন অ্যাপ্রুভ করলে এটি প্রকাশিত হবে।';
+                msg.className = 'mt-3 text-sm text-center font-bold text-green-600 block bg-green-50 p-2 rounded border border-green-200';
+                document.getElementById('reviewForm').reset();
+            }
+            btn.innerText = 'রিভিউ সাবমিট করুন'; btn.disabled = false;
+        });
+
+        // ==========================================
+        // ৪. রিকমেন্ডেশন লোড করা
+        // ==========================================
         function createBookCard(book) {
             const currentPrice = book.discount_price || book.original_price || 0;
             const hasDiscount = book.original_price && book.discount_price && book.original_price > book.discount_price;
@@ -171,10 +320,13 @@
             if (recs && recs.length > 0) {
                 grid.innerHTML = recs.map(book => createBookCard(book)).join('');
             } else {
-                grid.innerHTML = `<p class="text-gray-500 col-span-full text-center">কোনো রিকমেন্ডেশন পাওয়া যায়নি।</p>`;
+                grid.innerHTML = `<p class="text-gray-500 col-span-full text-center py-6">কোনো রিকমেন্ডেশন পাওয়া যায়নি।</p>`;
             }
         }
 
+        // ==========================================
+        // ৫. কার্ট ও অন্যান্য ফাংশন
+        // ==========================================
         window.addToCart = (id, title, price, image, buyNow = false) => {
             if (!currentUser) {
                 alert('অর্ডার করতে অনুগ্রহ করে প্রথমে লগইন করুন!');
@@ -200,9 +352,12 @@
             if(link) window.open(link, '_blank');
         }
 
-        window.handleLogout = async () => { await supabaseClient.auth.signOut(); checkAuth(); }
+        window.handleLogout = async () => { await supabaseClient.auth.signOut(); checkAuth(); alert('লগআউট হয়েছে।'); }
 
-        checkAuth(); loadBookDetails(); updateCartCount();
+        // শুরু
+        checkAuth(); 
+        loadBookDetails(); 
+        updateCartCount();
     </script>
 </body>
 </html>
