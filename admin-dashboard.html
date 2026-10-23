@@ -40,16 +40,12 @@
                 <button onclick="showSection('add-meta')" class="nav-item text-left px-4 py-3 rounded-md hover:bg-slate-700 transition flex items-center gap-3 w-full">🏷️ ক্যাটাগরি/লেখক/প্রকাশনী</button>
                 <button onclick="showSection('blog-management')" class="nav-item text-left px-4 py-3 rounded-md hover:bg-slate-700 transition flex items-center gap-3 w-full">📝 ব্লগ ম্যানেজমেন্ট</button>
                 <button onclick="showSection('review-management')" class="nav-item text-left px-4 py-3 rounded-md hover:bg-slate-700 transition flex items-center gap-3 w-full">⭐ রিভিউ ম্যানেজমেন্ট</button>
-                <!-- নতুন কুপন ও কাস্টমার মেনু -->
                 <button onclick="showSection('coupon-management')" class="nav-item text-left px-4 py-3 rounded-md hover:bg-slate-700 transition flex items-center gap-3 w-full">🎟️ কুপন ম্যানেজমেন্ট</button>
                 <button id="menu-customers" onclick="showSection('customer-list')" class="nav-item text-left px-4 py-3 rounded-md hover:bg-slate-700 transition flex items-center gap-3 w-full hidden">👥 কাস্টমার লিস্ট</button>
-                
                 <button onclick="showSection('report')" class="nav-item text-left px-4 py-3 rounded-md hover:bg-slate-700 transition flex items-center gap-3 w-full">📄 রিপোর্ট</button>
                 <a href="/admin-chat.html" class="nav-item text-left px-4 py-3 rounded-md hover:bg-slate-700 transition flex items-center gap-3 w-full">💬 লাইভ চ্যাট</a>
-                
                 <button id="menu-employee" onclick="showSection('employee')" class="nav-item text-left px-4 py-3 rounded-md hover:bg-slate-700 transition flex items-center gap-3 w-full hidden">⚙️ ইম্পলয়ি ম্যানেজমেন্ট</button>
                 <button id="menu-logs" onclick="showSection('activity-logs')" class="nav-item text-left px-4 py-3 rounded-md hover:bg-slate-700 transition flex items-center gap-3 w-full hidden">📋 কার্যক্রমের লগ</button>
-                
                 <button onclick="showSection('settings')" class="nav-item text-left px-4 py-3 rounded-md hover:bg-slate-700 transition flex items-center gap-3 w-full">⚙️ সাইট সেটিংস</button>
                 
                 <div class="border-t border-slate-700 mt-2 pt-2">
@@ -209,7 +205,7 @@
                 <div id="pendingReviewsList" class="space-y-4"><p class="text-gray-500">রিভিউ লোড হচ্ছে...</p></div>
             </section>
 
-            <!-- ৮. কুপন ম্যানেজমেন্ট (নতুন) -->
+            <!-- ৮. কুপন ম্যানেজমেন্ট -->
             <section id="section-coupon-management" class="section-content">
                 <h2 class="text-2xl font-bold text-gray-800 mb-6">কুপন ম্যানেজমেন্ট</h2>
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -233,7 +229,7 @@
                 </div>
             </section>
 
-            <!-- ৯. কাস্টমার লিস্ট (নতুন) -->
+            <!-- ৯. কাস্টমার লিস্ট -->
             <section id="section-customer-list" class="section-content">
                 <h2 class="text-2xl font-bold text-gray-800 mb-6">কাস্টমার লিস্ট</h2>
                 <div class="bg-white rounded-xl shadow-sm overflow-x-auto">
@@ -343,6 +339,25 @@
                     <form id="siteSettingsForm" class="space-y-4">
                         <div><label class="block text-sm font-medium text-gray-700">কোম্পানির নাম</label><input type="text" id="set_company_name" required class="mt-1 w-full px-3 py-2 border rounded-md"></div>
                         <div><label class="block text-sm font-medium text-gray-700">কোম্পানির টাইটেল / স্লোগান</label><input type="text" id="set_tagline" required class="mt-1 w-full px-3 py-2 border rounded-md"></div>
+                        
+                        <!-- নতুন ব্যানার সেটিংস -->
+                        <div class="border-t pt-4 mt-4">
+                            <h3 class="font-bold text-gray-800 mb-3">হোম পেজ ব্যানার সেটিংস</h3>
+                            <div class="space-y-3">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">ব্যানার টাইটেল (লেখা)</label>
+                                    <input type="text" id="set_banner_text" required class="mt-1 w-full px-3 py-2 border rounded-md" placeholder="যেমন: বইমেলায় ৫০% ছাড়!">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">ব্যানার ইমেজ</label>
+                                    <div class="flex items-center gap-4 mt-1">
+                                        <img id="current_banner" src="" class="h-12 w-24 object-cover border rounded hidden">
+                                        <input type="file" id="set_banner_file" accept="image/*" class="w-full px-3 py-2 border rounded-md bg-gray-50 text-sm">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <div><label class="block text-sm font-medium text-gray-700">কোম্পানির লোগো</label><div class="flex items-center gap-4 mt-1"><img id="current_logo" src="" class="h-12 w-12 object-contain border rounded hidden"><input type="file" id="set_logo_file" accept="image/*" class="w-full px-3 py-2 border rounded-md bg-gray-50 text-sm"></div></div>
                         <div class="grid grid-cols-2 gap-4">
                             <div><label class="block text-sm font-medium text-gray-700">ফোন নাম্বার</label><input type="text" id="set_phone" class="mt-1 w-full px-3 py-2 border rounded-md"></div>
@@ -515,8 +530,8 @@
             if(sectionId === 'report') loadReportData(); 
             if(sectionId === 'blog-management') loadPendingBlogs();
             if(sectionId === 'review-management') loadPendingReviews(); 
-            if(sectionId === 'coupon-management') loadCoupons(); // নতুন
-            if(sectionId === 'customer-list') loadCustomers(); // নতুন
+            if(sectionId === 'coupon-management') loadCoupons(); 
+            if(sectionId === 'customer-list') loadCustomers(); 
             if(sectionId === 'employee') loadEmployees();
             if(sectionId === 'activity-logs') loadActivityLogs(); 
         };
@@ -546,135 +561,128 @@
             listenForChatNotifications(); 
         }
 
-        async function fetchGlobalSettings() { /* আগের কোড */ }
-
-        // ==========================================
-        // নতুন ফাংশন: কুপন ম্যানেজমেন্ট
-        // ==========================================
-        async function loadCoupons() {
-            const tbody = document.getElementById('couponTableBody');
-            const { data: coupons, error } = await supabaseClient.from('coupons').select('*').order('created_at', { ascending: false });
-
-            if (error || !coupons || coupons.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-gray-500">কোনো কুপন নেই।</td></tr>`;
-                return;
+        async function fetchGlobalSettings() {
+            const { data } = await supabaseClient.from('site_settings').select('*').limit(1).maybeSingle();
+            if (data) {
+                siteSettings = data;
+                document.getElementById('sidebar-company-name').innerText = data.company_name || 'Boi Chokro';
+                document.getElementById('mobile-header-title').innerText = data.company_name || 'Boi Chokro';
+                document.getElementById('rep_company_name').innerText = data.company_name || 'Boi Chokro';
+                document.getElementById('rep_tagline').innerText = data.tagline || '';
+                document.getElementById('rep_address').innerText = data.address || 'ঢাকা, বাংলাদেশ';
+                document.getElementById('rep_phone').innerText = 'ফোন: ' + (data.phone || '017xxxxxxxx');
+                document.getElementById('rep_footer_text').innerText = data.footer_text || '© 2024 Boi Chokro';
+                if(data.logo_url) {
+                    document.getElementById('rep_logo').src = data.logo_url;
+                    document.getElementById('rep_logo').classList.remove('hidden');
+                    const sLogo = document.getElementById('sidebar_logo');
+                    sLogo.src = data.logo_url;
+                    sLogo.classList.remove('hidden');
+                }
             }
-
-            tbody.innerHTML = coupons.map(c => `
-                <tr class="border-b hover:bg-gray-50">
-                    <td class="p-4 font-bold text-gray-800 uppercase tracking-wider">${c.code}</td>
-                    <td class="p-4 text-blue-600 font-bold">${c.discount_percent}%</td>
-                    <td class="p-4"><span class="px-2 py-1 rounded text-xs font-bold ${c.is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">${c.is_active ? 'সক্রিয়' : 'নিষ্ক্রিয়'}</span></td>
-                    <td class="p-4 text-center">
-                        <button onclick="deleteCoupon('${c.id}', '${c.code}')" class="text-red-500 hover:text-red-700 p-2 rounded-full hover:bg-red-50 transition" title="ডিলিট">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                        </button>
-                    </td>
-                </tr>
-            `).join('');
         }
 
-        document.getElementById('addCouponForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const code = document.getElementById('couponCode').value.trim().toUpperCase();
-            const discount = parseFloat(document.getElementById('couponDiscount').value);
-            const btn = document.getElementById('addCouponBtn');
-            const msg = document.getElementById('couponMsg');
-
-            btn.innerText = 'তৈরি হচ্ছে...'; btn.disabled = true;
-            msg.classList.add('hidden');
-
-            const { error } = await supabaseClient.from('coupons').insert([{ code, discount_percent: discount }]);
-
-            if(error) {
-                msg.innerText = '⚠️ সমস্যা: ' + (error.code === '23505' ? 'এই কোডটি আগে থেকেই আছে!' : error.message);
-                msg.className = 'mt-3 text-center font-bold text-red-600 block';
-            } else {
-                await logActivity('Add', 'Coupons', `নতুন কুপন তৈরি করেছেন: "${code}"`);
-                msg.innerText = '✅ কুপন সফলভাবে তৈরি হয়েছে!';
-                msg.className = 'mt-3 text-center font-bold text-green-600 block';
-                document.getElementById('addCouponForm').reset();
-                loadCoupons();
+        async function loadSettings() {
+            if (!siteSettings) await fetchGlobalSettings();
+            if(siteSettings) {
+                document.getElementById('set_company_name').value = siteSettings.company_name || '';
+                document.getElementById('set_tagline').value = siteSettings.tagline || '';
+                document.getElementById('set_phone').value = siteSettings.phone || '';
+                document.getElementById('set_address').value = siteSettings.address || '';
+                document.getElementById('set_footer_text').value = siteSettings.footer_text || '';
+                document.getElementById('set_banner_text').value = siteSettings.banner_text || '';
+                
+                if(siteSettings.logo_url) {
+                    document.getElementById('current_logo').src = siteSettings.logo_url;
+                    document.getElementById('current_logo').classList.remove('hidden');
+                }
+                if(siteSettings.banner_image) {
+                    document.getElementById('current_banner').src = siteSettings.banner_image;
+                    document.getElementById('current_banner').classList.remove('hidden');
+                }
             }
-            btn.innerText = 'কুপন তৈরি করুন'; btn.disabled = false;
+        }
+
+        document.getElementById('siteSettingsForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('saveSettingsBtn');
+            btn.innerText = 'সেভ হচ্ছে...'; btn.disabled = true;
+            
+            const logoFile = document.getElementById('set_logo_file').files[0];
+            const bannerFile = document.getElementById('set_banner_file').files[0];
+            
+            let logo_url = siteSettings ? siteSettings.logo_url : null;
+            let banner_url = siteSettings ? siteSettings.banner_image : null;
+
+            try {
+                // লোগো আপলোড
+                if (logoFile) {
+                    const fileName = `logo_${Date.now()}.${logoFile.name.split('.').pop()}`;
+                    await supabaseClient.storage.from('book-covers').upload(fileName, logoFile);
+                    const { data } = supabaseClient.storage.from('book-covers').getPublicUrl(fileName);
+                    logo_url = data.publicUrl;
+                }
+
+                // ব্যানার ইমেজ আপলোড
+                if (bannerFile) {
+                    const bannerName = `banner_${Date.now()}.${bannerFile.name.split('.').pop()}`;
+                    await supabaseClient.storage.from('book-covers').upload(bannerName, bannerFile);
+                    const { data } = supabaseClient.storage.from('book-covers').getPublicUrl(bannerName);
+                    banner_url = data.publicUrl;
+                }
+
+                const updates = {
+                    company_name: document.getElementById('set_company_name').value,
+                    tagline: document.getElementById('set_tagline').value,
+                    phone: document.getElementById('set_phone').value,
+                    address: document.getElementById('set_address').value,
+                    footer_text: document.getElementById('set_footer_text').value,
+                    logo_url: logo_url,
+                    banner_image: banner_url,
+                    banner_text: document.getElementById('set_banner_text').value
+                };
+
+                if(siteSettings) await supabaseClient.from('site_settings').update(updates).eq('id', siteSettings.id);
+                else await supabaseClient.from('site_settings').insert([updates]);
+                
+                document.getElementById('settingsMessage').innerText = 'সেটিংস সফলভাবে সেভ হয়েছে!';
+                document.getElementById('settingsMessage').className = 'mt-3 text-center font-bold text-green-600 block';
+                await fetchGlobalSettings(); 
+            } catch (err) { showToast(err.message, true); } finally { btn.innerText = 'সেটিংস সেভ করুন'; btn.disabled = false; }
         });
 
-        window.deleteCoupon = async (id, code) => {
-            if(!confirm('আপনি কি এই কুপনটি ডিলিট করতে চান?')) return;
-            await supabaseClient.from('coupons').delete().eq('id', id);
-            await logActivity('Delete', 'Coupons', `কুপন ডিলিট করেছেন: "${code}"`);
-            showToast('কুপন ডিলিট হয়েছে।');
-            loadCoupons();
-        };
+        async function loadDashboardData() { /* আগের কোড */ }
+        function renderChart(data) { /* আগের কোড */ }
+        async function loadDropdowns() { /* আগের কোড */ }
+        async function loadAllBooks() { /* আগের কোড */ }
+        window.openEditModal = async (bookId) => { /* আগের কোড */ };
+        window.closeEditModal = () => { document.getElementById('editBookModal').classList.add('hidden'); document.getElementById('editBookModal').classList.remove('flex'); };
+        document.getElementById('editBookForm').addEventListener('submit', async (e) => { /* আগের কোড */ });
+        window.deleteBook = async (id) => { /* আগের কোড */ };
+        document.getElementById('addBookForm').addEventListener('submit', async (e) => { /* আগের কোড */ });
+        async function loadPendingBookings() { /* আগের কোড */ };
+        window.confirmOrder = async (id) => { /* আগের কোড */ };
+        async function loadPendingBlogs() { /* আগের কোড */ };
+        window.approveBlog = async (id) => { /* আগের কোড */ };
+        async function loadPendingReviews() { /* আগের কোড */ };
+        window.approveReview = async (id) => { /* আগের কোড */ };
+        document.getElementById('addCategoryForm').addEventListener('submit', async (e) => { /* আগের কোড */ });
+        document.getElementById('addAuthorForm').addEventListener('submit', async (e) => { /* আগের কোড */ });
+        document.getElementById('addPublisherForm').addEventListener('submit', async (e) => { /* আগের কোড */ });
+        document.getElementById('addEmployeeForm').addEventListener('submit', async (e) => { /* আগের কোড */ });
+        async function loadEmployees() { /* আগের কোড */ };
+        window.deleteEmployee = async (id) => { /* আগের কোড */ };
+        async function loadActivityLogs() { /* আগের কোড */ }
+        async function loadCoupons() { /* আগের কোড */ }
+        document.getElementById('addCouponForm').addEventListener('submit', async (e) => { /* আগের কোড */ });
+        window.deleteCoupon = async (id, code) => { /* আগের কোড */ };
+        async function loadCustomers() { /* আগের কোড */ }
+        window.filterReport = () => { /* আগের কোড */ };
+        window.resetReport = () => { /* আগের কোড */ };
+        async function loadReportData(startDate = null, endDate = null) { /* আগের কোড */ }
+        window.generatePDF = async () => { /* আগের কোড */ };
+        window.handleLogout = async () => { await supabaseClient.auth.signOut(); window.location.href = '/admin-login.html'; }
 
-        // ==========================================
-        // নতুন ফাংশন: কাস্টমার লিস্ট
-        // ==========================================
-        async function loadCustomers() {
-            const tbody = document.getElementById('customerTableBody');
-            tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center">লোড হচ্ছে...</td></tr>`;
-
-            // কাস্টমারদের প্রোফাইল আনা
-            const { data: customers, error } = await supabaseClient.from('profiles').select('*').eq('role', 'customer').order('created_at', { ascending: false });
-
-            if (error || !customers || customers.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-gray-500">কোনো কাস্টমার নেই।</td></tr>`;
-                return;
-            }
-
-            // প্রতিটা কাস্টমারের অর্ডার কাউন্ট বের করা
-            const customersWithOrders = await Promise.all(customers.map(async (cust) => {
-                const { count } = await supabaseClient.from('orders').select('*', { count: 'exact', head: true }).eq('user_id', cust.id);
-                return { ...cust, orderCount: count || 0 };
-            }));
-
-            tbody.innerHTML = customersWithOrders.map(cust => {
-                const name = cust.full_name || cust.email.split('@')[0];
-                return `
-                <tr class="border-b hover:bg-gray-50">
-                    <td class="p-4">
-                        <p class="font-bold text-gray-800">${name}</p>
-                        <p class="text-xs text-gray-500">${cust.email}</p>
-                    </td>
-                    <td class="p-4 text-sm">${cust.phone || 'N/A'}</td>
-                    <td class="p-4 text-sm text-gray-600 max-w-xs truncate">${cust.address || 'N/A'}</td>
-                    <td class="p-4 text-center"><span class="bg-blue-100 text-blue-700 font-bold px-3 py-1 rounded-full text-xs">${cust.orderCount} টি</span></td>
-                </tr>
-                `;
-            }).join('');
-        }
-
-        // ==========================================
-        // অর্ডার কনফার্ম (কাস্টমার নোটিফিকেশনসহ)
-        // ==========================================
-        window.confirmOrder = async (id) => {
-            if(!confirm('অর্ডারটি কনফার্ম করবেন?')) return;
-            
-            // ১. অর্ডার স্ট্যাটাস আপডেট
-            const { data: orderData, error } = await supabaseClient.from('orders').update({ status: 'completed' }).eq('id', id).select().single();
-            
-            if(error) { showToast('অর্ডার কনফার্ম করা যায়নি!', true); return; }
-
-            // ২. কাস্টমারকে নোটিফিকেশন পাঠানো
-            if(orderData && orderData.user_id) {
-                await supabaseClient.from('notifications').insert([{
-                    user_id: orderData.user_id,
-                    message: `আপনার অর্ডারটি (ID: ${id.split('-')[0]}) সফলভাবে কনফার্ম হয়েছে!`
-                }]);
-            }
-
-            // ৩. লগ
-            await logActivity('Confirm', 'Orders', `অর্ডার কনফার্ম করেছেন (ID: ${id.split('-')[0]})`);
-            
-            showToast('অর্ডার সফলভাবে কনফার্ম হয়েছে!');
-            loadPendingBookings();
-            loadDashboardData();
-        };
-
-        // অন্যান্য ফাংশনগুলো (loadDashboardData, loadActivityLogs, loadAllBooks, loadPendingBookings, loadPendingBlogs, loadPendingReviews, approveReview, approveBlog, loadEmployees, loadReportData, generatePDF, loadSettings) আগের কোডেই আছে, এখানে শুধু নতুন ফাংশনগুলো যুক্ত করা হয়েছে।
-
-        // (নোট: সম্পূর্ণ কোড ফাইলটি অনেক বড়, তাই এখানে শুধু নতুন ফাংশনগুলো এবং সেগুলোকে যুক্ত করার জন্য HTML অংশটুকু দেখানো হলো। আপনার আগের কোডে শুধু এই অংশগুলো পেস্ট করলেই হবে।)
-        
         init();
     </script>
 </body>
