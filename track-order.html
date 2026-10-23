@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="bn" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>অর্ডার ট্র্যাক করুন - Boi Chokro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script> tailwind.config = { darkMode: 'class' } </script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Hind Siliguri', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 transition-colors duration-300 min-h-screen flex flex-col">
+
+    <nav class="bg-white dark:bg-gray-800 shadow-sm p-4 flex justify-between items-center transition-colors">
+        <a href="/index.html" class="text-xl font-bold text-blue-600 dark:text-blue-400">&larr; হোমে ফিরে যান</a>
+        <h1 class="text-xl font-bold text-gray-800 dark:text-white">অর্ডার ট্র্যাকিং</h1>
+    </nav>
+
+    <main class="flex-grow max-w-3xl mx-auto w-full p-4 mt-10">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 md:p-8 border border-gray-100 dark:border-gray-700">
+            <h2 class="text-2xl font-bold text-center mb-2">আপনার অর্ডারটি কোথায়?</h2>
+            <p class="text-gray-500 text-center mb-6 text-sm">অর্ডারের বর্তমান অবস্থা জানতে নিচে আপনার মোবাইল নম্বর বা অর্ডার আইডি দিন।</p>
+            
+            <div class="flex flex-col sm:flex-row gap-3">
+                <input type="text" id="searchQuery" placeholder="আপনার মোবাইল নম্বর বা #অর্ডার_আইডি" class="flex-grow px-4 py-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <button onclick="trackOrder()" id="trackBtn" class="bg-blue-600 text-white font-bold px-6 py-3 rounded-lg hover:bg-blue-700 transition shadow-md w-full sm:w-auto">ট্র্যাক করুন</button>
+            </div>
+        </div>
+
+        <!-- রেজাল্ট এরিয়া -->
+        <div id="trackingResult" class="mt-8 hidden">
+            <!-- JS দিয়ে এখানে অর্ডার ডিটেইলস রেন্ডার হবে -->
+        </div>
+    </main>
+
+    <script>
+        const SUPABASE_URL = 'https://jhbpaezbpkfwjfmazdcn.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_oBzutzPKvIvujmSG7icXug_SwwveL5g';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        }
+
+        async function trackOrder() {
+            const query = document.getElementById('searchQuery').value.trim();
+            const resultDiv = document.getElementById('trackingResult');
+            const btn = document.getElementById('trackBtn');
+
+            if(!query) { alert('অনুগ্রহ করে মোবাইল নম্বর বা অর্ডার আইডি দিন!'); return; }
+
+            btn.innerText = 'খোঁজা হচ্ছে...'; btn.disabled = true;
+            resultDiv.classList.add('hidden');
+
+            // ফোন নম্বর অথবা অর্ডার আইডি (UUID-এর প্রথম অংশ) দিয়ে খোঁজা
+            const { data: orders, error } = await supabaseClient
+                .from('orders')
+                .select('*')
+                .or(`customer_phone.eq."${query}",id::text.ilike."${query}%"`)
+                .order('created_at', { ascending: false });
+
+            btn.innerText = 'ট্র্যাক করুন'; btn.disabled = false;
+
+            if(error || !orders || orders.length === 0) {
+                resultDiv.classList.remove('hidden');
+                resultDiv.innerHTML = `<div class="bg-red-50 text-red-600 p-6 rounded-xl text-center border border-red-200">
+                    <p class="font-bold text-lg mb-1">❌ কোনো অর্ডার পাওয়া যায়নি!</p>
+                    <p class="text-sm">আপনার দেওয়া তথ্যটি সঠিক কিনা আবার চেক করুন।</p>
+                </div>`;
+                return;
+            }
+
+            resultDiv.classList.remove('hidden');
+            
+            // সব ম্যাচিং অর্ডার দেখানো (যদি একই ফোন নম্বরে একাধিক অর্ডার থাকে)
+            resultDiv.innerHTML = orders.map(order => {
+                const status = order.status;
+                let pPending = 'bg-blue-600', pProcessing = 'bg-gray-300 dark:bg-gray-600', pShipped = 'bg-gray-300 dark:bg-gray-600', pCompleted = 'bg-gray-300 dark:bg-gray-600';
+                let textPending = 'text-blue-600 font-bold', textProcessing = 'text-gray-400', textShipped = 'text-gray-400', textCompleted = 'text-gray-400';
+
+                if(status === 'processing') {
+                    pProcessing = 'bg-blue-600'; textProcessing = 'text-blue-600 font-bold';
+                } else if(status === 'shipped') {
+                    pProcessing = 'bg-blue-600'; textProcessing = 'text-blue-600';
+                    pShipped = 'bg-blue-600'; textShipped = 'text-blue-600 font-bold';
+                } else if(status === 'completed') {
+                    pProcessing = 'bg-green-500'; textProcessing = 'text-green-500';
+                    pShipped = 'bg-green-500'; textShipped = 'text-green-500';
+                    pCompleted = 'bg-green-500'; textCompleted = 'text-green-500 font-bold';
+                }
+
+                const showTracker = status !== 'cancelled';
+
+                return `
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 mb-6">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 border-b dark:border-gray-700 pb-4">
+                        <div>
+                            <p class="text-sm font-bold text-gray-800 dark:text-white">অর্ডার আইডি: <span class="text-blue-600 dark:text-blue-400">#${order.id.split('-')[0]}</span></p>
+                            <p class="text-xs text-gray-500 mt-1">তারিখ: ${new Date(order.created_at).toLocaleDateString('bn-BD')}</p>
+                            <p class="text-xs text-gray-500 mt-1">কাস্টমার: ${order.customer_name}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-lg font-extrabold text-gray-900 dark:text-white">৳ ${order.total_amount}</p>
+                            ${status === 'cancelled' ? `<span class="text-xs font-bold text-red-500">অর্ডার বাতিল</span>` : ''}
+                        </div>
+                    </div>
+
+                    ${showTracker ? `
+                    <div class="flex justify-between relative mt-8 mb-4">
+                        <div class="absolute top-1/2 left-0 w-full h-1 bg-gray-200 dark:bg-gray-600 -z-10 transform -translate-y-1/2"></div>
+                        <div class="absolute top-1/2 left-0 h-1 ${pCompleted} -z-10 transform -translate-y-1/2 transition-all duration-500" style="width: ${status==='completed'?'100%':status==='shipped'?'66%':status==='processing'?'33%':'0%'}"></div>
+                        
+                        <div class="flex flex-col items-center">
+                            <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs ${pPending}">✓</div>
+                            <span class="text-[10px] sm:text-xs mt-2 ${textPending}">প্লেসড</span>
+                        </div>
+                        <div class="flex flex-col items-center">
+                            <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs ${pProcessing}">⚙️</div>
+                            <span class="text-[10px] sm:text-xs mt-2 ${textProcessing}">প্রসেসিং</span>
+                        </div>
+                        <div class="flex flex-col items-center">
+                            <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs ${pShipped}">🚚</div>
+                            <span class="text-[10px] sm:text-xs mt-2 ${textShipped}">শিপড</span>
+                        </div>
+                        <div class="flex flex-col items-center">
+                            <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs ${pCompleted}">🏠</div>
+                            <span class="text-[10px] sm:text-xs mt-2 ${textCompleted}">ডেলিভারড</span>
+                        </div>
+                    </div>
+                    ` : `
+                    <div class="mb-4 text-center bg-red-50 text-red-600 p-3 rounded-lg text-sm font-bold border border-red-200">এই অর্ডারটি বাতিল করা হয়েছে।</div>
+                    `}
+                </div>
+                `;
+            }).join('');
+        }
+    </script>
+</body>
+</html>
