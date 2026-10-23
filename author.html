@@ -1,58 +1,54 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="bn" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>লেখক পরিচিতি - Boi Chokro</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script> tailwind.config = { darkMode: 'class' } </script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Hind Siliguri', sans-serif; }
+        .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    </style>
 </head>
-<body class="bg-gray-50 min-h-screen flex flex-col">
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 transition-colors duration-300 min-h-screen flex flex-col">
 
-    <!-- নেভিগেশন বার -->
-    <nav class="bg-white shadow-sm sticky top-0 z-50">
+    <nav class="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-40">
         <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
-            <a href="/index.html" class="text-2xl font-bold text-blue-600 tracking-tight">Boi Chokro</a>
-            <div class="flex items-center gap-4 sm:gap-6">
-                <a href="/cart.html" class="relative text-gray-600 hover:text-blue-600">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
-                    <span id="cartCount" class="absolute -top-1 -right-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">0</span>
-                </a>
-                <div id="authButtons"></div>
-            </div>
+            <a href="/index.html" class="text-2xl font-bold text-blue-600 dark:text-blue-400">Boi Chokro</a>
+            <a href="/cart.html" class="relative text-gray-600 dark:text-gray-300 hover:text-blue-600 transition">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                <span id="cartCount" class="absolute -top-1 -right-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">0</span>
+            </a>
         </div>
     </nav>
 
     <main class="flex-grow max-w-7xl mx-auto w-full px-4 py-8">
-        
-        <!-- লেখকের প্রোফাইল সেকশন -->
-        <div id="authorProfile" class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-10 mb-10 flex flex-col md:flex-row items-center md:items-start gap-8">
-            <p class="text-center text-gray-500 w-full py-10">লেখকের তথ্য লোড হচ্ছে...</p>
+        <a href="/index.html" class="text-blue-600 text-sm font-semibold hover:underline mb-4 inline-block">&larr; হোমে ফিরে যান</a>
+
+        <!-- লেখকের প্রোফাইল কার্ড -->
+        <div id="authorProfileCard" class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 md:p-8 mb-10 flex flex-col md:flex-row items-center md:items-start gap-6">
+            <p class="text-gray-500 w-full text-center">লেখকের তথ্য লোড হচ্ছে...</p>
         </div>
 
         <!-- লেখকের বই -->
         <section>
-            <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
-                <span class="text-3xl">📚</span> এই লেখকের অন্যান্য বই
-            </h2>
-            <div id="authorBooksGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6 border-b dark:border-gray-700 pb-2">এই লেখকের বইসমূহ</h2>
+            <div id="authorBooksGrid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
                 <!-- বই লোড হবে -->
             </div>
         </section>
     </main>
-
-    <footer class="bg-gray-800 text-gray-300 py-6 text-center mt-auto">
-        <p>&copy; 2024 Boi Chokro. All rights reserved.</p>
-    </footer>
 
     <script>
         const SUPABASE_URL = 'https://jhbpaezbpkfwjfmazdcn.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_oBzutzPKvIvujmSG7icXug_SwwveL5g';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        let currentUser = null;
-        
-        // URL থেকে লেখকের নাম বের করা (?name=লেখকের নাম)
+        if (localStorage.getItem('theme') === 'dark') document.documentElement.classList.add('dark');
+
         const urlParams = new URLSearchParams(window.location.search);
         const authorName = urlParams.get('name');
 
@@ -61,35 +57,23 @@
             document.getElementById('cartCount').innerText = cart.length;
         }
 
-        async function checkAuth() {
-            const { data: { session } } = await supabaseClient.auth.getSession();
-            const authButtons = document.getElementById('authButtons');
-            if (session) {
-                currentUser = session.user;
-                authButtons.innerHTML = `<button onclick="handleLogout()" class="bg-red-50 text-red-600 px-4 py-2 rounded-lg text-sm font-semibold border border-red-200">লগআউট</button>`;
-            } else {
-                currentUser = null;
-                authButtons.innerHTML = `<a href="/login.html" class="text-blue-600 text-sm font-semibold hover:underline">লগইন</a>`;
-            }
-        }
-
         function createBookCard(book) {
             const currentPrice = book.discount_price || book.original_price || 0;
             const hasDiscount = book.original_price && book.discount_price && book.original_price > book.discount_price;
-            
+            let discountPercent = 0;
+            if (hasDiscount) discountPercent = Math.round(((book.original_price - book.discount_price) / book.original_price) * 100);
+
             return `
-            <div class="bg-white rounded-xl shadow-sm hover:shadow-xl transition duration-300 overflow-hidden flex flex-col border border-gray-100 relative">
-                <a href="/book-details.html?id=${book.id}" class="block h-56 bg-gray-100 overflow-hidden relative">
-                    ${hasDiscount ? `<div class="absolute top-3 left-3 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded shadow z-10">ডিসকাউন্ট</div>` : ''}
-                    <img src="${book.cover_url || 'https://via.placeholder.com/150'}" class="w-full h-full object-cover hover:scale-105 transition duration-500">
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-xl transition duration-300 overflow-hidden flex flex-col border border-gray-100 dark:border-gray-700 group">
+                <a href="/book-details.html?id=${book.id}" class="block w-full aspect-[3/4] bg-gray-100 dark:bg-gray-700 overflow-hidden relative">
+                    ${hasDiscount ? `<div class="absolute top-2 left-2 bg-red-600 text-white text-[10px] sm:text-xs font-bold px-2 py-1 rounded-md shadow-md z-10">${discountPercent}% ছাড়</div>` : ''}
+                    <img src="${book.cover_url || 'https://via.placeholder.com/300x400'}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
                 </a>
-                <div class="p-4 flex flex-col flex-grow">
-                    <span class="text-xs text-blue-600 font-semibold mb-1">${book.category}</span>
-                    <a href="/book-details.html?id=${book.id}">
-                        <h3 class="font-bold text-md text-gray-800 leading-tight mb-1 line-clamp-2 hover:text-blue-600 transition">${book.title}</h3>
-                    </a>
-                    <div class="mt-auto pt-2 flex items-center gap-2">
-                        <span class="text-lg font-bold text-blue-600">৳ ${currentPrice}</span>
+                <div class="p-3 sm:p-4 flex flex-col flex-grow">
+                    <a href="/book-details.html?id=${book.id}"><h3 class="font-bold text-sm sm:text-base text-gray-900 dark:text-white leading-snug line-clamp-2 mb-1">${book.title}</h3></a>
+                    <p class="text-xs text-gray-500 mb-2">${book.category}</p>
+                    <div class="mt-auto flex items-center gap-2">
+                        <span class="text-lg font-bold text-blue-600 dark:text-blue-400">৳ ${currentPrice}</span>
                         ${hasDiscount ? `<span class="text-gray-400 line-through text-xs">৳ ${book.original_price}</span>` : ''}
                     </div>
                 </div>
@@ -98,49 +82,39 @@
         }
 
         async function loadAuthorData() {
-            const profileDiv = document.getElementById('authorProfile');
+            const profileCard = document.getElementById('authorProfileCard');
             const booksGrid = document.getElementById('authorBooksGrid');
 
             if (!authorName) {
-                profileDiv.innerHTML = `<p class="text-red-500 text-center w-full">লেখক খুঁজে পাওয়া যায়নি!</p>`;
+                profileCard.innerHTML = `<p class="text-red-500 text-center w-full">লেখক খুঁজে পাওয়া যায়নি!</p>`;
                 return;
             }
 
-            // ১. লেখকের তথ্য আনা (ছবি ও বায়ো)
-            const { data: author, error } = await supabaseClient.from('authors').select('*').eq('name', authorName).single();
+            // ১. লেখকের তথ্য আনা (authors টেবিল থেকে)
+            const { data: author } = await supabaseClient.from('authors').select('*').eq('name', authorName).maybeSingle();
             
             if (author) {
-                // ডিফল্ট ছবি যদি ডাটাবেসে না থাকে
                 const authorImg = author.image_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(author.name)}&background=random&size=200`;
-                
-                profileDiv.innerHTML = `
-                    <div class="w-32 h-32 md:w-48 md:h-48 flex-shrink-0">
-                        <img src="${authorImg}" alt="${author.name}" class="w-full h-full object-cover rounded-full shadow-lg border-4 border-white">
-                    </div>
+                profileCard.innerHTML = `
+                    <img src="${authorImg}" class="w-32 h-32 md:w-40 md:h-40 rounded-full object-cover shadow-lg border-4 border-blue-100 dark:border-gray-600">
                     <div class="flex-grow text-center md:text-left">
-                        <a href="/index.html" class="text-blue-600 text-sm font-semibold hover:underline mb-2 inline-block">&larr; হোমে ফিরে যান</a>
-                        <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-3">${author.name}</h1>
-                        <div class="prose text-gray-600">
-                            <p>${author.bio || 'এই লেখকের সম্পর্কে বিস্তারিত তথ্য এখনো যোগ করা হয়নি।'}</p>
+                        <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-3">${author.name}</h1>
+                        <div class="text-gray-600 dark:text-gray-300 text-sm leading-relaxed max-w-3xl">
+                            ${author.bio || 'এই লেখকের সম্পর্কে বিস্তারিত তথ্য এখনো যোগ করা হয়নি।'}
                         </div>
                     </div>
                 `;
             } else {
-                // যদি authors টেবিলে লেখক খুঁজে না পাওয়া যায়, তবুও বই দেখাবে
-                profileDiv.innerHTML = `
+                profileCard.innerHTML = `
                     <div class="w-full text-center">
-                        <h1 class="text-3xl font-bold text-gray-800 mb-2">${authorName}</h1>
+                        <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">${authorName}</h1>
                         <p class="text-gray-500">এই লেখকের বিস্তারিত পরিচিতি এখনো যোগ করা হয়নি।</p>
                     </div>
                 `;
             }
 
             // ২. লেখকের সব বই আনা
-            const { data: books, error: booksError } = await supabaseClient
-                .from('books')
-                .select('*')
-                .eq('author', authorName)
-                .order('created_at', { ascending: false });
+            const { data: books } = await supabaseClient.from('books').select('*').eq('author', authorName).order('created_at', { ascending: false });
 
             if (books && books.length > 0) {
                 booksGrid.innerHTML = books.map(book => createBookCard(book)).join('');
@@ -149,12 +123,8 @@
             }
         }
 
-        window.handleLogout = async () => { await supabaseClient.auth.signOut(); checkAuth(); }
-
-        // শুরু
-        checkAuth();
-        loadAuthorData();
         updateCartCount();
+        loadAuthorData();
     </script>
 </body>
 </html>
