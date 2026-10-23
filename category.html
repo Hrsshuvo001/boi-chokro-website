@@ -1,100 +1,92 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="bn" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ক্যাটাগরি - Boi Chokro</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script> tailwind.config = { darkMode: 'class' } </script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Hind Siliguri', sans-serif; }
+        .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    </style>
 </head>
-<body class="bg-gray-50 min-h-screen flex flex-col">
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 transition-colors duration-300 min-h-screen flex flex-col">
 
-    <nav class="bg-white shadow-sm sticky top-0 z-50">
+    <!-- নেভিগেশন বার -->
+    <nav class="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-40">
         <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
-            <a href="/index.html" class="text-2xl font-bold text-blue-600 tracking-tight">Boi Chokro</a>
-            <div class="flex items-center gap-4 sm:gap-6">
-                <a href="/cart.html" class="relative text-gray-600 hover:text-blue-600 transition">
+            <a href="/index.html" class="text-2xl font-bold text-blue-600 dark:text-blue-400">Boi Chokro</a>
+            <div class="flex items-center gap-4">
+                <a href="/cart.html" class="relative text-gray-600 dark:text-gray-300 hover:text-blue-600 transition">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
                     <span id="cartCount" class="absolute -top-1 -right-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">0</span>
                 </a>
-                <div id="authButtons" class="flex items-center gap-3"></div>
             </div>
         </div>
     </nav>
 
+    <!-- মেইন কন্টেন্ট -->
     <main class="flex-grow max-w-7xl mx-auto w-full px-4 py-8">
-        <div class="mb-8 border-b pb-4">
-            <a href="/index.html" class="text-blue-600 text-sm font-semibold hover:underline mb-2 inline-block">&larr; হোমে ফিরে যান</a>
-            <h1 id="pageTitle" class="text-3xl font-bold text-gray-800">ক্যাটাগরি লোড হচ্ছে...</h1>
+        <div class="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b dark:border-gray-700 pb-4">
+            <div>
+                <a href="/index.html" class="text-blue-600 text-sm font-semibold hover:underline mb-1 inline-block">&larr; হোমে ফিরে যান</a>
+                <h1 id="pageTitle" class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">ক্যাটাগরি লোড হচ্ছে...</h1>
+            </div>
+            
+            <!-- সর্টিং অপশন -->
+            <div class="flex items-center gap-2">
+                <label class="text-sm font-semibold text-gray-600 dark:text-gray-400">সাজান:</label>
+                <select id="sortPrice" onchange="sortBooks()" class="px-3 py-1.5 border rounded-md bg-white dark:bg-gray-800 dark:border-gray-600 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
+                    <option value="default">ডিফল্ট</option>
+                    <option value="low">দাম: কম থেকে বেশি</option>
+                    <option value="high">দাম: বেশি থেকে কম</option>
+                </select>
+            </div>
         </div>
 
-        <div id="bookGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
+        <div id="bookGrid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+            <p class="text-gray-500 col-span-full text-center py-10">বই লোড হচ্ছে...</p>
+        </div>
     </main>
-
-    <footer class="bg-gray-800 text-gray-300 py-6 text-center mt-auto">
-        <p>&copy; 2024 Boi Chokro. All rights reserved.</p>
-    </footer>
 
     <script>
         const SUPABASE_URL = 'https://jhbpaezbpkfwjfmazdcn.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_oBzutzPKvIvujmSG7icXug_SwwveL5g';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        let currentUser = null;
+        if (localStorage.getItem('theme') === 'dark') document.documentElement.classList.add('dark');
+
         const urlParams = new URLSearchParams(window.location.search);
         const categoryName = urlParams.get('cat');
+        let allBooks = [];
 
         function updateCartCount() {
             const cart = JSON.parse(localStorage.getItem('boiChokroCart')) || [];
             document.getElementById('cartCount').innerText = cart.length;
         }
 
-        async function checkAuth() {
-            const { data: { session } } = await supabaseClient.auth.getSession();
-            const authButtons = document.getElementById('authButtons');
-            if (session) {
-                currentUser = session.user;
-                authButtons.innerHTML = `<button onclick="handleLogout()" class="bg-red-50 text-red-600 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-red-100 border border-red-200">লগআউট</button>`;
-            } else {
-                currentUser = null;
-                authButtons.innerHTML = `<a href="/login.html" class="text-blue-600 text-sm font-semibold hover:underline">লগইন</a>`;
-            }
-        }
-
         function createBookCard(book) {
             const currentPrice = book.discount_price || book.original_price || 0;
             const hasDiscount = book.original_price && book.discount_price && book.original_price > book.discount_price;
-            
             let discountPercent = 0;
-            if (hasDiscount) {
-                discountPercent = Math.round(((book.original_price - book.discount_price) / book.original_price) * 100);
-            }
+            if (hasDiscount) discountPercent = Math.round(((book.original_price - book.discount_price) / book.original_price) * 100);
 
             return `
-            <div class="bg-white rounded-xl shadow-sm hover:shadow-xl transition duration-300 overflow-hidden flex flex-col border border-gray-100 relative">
-                
-                <a href="/book-details.html?id=${book.id}" class="block h-56 bg-gray-100 overflow-hidden relative">
-                    ${hasDiscount ? `<div class="absolute top-3 left-3 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded shadow z-10">${discountPercent}% ছাড়</div>` : ''}
-                    <img src="${book.cover_url || 'https://via.placeholder.com/150'}" class="w-full h-full object-cover hover:scale-105 transition duration-500">
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-xl transition duration-300 overflow-hidden flex flex-col border border-gray-100 dark:border-gray-700 group">
+                <a href="/book-details.html?id=${book.id}" class="block w-full aspect-[3/4] bg-gray-100 dark:bg-gray-700 overflow-hidden relative">
+                    ${hasDiscount ? `<div class="absolute top-2 left-2 bg-red-600 text-white text-[10px] sm:text-xs font-bold px-2 py-1 rounded-md shadow-md z-10">${discountPercent}% ছাড়</div>` : ''}
+                    <img src="${book.cover_url || 'https://via.placeholder.com/300x400'}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
                 </a>
-                
-                <div class="p-4 flex flex-col flex-grow">
-                    <span class="text-xs text-blue-600 font-semibold mb-1">${book.category || 'সাধারণ'}</span>
-                    <a href="/book-details.html?id=${book.id}">
-                        <h3 class="font-bold text-md text-gray-800 leading-tight mb-1 line-clamp-2 hover:text-blue-600 transition">${book.title}</h3>
-                    </a>
-                    <p class="text-xs text-gray-500 mb-3">লেখক: ${book.author}</p>
-                    
-                    <div class="flex items-end gap-2 mb-3 mt-auto">
-                        <span class="text-xl font-bold text-blue-600">৳ ${currentPrice}</span>
-                        ${hasDiscount ? `<span class="text-gray-400 line-through text-xs mb-1">৳ ${book.original_price}</span>` : ''}
+                <div class="p-3 sm:p-4 flex flex-col flex-grow">
+                    <a href="/book-details.html?id=${book.id}"><h3 class="font-bold text-sm sm:text-base text-gray-900 dark:text-white leading-snug line-clamp-2 mb-1">${book.title}</h3></a>
+                    <p class="text-xs text-gray-500 mb-2">${book.author}</p>
+                    <div class="mt-auto flex items-center gap-2">
+                        <span class="text-lg font-bold text-blue-600 dark:text-blue-400">৳ ${currentPrice}</span>
+                        ${hasDiscount ? `<span class="text-gray-400 line-through text-xs">৳ ${book.original_price}</span>` : ''}
                     </div>
-
-                    ${book.is_affiliate ? `
-                        <button onclick="event.preventDefault(); handleAffiliateBuy('${book.purchase_link}')" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-1.5 rounded-lg transition text-sm z-10 relative">অন্য সাইট থেকে কিনুন</button>
-                    ` : `
-                        <button onclick="event.preventDefault(); addToCart('${book.id}', '${book.title}', ${currentPrice}, '${book.cover_url}')" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-1.5 rounded-lg transition flex justify-center items-center gap-1 text-sm z-10 relative">কার্টে যোগ করুন</button>
-                    `}
                 </div>
             </div>
             `;
@@ -104,45 +96,40 @@
             const grid = document.getElementById('bookGrid');
             const title = document.getElementById('pageTitle');
 
-            if (!categoryName) {
-                title.innerText = "ক্যাটাগরি পাওয়া যায়নি";
-                grid.innerHTML = `<p class="text-red-500 col-span-full text-center">কোনো ক্যাটাগরি সিলেক্ট করা হয়নি।</p>`;
-                return;
+            if (!categoryName || categoryName === 'all') {
+                title.innerText = "সব বই";
+                const { data } = await supabaseClient.from('books').select('*').order('created_at', { ascending: false });
+                allBooks = data || [];
+            } else {
+                title.innerText = `ক্যাটাগরি: "${categoryName}"`;
+                const { data } = await supabaseClient.from('books').select('*').eq('category', categoryName).order('created_at', { ascending: false });
+                allBooks = data || [];
             }
 
-            title.innerText = `"${categoryName}" এর বইসমূহ`;
-
-            const { data: books, error } = await supabaseClient
-                .from('books')
-                .select('*')
-                .eq('category', categoryName)
-                .order('created_at', { ascending: false });
-
-            if (error || books.length === 0) {
-                grid.innerHTML = `<p class="text-gray-500 col-span-full text-center py-10">এই ক্যাটাগরিতে এখনো কোনো বই যোগ করা হয়নি।</p>`;
+            if (allBooks.length === 0) {
+                grid.innerHTML = `<p class="text-gray-500 col-span-full text-center py-10">এই ক্যাটাগরিতে কোনো বই পাওয়া যায়নি।</p>`;
                 return;
             }
-
-            grid.innerHTML = books.map(book => createBookCard(book)).join('');
+            renderBooks(allBooks);
         }
 
-        window.addToCart = (id, title, price, image) => {
-            if (!currentUser) { alert('কার্টে যোগ করতে প্রথমে লগইন করুন!'); window.location.href = '/login.html'; return; }
-            let cart = JSON.parse(localStorage.getItem('boiChokroCart')) || [];
-            if (cart.find(item => item.id === id)) { alert('বইটি আগেই কার্টে আছে!'); return; }
-            cart.push({ id, title, price, image });
-            localStorage.setItem('boiChokroCart', JSON.stringify(cart));
-            updateCartCount(); alert('সফলভাবে কার্টে যোগ হয়েছে!');
+        window.sortBooks = () => {
+            const sort = document.getElementById('sortPrice').value;
+            let sorted = [...allBooks];
+            if (sort === 'low') {
+                sorted.sort((a, b) => (a.discount_price || a.original_price) - (b.discount_price || b.original_price));
+            } else if (sort === 'high') {
+                sorted.sort((a, b) => (b.discount_price || b.original_price) - (a.discount_price || a.original_price));
+            }
+            renderBooks(sorted);
         }
 
-        window.handleAffiliateBuy = (link) => {
-            if (!currentUser) { alert('লিংকে যেতে প্রথমে লগইন করুন!'); window.location.href = '/login.html'; return; }
-            if(link) window.open(link, '_blank');
+        function renderBooks(books) {
+            document.getElementById('bookGrid').innerHTML = books.map(book => createBookCard(book)).join('');
         }
 
-        window.handleLogout = async () => { await supabaseClient.auth.signOut(); checkAuth(); }
-
-        checkAuth(); loadCategoryBooks(); updateCartCount();
+        updateCartCount();
+        loadCategoryBooks();
     </script>
 </body>
 </html>
