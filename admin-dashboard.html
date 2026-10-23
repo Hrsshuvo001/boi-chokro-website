@@ -35,7 +35,6 @@
                 <button onclick="showSection('home')" class="nav-item active text-left px-4 py-3 rounded-md hover:bg-slate-700 transition flex items-center gap-3 w-full">📊 হোম (ড্যাশবোর্ড)</button>
                 <button onclick="showSection('all-books')" class="nav-item text-left px-4 py-3 rounded-md hover:bg-slate-700 transition flex items-center gap-3 w-full">📚 সব বই</button>
                 <button onclick="showSection('add-book')" class="nav-item text-left px-4 py-3 rounded-md hover:bg-slate-700 transition flex items-center gap-3 w-full">➕ অ্যাড নিউ বুক</button>
-                <!-- মেনু পরিবর্তন করা হয়েছে -->
                 <button onclick="showSection('confirm-booking')" class="nav-item text-left px-4 py-3 rounded-md hover:bg-slate-700 transition flex items-center gap-3 w-full">📦 অর্ডার ম্যানেজমেন্ট</button>
                 <button onclick="showSection('add-meta')" class="nav-item text-left px-4 py-3 rounded-md hover:bg-slate-700 transition flex items-center gap-3 w-full">🏷️ ক্যাটাগরি/লেখক/প্রকাশনী</button>
                 <button onclick="showSection('blog-management')" class="nav-item text-left px-4 py-3 rounded-md hover:bg-slate-700 transition flex items-center gap-3 w-full">📝 ব্লগ ম্যানেজমেন্ট</button>
@@ -168,7 +167,7 @@
                 </div>
             </section>
 
-            <!-- ৪. অর্ডার ম্যানেজমেন্ট (নতুন) -->
+            <!-- ৪. অর্ডার ম্যানেজমেন্ট -->
             <section id="section-confirm-booking" class="section-content">
                 <h2 class="text-2xl font-bold text-gray-800 mb-6">সব অর্ডার (Order Management)</h2>
                 <div class="bg-white rounded-xl shadow-sm overflow-x-auto">
@@ -187,7 +186,7 @@
                 </div>
             </section>
 
-            <!-- বাকি সেকশনগুলো (মেটা, ব্লগ, রিভিউ, কুপন, কাস্টমার, ইম্পলয়ি, লগ, রিপোর্ট, সেটিংস) আগের মতোই থাকবে -->
+            <!-- ৫. অ্যাড মেটা -->
             <section id="section-add-meta" class="section-content">
                 <h2 class="text-2xl font-bold text-gray-800 mb-6">ক্যাটাগরি, লেখক ও প্রকাশনী যোগ করুন</h2>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -197,16 +196,19 @@
                 </div>
             </section>
 
+            <!-- ৬. ব্লগ ম্যানেজমেন্ট -->
             <section id="section-blog-management" class="section-content">
                 <h2 class="text-2xl font-bold text-gray-800 mb-6">ব্লগ ম্যানেজমেন্ট (পেন্ডিং)</h2>
                 <div id="pendingBlogsList" class="space-y-4"><p class="text-gray-500">ব্লগ লোড হচ্ছে...</p></div>
             </section>
 
+            <!-- ৭. রিভিউ ম্যানেজমেন্ট -->
             <section id="section-review-management" class="section-content">
                 <h2 class="text-2xl font-bold text-gray-800 mb-6">রিভিউ ম্যানেজমেন্ট (পেন্ডিং)</h2>
                 <div id="pendingReviewsList" class="space-y-4"><p class="text-gray-500">রিভিউ লোড হচ্ছে...</p></div>
             </section>
 
+            <!-- ৮. কুপন ম্যানেজমেন্ট -->
             <section id="section-coupon-management" class="section-content">
                 <h2 class="text-2xl font-bold text-gray-800 mb-6">কুপন ম্যানেজমেন্ট</h2>
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -230,6 +232,7 @@
                 </div>
             </section>
 
+            <!-- ৯. কাস্টমার লিস্ট -->
             <section id="section-customer-list" class="section-content">
                 <h2 class="text-2xl font-bold text-gray-800 mb-6">কাস্টমার লিস্ট</h2>
                 <div class="bg-white rounded-xl shadow-sm overflow-x-auto">
@@ -240,6 +243,7 @@
                 </div>
             </section>
 
+            <!-- ১০. ইম্পলয়ি ম্যানেজমেন্ট -->
             <section id="section-employee" class="section-content">
                 <h2 class="text-2xl font-bold text-gray-800 mb-6">ইম্পলয়ি ম্যানেজমেন্ট</h2>
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -263,6 +267,7 @@
                 </div>
             </section>
 
+            <!-- ১১. কার্যক্রমের লগ -->
             <section id="section-activity-logs" class="section-content">
                 <h2 class="text-2xl font-bold text-gray-800 mb-6">কার্যক্রমের লগ (Activity Logs)</h2>
                 <div class="bg-white rounded-xl shadow-sm overflow-x-auto">
@@ -273,6 +278,7 @@
                 </div>
             </section>
 
+            <!-- ১২. রিপোর্ট -->
             <section id="section-report" class="section-content">
                 <div class="flex justify-between items-center mb-6">
                     <h2 class="text-2xl font-bold text-gray-800">সেলস রিপোর্ট</h2>
@@ -322,12 +328,23 @@
                 </div>
             </section>
 
+            <!-- ১৩. সাইট সেটিংস -->
             <section id="section-settings" class="section-content">
                 <h2 class="text-2xl font-bold text-gray-800 mb-6">সাইট সেটিংস</h2>
                 <div class="bg-white p-6 rounded-xl shadow-sm max-w-2xl">
                     <form id="siteSettingsForm" class="space-y-4">
                         <div><label class="block text-sm font-medium text-gray-700">কোম্পানির নাম</label><input type="text" id="set_company_name" required class="mt-1 w-full px-3 py-2 border rounded-md"></div>
                         <div><label class="block text-sm font-medium text-gray-700">কোম্পানির টাইটেল / স্লোগান</label><input type="text" id="set_tagline" required class="mt-1 w-full px-3 py-2 border rounded-md"></div>
+                        
+                        <div class="border-t pt-4 mt-4">
+                            <h3 class="font-bold text-gray-800 mb-3">ডেলিভারি চার্জ সেটিংস</h3>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div><label class="block text-sm font-medium text-gray-700">ঢাকার ভেতরে (৳)</label><input type="number" id="set_del_dhaka" required class="mt-1 w-full px-3 py-2 border rounded-md" placeholder="60"></div>
+                                <div><label class="block text-sm font-medium text-gray-700">ঢাকার বাইরে (৳)</label><input type="number" id="set_del_outside" required class="mt-1 w-full px-3 py-2 border rounded-md" placeholder="120"></div>
+                            </div>
+                            <div class="mt-3"><label class="block text-sm font-medium text-gray-700">ফ্রি ডেলিভারি (কত টাকার বেশি কিনলে)</label><input type="number" id="set_free_del" required class="mt-1 w-full px-3 py-2 border rounded-md" placeholder="1000 (0 দিলে অফ হবে)"></div>
+                        </div>
+
                         <div class="border-t pt-4 mt-4">
                             <h3 class="font-bold text-gray-800 mb-3">হোম পেজ ব্যানার সেটিংস</h3>
                             <div class="space-y-3">
@@ -335,6 +352,7 @@
                                 <div><label class="block text-sm font-medium text-gray-700">ব্যানার ইমেজ</label><div class="flex items-center gap-4 mt-1"><img id="current_banner" src="" class="h-12 w-24 object-cover border rounded hidden"><input type="file" id="set_banner_file" accept="image/*" class="w-full px-3 py-2 border rounded-md bg-gray-50 text-sm"></div></div>
                             </div>
                         </div>
+
                         <div><label class="block text-sm font-medium text-gray-700">কোম্পানির লোগো</label><div class="flex items-center gap-4 mt-1"><img id="current_logo" src="" class="h-12 w-12 object-contain border rounded hidden"><input type="file" id="set_logo_file" accept="image/*" class="w-full px-3 py-2 border rounded-md bg-gray-50 text-sm"></div></div>
                         <div class="grid grid-cols-2 gap-4">
                             <div><label class="block text-sm font-medium text-gray-700">ফোন নাম্বার</label><input type="text" id="set_phone" class="mt-1 w-full px-3 py-2 border rounded-md"></div>
@@ -538,8 +556,102 @@
             listenForChatNotifications(); 
         }
 
-        async function fetchGlobalSettings() { /* আগের কোড */ }
-        async function loadActivityLogs() { /* আগের কোড */ }
+        async function fetchGlobalSettings() {
+            const { data } = await supabaseClient.from('site_settings').select('*').limit(1).maybeSingle();
+            if (data) {
+                siteSettings = data;
+                document.getElementById('sidebar-company-name').innerText = data.company_name || 'Boi Chokro';
+                document.getElementById('mobile-header-title').innerText = data.company_name || 'Boi Chokro';
+                document.getElementById('rep_company_name').innerText = data.company_name || 'Boi Chokro';
+                document.getElementById('rep_tagline').innerText = data.tagline || '';
+                document.getElementById('rep_address').innerText = data.address || 'ঢাকা, বাংলাদেশ';
+                document.getElementById('rep_phone').innerText = 'ফোন: ' + (data.phone || '017xxxxxxxx');
+                document.getElementById('rep_footer_text').innerText = data.footer_text || '© 2024 Boi Chokro';
+                if(data.logo_url) {
+                    document.getElementById('rep_logo').src = data.logo_url;
+                    document.getElementById('rep_logo').classList.remove('hidden');
+                    const sLogo = document.getElementById('sidebar_logo');
+                    sLogo.src = data.logo_url;
+                    sLogo.classList.remove('hidden');
+                }
+            }
+        }
+
+        async function loadSettings() {
+            if (!siteSettings) await fetchGlobalSettings();
+            if(siteSettings) {
+                document.getElementById('set_company_name').value = siteSettings.company_name || '';
+                document.getElementById('set_tagline').value = siteSettings.tagline || '';
+                document.getElementById('set_phone').value = siteSettings.phone || '';
+                document.getElementById('set_address').value = siteSettings.address || '';
+                document.getElementById('set_footer_text').value = siteSettings.footer_text || '';
+                document.getElementById('set_banner_text').value = siteSettings.banner_text || '';
+                // নতুন ডেলিভারি সেটিংস
+                document.getElementById('set_del_dhaka').value = siteSettings.delivery_dhaka || 60;
+                document.getElementById('set_del_outside').value = siteSettings.delivery_outside || 120;
+                document.getElementById('set_free_del').value = siteSettings.free_delivery_amount || 0;
+                
+                if(siteSettings.logo_url) {
+                    document.getElementById('current_logo').src = siteSettings.logo_url;
+                    document.getElementById('current_logo').classList.remove('hidden');
+                }
+                if(siteSettings.banner_image) {
+                    document.getElementById('current_banner').src = siteSettings.banner_image;
+                    document.getElementById('current_banner').classList.remove('hidden');
+                }
+            }
+        }
+
+        document.getElementById('siteSettingsForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('saveSettingsBtn');
+            btn.innerText = 'সেভ হচ্ছে...'; btn.disabled = true;
+            
+            const logoFile = document.getElementById('set_logo_file').files[0];
+            const bannerFile = document.getElementById('set_banner_file').files[0];
+            
+            let logo_url = siteSettings ? siteSettings.logo_url : null;
+            let banner_url = siteSettings ? siteSettings.banner_image : null;
+
+            try {
+                if (logoFile) {
+                    const fileName = `logo_${Date.now()}.${logoFile.name.split('.').pop()}`;
+                    await supabaseClient.storage.from('book-covers').upload(fileName, logoFile);
+                    const { data } = supabaseClient.storage.from('book-covers').getPublicUrl(fileName);
+                    logo_url = data.publicUrl;
+                }
+
+                if (bannerFile) {
+                    const bannerName = `banner_${Date.now()}.${bannerFile.name.split('.').pop()}`;
+                    await supabaseClient.storage.from('book-covers').upload(bannerName, bannerFile);
+                    const { data } = supabaseClient.storage.from('book-covers').getPublicUrl(bannerName);
+                    banner_url = data.publicUrl;
+                }
+
+                const updates = {
+                    company_name: document.getElementById('set_company_name').value,
+                    tagline: document.getElementById('set_tagline').value,
+                    phone: document.getElementById('set_phone').value,
+                    address: document.getElementById('set_address').value,
+                    footer_text: document.getElementById('set_footer_text').value,
+                    logo_url: logo_url,
+                    banner_image: banner_url,
+                    banner_text: document.getElementById('set_banner_text').value,
+                    // নতুন ডেলিভারি সেটিংস
+                    delivery_dhaka: parseFloat(document.getElementById('set_del_dhaka').value),
+                    delivery_outside: parseFloat(document.getElementById('set_del_outside').value),
+                    free_delivery_amount: parseFloat(document.getElementById('set_free_del').value)
+                };
+
+                if(siteSettings) await supabaseClient.from('site_settings').update(updates).eq('id', siteSettings.id);
+                else await supabaseClient.from('site_settings').insert([updates]);
+                
+                document.getElementById('settingsMessage').innerText = 'সেটিংস সফলভাবে সেভ হয়েছে!';
+                document.getElementById('settingsMessage').className = 'mt-3 text-center font-bold text-green-600 block';
+                await fetchGlobalSettings(); 
+            } catch (err) { showToast(err.message, true); } finally { btn.innerText = 'সেটিংস সেভ করুন'; btn.disabled = false; }
+        });
+
         async function loadDashboardData() { /* আগের কোড */ }
         function renderChart(data) { /* আগের কোড */ }
         async function loadDropdowns() { /* আগের কোড */ }
@@ -559,6 +671,7 @@
         document.getElementById('addEmployeeForm').addEventListener('submit', async (e) => { /* আগের কোড */ });
         async function loadEmployees() { /* আগের কোড */ };
         window.deleteEmployee = async (id) => { /* আগের কোড */ };
+        async function loadActivityLogs() { /* আগের কোড */ }
         async function loadCoupons() { /* আগের কোড */ }
         document.getElementById('addCouponForm').addEventListener('submit', async (e) => { /* আগের কোড */ });
         window.deleteCoupon = async (id, code) => { /* আগের কোড */ };
@@ -567,13 +680,11 @@
         window.resetReport = () => { /* আগের কোড */ };
         async function loadReportData(startDate = null, endDate = null) { /* আগের কোড */ }
         window.generatePDF = async () => { /* আগের কোড */ };
-        window.handleLogout = async () => { await supabaseClient.auth.signOut(); window.location.href = '/admin-login.html'; }
-
+        
         // ==========================================
-        // অর্ডার ম্যানেজমেন্ট লজিক (নতুন)
+        // অর্ডার ম্যানেজমেন্ট লজিক
         // ==========================================
         async function loadPendingBookings() {
-            // সব অর্ডার লোড করবে, শুধু পেন্ডিং না
             const { data: orders } = await supabaseClient.from('orders').select('*').order('created_at', { ascending: false });
             const tbody = document.getElementById('bookingTableBody');
             
@@ -615,12 +726,10 @@
         window.updateOrderStatus = async (orderId, newStatus) => {
             if(!confirm('আপনি কি অর্ডারটির স্ট্যাটাস পরিবর্তন করতে চান?')) return;
 
-            // ১. ডাটাবেস আপডেট
             const { data: order, error } = await supabaseClient.from('orders').update({ status: newStatus }).eq('id', orderId).select().single();
             
             if(error) { showToast('স্ট্যাটাস আপডেট করা যায়নি!', true); loadPendingBookings(); return; }
 
-            // ২. কাস্টমারকে নোটিফিকেশন পাঠানো
             if(order && order.user_id) {
                 let msg = '';
                 if(newStatus === 'processing') msg = 'আপনার অর্ডারটি প্রসেসিং করা হচ্ছে।';
@@ -636,13 +745,12 @@
                 }
             }
 
-            // ৩. লগ এন্ট্রি
             await logActivity('Update', 'Orders', `অর্ডার স্ট্যাটাস আপডেট করেছেন (ID: ${orderId.split('-')[0]}) থেকে ${newStatus}`);
-            
             showToast('অর্ডার স্ট্যাটাস সফলভাবে আপডেট হয়েছে!');
-            loadPendingBookings(); // রিফ্রেশ
+            loadPendingBookings(); 
         };
 
+        window.handleLogout = async () => { await supabaseClient.auth.signOut(); window.location.href = '/admin-login.html'; }
         init();
     </script>
 </body>
