@@ -6,6 +6,10 @@
     <title>লগইন - Boi Chokro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Hind Siliguri', sans-serif; }
+    </style>
 </head>
 <body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
 
@@ -25,8 +29,13 @@
                 <label class="block text-sm font-semibold text-gray-700 mb-1">পাসওয়ার্ড</label>
                 <input type="password" id="password" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
             </div>
+
+            <!-- পাসওয়ার্ড ভুলে গেছেন লিংক -->
+            <div class="text-right">
+                <a href="/forgot-password.html" class="text-sm text-blue-600 hover:underline font-semibold">পাসওয়ার্ড ভুলে গেছেন?</a>
+            </div>
             
-            <button type="submit" id="loginBtn" class="w-full bg-blue-600 text-white font-bold py-2.5 rounded-lg hover:bg-blue-700 transition">
+            <button type="submit" id="loginBtn" class="w-full bg-blue-600 text-white font-bold py-2.5 rounded-lg hover:bg-blue-700 transition shadow-md">
                 লগইন
             </button>
         </form>
@@ -58,39 +67,41 @@
             const password = document.getElementById('password').value;
 
             try {
-                // ১. প্রথমে Supabase Auth দিয়ে লগইন করা
                 const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
 
                 if (error) {
                     throw new Error(error.message === 'Invalid login credentials' ? 'ভুল ইমেইল বা পাসওয়ার্ড!' : error.message);
                 }
 
-                // ২. লগইন সফল হলে, চেক করা সে অ্যাডমিন কি না
                 if (data.user) {
                     const { data: profile, error: profileError } = await supabaseClient
                         .from('profiles')
                         .select('role')
                         .eq('id', data.user.id)
-                        .maybeSingle(); // maybeSingle ব্যবহার করা হয়েছে যাতে এরর না আসে
+                        .maybeSingle();
 
                     if (profileError) throw new Error("প্রোফাইল চেক করতে সমস্যা হয়েছে!");
 
-                    // ৩. যদি ইউজার অ্যাডমিন হয়
                     if (profile && profile.role === 'admin') {
-                        await supabaseClient.auth.signOut(); // সাথে সাথে লগআউট করে দাও
-                        
+                        await supabaseClient.auth.signOut();
                         messageDiv.classList.remove('hidden', 'text-green-600');
                         messageDiv.classList.add('text-red-600');
                         messageDiv.innerText = '❌ আপনি একজন অ্যাডমিন! দয়া করে অ্যাডমিন পোর্টাল দিয়ে লগইন করুন।';
-                    } 
-                    // ৪. যদি সাধারণ ইউজার হয়
-                    else {
+                    } else if (profile && profile.role === 'employee') {
+                        // ইমপ্লয়ি হলে অ্যাডমিন প্যানেলে পাঠাবে
+                        messageDiv.classList.remove('hidden', 'text-red-600');
+                        messageDiv.classList.add('text-green-600');
+                        messageDiv.innerText = '✅ সফলভাবে লগইন হয়েছে! অ্যাডমিন প্যানেলে যাচ্ছেন...';
+                        setTimeout(() => {
+                            window.location.href = '/admin-dashboard.html'; 
+                        }, 1000);
+                    } else {
+                        // সাধারণ কাস্টমার
                         messageDiv.classList.remove('hidden', 'text-red-600');
                         messageDiv.classList.add('text-green-600');
                         messageDiv.innerText = '✅ সফলভাবে লগইন হয়েছে! হোম পেজে যাচ্ছেন...';
-                        
                         setTimeout(() => {
-                            window.location.href = '/index.html'; // হোম পেজে পাঠিয়ে দাও
+                            window.location.href = '/index.html'; 
                         }, 1000);
                     }
                 }
