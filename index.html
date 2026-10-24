@@ -164,7 +164,6 @@
         let currentSort = 'newest';
         let currentCategory = 'all';
         
-        // এখানে বাগ ফিক্স করা হয়েছে (undefined এর বদলে ডিফল্ট ভ্যালু)
         let minPriceFilter = 0; 
         let maxPriceFilter = Infinity; 
 
@@ -272,14 +271,11 @@
         }
 
         async function loadHomePage() {
-            // ফিল্টার ভ্যালু আগে থেকেই সেট করে দেওয়া হলো
             minPriceFilter = 0;
             maxPriceFilter = Infinity;
 
-            // Supabase থেকে বই লোড করা
             const { data: books, error } = await supabaseClient.from('books').select('*'); 
             
-            // লোডার লুকানো এবং গ্রিড দেখানো
             document.getElementById('skeletonLoader').classList.add('hidden');
             document.getElementById('bookGrid').classList.remove('hidden');
 
@@ -291,7 +287,6 @@
             allBooksData = books;
             filteredBooksData = [...books]; 
 
-            // ক্যাটাগরি লোড করা
             const { data: categories } = await supabaseClient.from('categories').select('*').order('name');
             const categoryButtons = document.getElementById('categoryButtons');
 
@@ -374,11 +369,17 @@
             renderBooks();
         }
 
+        // ==============================
+        // সার্চ বার ও ড্রপডাউন লজিক (নতুন যুক্ত করা হয়েছে)
+        // ==============================
         window.handleSearch = (source) => {
             const input = source === 'desktop' ? document.getElementById('searchInput') : document.getElementById('searchInputMobile');
             const query = input.value.trim().toLowerCase();
+            const dropdown = source === 'desktop' ? document.getElementById('searchResultsDropdown') : document.getElementById('searchResultsDropdownMobile');
             
+            // মেইন গ্রিড আপডেট করা
             if(query === '') {
+                dropdown.classList.add('hidden');
                 applyFiltersAndRender();
                 return;
             }
@@ -386,11 +387,39 @@
             filteredBooksData = allBooksData.filter(book => {
                 const title = (book.title || '').toLowerCase();
                 const author = (book.author || '').toLowerCase();
-                return title.includes(query) || author.includes(query);
+                const publisher = (book.publisher || '').toLowerCase();
+                return title.includes(query) || author.includes(query) || publisher.includes(query);
             });
             itemsToShow = 12; 
             renderBooks();
+
+            // ড্রপডাউন দেখানো
+            if(filteredBooksData.length > 0) {
+                dropdown.classList.remove('hidden');
+                // সর্বোচ্চ ৫টি রেজাল্ট দেখাবে
+                dropdown.innerHTML = filteredBooksData.slice(0, 5).map(book => `
+                    <a href="/book-details.html?id=${book.id}" class="flex items-center gap-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-700 last:border-0 cursor-pointer">
+                        <img src="${book.cover_url || 'https://via.placeholder.com/50'}" class="w-10 h-14 object-cover rounded shadow-sm">
+                        <div class="overflow-hidden">
+                            <p class="font-bold text-sm text-gray-900 dark:text-white truncate">${book.title}</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 truncate">${book.author}</p>
+                        </div>
+                        <span class="ml-auto font-bold text-sm text-blue-600 dark:text-blue-400 whitespace-nowrap">৳ ${book.discount_price || book.original_price || 0}</span>
+                    </a>
+                `).join('');
+            } else {
+                dropdown.classList.remove('hidden');
+                dropdown.innerHTML = `<p class="p-4 text-center text-sm text-gray-500 dark:text-gray-400">কোনো বই পাওয়া যায়নি।</p>`;
+            }
         }
+
+        // বাইরে ক্লিক করলে সার্চ ড্রপডাউন বন্ধ হয়ে যাবে
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.group')) {
+                document.getElementById('searchResultsDropdown').classList.add('hidden');
+                document.getElementById('searchResultsDropdownMobile').classList.add('hidden');
+            }
+        });
 
         window.toggleWishlist = async (event, bookId) => {
             event.preventDefault();
