@@ -9,6 +9,7 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap');
         body { font-family: 'Hind Siliguri', sans-serif; }
+        .line-clamp-6 { display: -webkit-box; -webkit-line-clamp: 6; -webkit-box-orient: vertical; overflow: hidden; }
     </style>
 </head>
 <body class="bg-gray-50 min-h-screen flex flex-col text-gray-800">
@@ -30,7 +31,7 @@
     <!-- মেইন কন্টেন্ট -->
     <main class="flex-grow max-w-7xl mx-auto w-full px-4 py-8">
         
-        <!-- বইয়ের ডিটেইলস -->
+        <!-- বইয়ের ডিটেইলস কন্টেইনার -->
         <div id="bookDetailsContainer" class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-10 mb-12">
             <p class="text-center text-gray-500 py-10">বইয়ের তথ্য লোড হচ্ছে...</p>
         </div>
@@ -85,7 +86,9 @@
             <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
                 <span class="text-3xl">💡</span> আপনার পছন্দ হতে পারে
             </h2>
-            <div id="recommendGrid" class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6"></div>
+            <div id="recommendGrid" class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+                <p class="text-gray-500 col-span-full text-center">রিকমেন্ডেশন লোড হচ্ছে...</p>
+            </div>
         </section>
     </main>
 
@@ -100,9 +103,8 @@
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let currentUser = null;
-        let currentBookId = null;
         const urlParams = new URLSearchParams(window.location.search);
-        currentBookId = urlParams.get('id');
+        const currentBookId = urlParams.get('id');
 
         function updateCartCount() {
             const cart = JSON.parse(localStorage.getItem('boiChokroCart')) || [];
@@ -125,17 +127,27 @@
         }
 
         // ==========================================
-        // ১. বইয়ের ডিটেইলস লোড করা
+        // ১. বইয়ের ডিটেইলস লোড করা (ফিক্স করা হয়েছে)
         // ==========================================
         async function loadBookDetails() {
+            const container = document.getElementById('bookDetailsContainer');
+            
             if (!currentBookId) {
-                document.getElementById('bookDetailsContainer').innerHTML = `<p class="text-red-500 text-center">বই খুঁজে পাওয়া যায়নি!</p>`;
+                container.innerHTML = `<p class="text-red-500 text-center">বইয়ের আইডি খুঁজে পাওয়া যায়নি! দয়া করে হোম পেজ থেকে আবার ক্লিক করুন।</p>`;
                 return;
             }
 
-            const { data: book, error } = await supabaseClient.from('books').select('*').eq('id', currentBookId).single();
-            if (error || !book) {
-                document.getElementById('bookDetailsContainer').innerHTML = `<p class="text-red-500 text-center">বইটি ডাটাবেসে নেই!</p>`;
+            // .single() এর বদলে .maybeSingle() ব্যবহার করা হলো যাতে ক্র্যাশ না করে
+            const { data: book, error } = await supabaseClient.from('books').select('*').eq('id', currentBookId).maybeSingle();
+            
+            if (error) {
+                console.error("Error fetching book:", error);
+                container.innerHTML = `<p class="text-red-500 text-center">ডেটাবেস থেকে বইয়ের তথ্য আনতে সমস্যা হয়েছে।</p>`;
+                return;
+            }
+
+            if (!book) {
+                container.innerHTML = `<p class="text-red-500 text-center">দুঃখিত, এই বইটি ডেটাবেসে খুঁজে পাওয়া যায়নি!</p>`;
                 return;
             }
 
@@ -146,22 +158,22 @@
             let discountPercent = 0;
             if (hasDiscount) discountPercent = Math.round(((book.original_price - book.discount_price) / book.original_price) * 100);
 
-            document.getElementById('bookDetailsContainer').innerHTML = `
+            container.innerHTML = `
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
                     <!-- বাম দিক: ছবি -->
                     <div class="bg-gray-50 rounded-xl overflow-hidden p-4 flex items-center justify-center border relative h-96 md:h-[500px]">
                         ${hasDiscount ? `<div class="absolute top-4 left-4 bg-red-500 text-white font-bold px-3 py-1 rounded shadow z-10">${discountPercent}% ছাড়</div>` : ''}
                         ${isOutOfStock ? `<div class="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-10"><span class="bg-red-600 text-white font-bold px-4 py-2 rounded-lg text-lg">স্টক নেই</span></div>` : ''}
-                        <img src="${book.cover_url || 'https://via.placeholder.com/300'}" class="max-h-full w-auto object-contain drop-shadow-xl">
+                        <img src="${book.cover_url || 'https://via.placeholder.com/300x400?text=No+Image'}" class="max-h-full w-auto object-contain drop-shadow-xl">
                     </div>
                     
                     <!-- ডান দিক: তথ্য ও বাটন -->
                     <div class="flex flex-col">
-                        <a href="/category.html?cat=${encodeURIComponent(book.category)}" class="text-sm font-bold text-blue-600 tracking-wider mb-2 uppercase hover:underline w-fit">${book.category || 'সাধারণ'}</a>
-                        <h1 class="text-3xl md:text-4xl font-extrabold text-gray-900 leading-tight mb-2">${book.title}</h1>
+                        <a href="/category.html?cat=${encodeURIComponent(book.category || '')}" class="text-sm font-bold text-blue-600 tracking-wider mb-2 uppercase hover:underline w-fit">${book.category || 'সাধারণ'}</a>
+                        <h1 class="text-3xl md:text-4xl font-extrabold text-gray-900 leading-tight mb-2">${book.title || 'নামহীন বই'}</h1>
                         
-                        <p class="text-lg text-gray-600 mb-1">লেখক: <a href="/author.html?name=${encodeURIComponent(book.author)}" class="font-semibold text-blue-600 hover:underline">${book.author}</a></p>
-                        <p class="text-lg text-gray-600 mb-4">প্রকাশনী: <a href="/publisher.html?pub=${encodeURIComponent(book.publisher)}" class="font-semibold text-blue-600 hover:underline">${book.publisher || 'অজানা'}</a></p>
+                        <p class="text-lg text-gray-600 mb-1">লেখক: <a href="/author.html?name=${encodeURIComponent(book.author || '')}" class="font-semibold text-blue-600 hover:underline">${book.author || 'অজানা'}</a></p>
+                        <p class="text-lg text-gray-600 mb-4">প্রকাশনী: <a href="/publisher.html?pub=${encodeURIComponent(book.publisher || '')}" class="font-semibold text-blue-600 hover:underline">${book.publisher || 'অজানা'}</a></p>
                         
                         <div class="flex items-end gap-3 mb-4 bg-gray-50 p-4 rounded-lg w-fit border border-gray-200">
                             <span class="text-4xl font-bold text-green-600">৳ ${currentPrice}</span>
@@ -169,12 +181,12 @@
                         </div>
 
                         <p class="text-sm font-bold mb-6 ${isOutOfStock ? 'text-red-500' : 'text-green-600'}">
-                            ${isOutOfStock ? '❌ বর্তমানে স্টকে নেই' : `✅ স্টকে আছে (${book.stock_quantity} কপি)`}
+                            ${isOutOfStock ? '❌ বর্তমানে স্টকে নেই' : `✅ স্টকে আছে (${book.stock_quantity || 0} কপি)`}
                         </p>
 
-                        <div class="prose text-gray-600 mb-8 line-clamp-6">
+                        <div class="prose text-gray-600 mb-8">
                             <h3 class="text-sm font-bold text-gray-900 mb-1">বইয়ের বিবরণ:</h3>
-                            <p>${book.description || 'এই বইটির কোনো বিবরণ দেওয়া হয়নি।'}</p>
+                            <p class="text-sm leading-relaxed whitespace-pre-line">${book.description || 'এই বইটির কোনো বিবরণ দেওয়া হয়নি।'}</p>
                         </div>
 
                         <div class="mt-auto pt-6 border-t flex flex-col gap-3">
@@ -184,10 +196,10 @@
                                 <button onclick="handleAffiliateBuy('${book.purchase_link}')" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3.5 rounded-xl transition text-lg flex justify-center items-center gap-2 shadow-lg">অন্য সাইট থেকে কিনুন</button>
                             ` : `
                                 <div class="grid grid-cols-2 gap-3">
-                                    <button onclick="addToCart('${book.id}', '${book.title}', ${currentPrice}, '${book.cover_url}', false)" class="w-full bg-green-100 text-green-700 hover:bg-green-200 border border-green-300 font-bold py-3.5 rounded-xl transition text-lg flex justify-center items-center gap-2">
+                                    <button onclick="addToCart('${book.id}', '${book.title.replace(/'/g, "\\'")}', ${currentPrice}, '${book.cover_url}', false)" class="w-full bg-green-100 text-green-700 hover:bg-green-200 border border-green-300 font-bold py-3.5 rounded-xl transition text-lg flex justify-center items-center gap-2">
                                         কার্টে যোগ করুন
                                     </button>
-                                    <button onclick="addToCart('${book.id}', '${book.title}', ${currentPrice}, '${book.cover_url}', true)" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3.5 rounded-xl transition text-lg flex justify-center items-center gap-2 shadow-lg">
+                                    <button onclick="addToCart('${book.id}', '${book.title.replace(/'/g, "\\'")}', ${currentPrice}, '${book.cover_url}', true)" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3.5 rounded-xl transition text-lg flex justify-center items-center gap-2 shadow-lg">
                                         বায় নাও
                                     </button>
                                 </div>
@@ -208,7 +220,6 @@
             const list = document.getElementById('reviewsList');
             list.innerHTML = `<p class="text-gray-500 text-center py-4">রিভিউ লোড হচ্ছে...</p>`;
 
-            // এখানে .eq('status', 'approved') দেওয়া হয়েছে, তাই শুধু অ্যাডমিনের অ্যাপ্রুভ করা রিভিউ দেখাবে
             const { data: reviews, error } = await supabaseClient
                 .from('reviews')
                 .select(`*, profiles ( full_name, email )`)
@@ -270,7 +281,7 @@
                 user_id: currentUser.id,
                 rating: rating,
                 comment: comment,
-                status: 'pending' // ডিফল্টভাবে পেন্ডিং থাকবে
+                status: 'pending'
             }]);
 
             if (error) {
