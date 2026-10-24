@@ -31,9 +31,8 @@
     <main class="flex-grow max-w-4xl mx-auto w-full px-4 py-8 relative">
         
         <!-- টোস্ট নোটিফিকেশন (মেসেজ দেখানোর জন্য) -->
-        <div id="toastMessage" class="fixed top-24 right-4 md:right-10 transform translate-x-[150%] transition-transform duration-300 ease-in-out z-[100]">
+        <div id="toastMessage" class="fixed top-20 right-4 md:right-10 transform translate-x-[150%] transition-transform duration-300 ease-in-out z-[100]">
             <div id="toastBox" class="bg-green-600 text-white px-6 py-3 rounded-lg shadow-xl flex items-center gap-3 font-semibold">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                 <span id="toastText">রিভিউ সফলভাবে জমা হয়েছে!</span>
             </div>
         </div>
@@ -77,7 +76,7 @@
             <!-- ডান দিক: সব রিভিউয়ের লিস্ট -->
             <div class="md:col-span-2">
                 <div id="reviewsList" class="space-y-4">
-                    <!-- রিভিউ লোড হবে -->
+                    <p class="text-gray-500 text-center py-10">লোড হচ্ছে...</p>
                 </div>
             </div>
         </div>
@@ -97,13 +96,12 @@
         const urlParams = new URLSearchParams(window.location.search);
         const currentBookId = urlParams.get('id');
 
-        // টোস্ট মেসেজ দেখানোর ফাংশন
+        // টোস্ট মেসেজ ফাংশন (স্ক্রিনে মেসেজ দেখানোর জন্য)
         function showToast(message, isError = false) {
             const toast = document.getElementById('toastMessage');
             const toastBox = document.getElementById('toastBox');
             const toastText = document.getElementById('toastText');
             
-            // কালার পরিবর্তন (সফল হলে সবুজ, এরর হলে লাল)
             if (isError) {
                 toastBox.className = 'bg-red-600 text-white px-6 py-3 rounded-lg shadow-xl flex items-center gap-3 font-semibold';
             } else {
@@ -111,24 +109,23 @@
             }
             
             toastText.innerText = message;
-            
-            // ডান দিক থেকে এনে দেখানো
             toast.classList.remove('translate-x-[150%]');
             toast.classList.add('translate-x-0');
             
-            // ৫ সেকেন্ড পর আবার ডান দিকে লুকিয়ে ফেলা
             setTimeout(() => {
                 toast.classList.remove('translate-x-0');
                 toast.classList.add('translate-x-[150%]');
-            }, 5000);
+            }, 4000);
         }
 
+        // কার্ট কাউন্ট
         function updateCartCount() {
             const cart = JSON.parse(localStorage.getItem('boiChokroCart')) || [];
             const cartEl = document.getElementById('cartCount');
             if(cartEl) cartEl.innerText = cart.length;
         }
 
+        // ইউজার চেক
         async function checkAuth() {
             const { data: { session } } = await supabaseClient.auth.getSession();
             const authButtons = document.getElementById('authButtons');
@@ -147,37 +144,29 @@
         }
 
         // ==========================================
-        // ১. পেজ সেটআপ (বইয়ের নাম)
+        // ১. পেজ সেটআপ ও রিভিউ লোড করা (Read)
         // ==========================================
         async function initPage() {
+            const list = document.getElementById('reviewsList');
+            
             if (!currentBookId) {
                 document.getElementById('pageTitle').innerText = "⚠️ কোনো বই সিলেক্ট করা হয়নি!";
-                document.getElementById('reviewsList').innerHTML = `<p class="text-red-500 text-center py-10">দয়া করে হোম পেজ থেকে একটি বই সিলেক্ট করুন।</p>`;
+                list.innerHTML = `<p class="text-red-500 text-center py-10">দয়া করে হোম পেজ থেকে একটি বই সিলেক্ট করুন।</p>`;
                 return;
             }
 
+            // বইয়ের নাম আনা
             try {
                 const { data: book } = await supabaseClient.from('books').select('title').eq('id', currentBookId).maybeSingle();
-                if (book) {
-                    document.getElementById('pageTitle').innerText = `"${book.title}" এর রিভিউ`;
-                } else {
-                    document.getElementById('pageTitle').innerText = "বইটি খুঁজে পাওয়া যায়নি";
-                }
+                if (book) document.getElementById('pageTitle').innerText = `"${book.title}" এর রিভিউ`;
             } catch (e) {
                 document.getElementById('pageTitle').innerText = "রিভিউ পেজ";
             }
 
             document.getElementById('backToBookBtn').href = `/book-details.html?id=${currentBookId}`;
-            fetchReviews();
-        }
 
-        // ==========================================
-        // ২. রিভিউ লোড করা (Read)
-        // ==========================================
-        async function fetchReviews() {
-            const list = document.getElementById('reviewsList');
+            // রিভিউ লোড করা
             list.innerHTML = `<p class="text-gray-500 text-center py-10">রিভিউ লোড হচ্ছে...</p>`;
-            
             try {
                 const { data: reviews, error } = await supabaseClient
                     .from('reviews')
@@ -188,19 +177,19 @@
                 if (error) throw new Error(error.message);
 
                 if (!reviews || reviews.length === 0) {
-                    list.innerHTML = `<div class="text-center py-10 bg-white rounded-xl border border-gray-100 shadow-sm"><p class="text-gray-500">এই বইয়ের জন্য এখনো কোনো রিভিউ নেই।</p><p class="text-sm text-gray-400 mt-1">আপনি প্রথম রিভিউটি দিতে পারেন!</p></div>`;
+                    list.innerHTML = `<div class="text-center py-10 bg-white rounded-xl border border-gray-100 shadow-sm"><p class="text-gray-500">এই বইয়ের জন্য এখনো কোনো রিভিউ নেই।</p></div>`;
                     return;
                 }
 
-                // শুধুমাত্র approved রিভিউগুলো ফিল্টার করে দেখানো
-                const approvedReviews = reviews.filter(r => r.status === 'approved');
+                // শুধুমাত্র approved রিভিউ দেখানো
+                const approved = reviews.filter(r => r.status === 'approved');
 
-                if (approvedReviews.length === 0) {
-                    list.innerHTML = `<div class="text-center py-10 bg-white rounded-xl border border-gray-100 shadow-sm"><p class="text-gray-500">এই বইয়ের কোনো রিভিউ এখনো পাবলিশ হয়নি।</p><p class="text-sm text-gray-400 mt-1">রিভিউগুলো অ্যাডমিন অ্যাপ্রুভালের অপেক্ষায় আছে।</p></div>`;
+                if (approved.length === 0) {
+                    list.innerHTML = `<div class="text-center py-10 bg-white rounded-xl border border-gray-100 shadow-sm"><p class="text-gray-500">এই বইয়ের কোনো রিভিউ এখনো পাবলিশ হয়নি।</p></div>`;
                     return;
                 }
 
-                list.innerHTML = approvedReviews.map(rev => {
+                list.innerHTML = approved.map(rev => {
                     const date = new Date(rev.created_at).toLocaleDateString('bn-BD');
                     const stars = Array(rev.rating || 5).fill('<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>`).join('');
 
@@ -216,10 +205,11 @@
                             </div>
                             <div class="flex text-yellow-400">${stars}</div>
                         </div>
-                        <p class="text-gray-600 text-sm mt-2 whitespace-pre-line">${rev.comment || 'কোনো মন্তব্য নেই'}</p>
+                        <p class="text-gray-600 text-sm mt-2">${rev.comment || 'কোনো মন্তব্য নেই'}</p>
                     </div>
                     `;
                 }).join('');
+
             } catch (err) {
                 list.innerHTML = `<div class="text-center py-6 bg-red-50 rounded-xl border border-red-200">
                     <p class="text-red-600 font-bold mb-1">⚠️ রিভিউ লোড সমস্যা!</p>
@@ -229,13 +219,13 @@
         }
 
         // ==========================================
-        // ৩. নতুন রিভিউ সাবমিট করা (Create)
+        // ২. নতুন রিভিউ সাবমিট (Create)
         // ==========================================
         document.getElementById('reviewForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
             if (!currentUser) {
-                showToast('রিভিউ দিতে অনুগ্রহ করে প্রথমে লগইন করুন!', true);
+                showToast('রিভিউ দিতে প্রথমে লগইন করুন!', true);
                 setTimeout(() => { window.location.href = '/login.html'; }, 1500);
                 return;
             }
@@ -248,26 +238,23 @@
             btn.disabled = true;
 
             try {
-                // ডেটাবেসে রিভিউ পাঠানো
-                const { data, error } = await supabaseClient.from('reviews').insert([{
+                // ডেটাবেসে ইনসার্ট
+                const { error } = await supabaseClient.from('reviews').insert([{
                     book_id: currentBookId,
                     user_id: currentUser.id,
                     rating: rating,
                     comment: comment,
-                    status: 'pending' // অ্যাডমিন প্যানেলে যাওয়ার জন্য pending
+                    status: 'pending'
                 }]);
 
-                // যদি সুপাবেস কোনো এরর দেয়
-                if (error) {
-                    throw new Error(error.message);
-                }
+                if (error) throw new Error(error.message);
 
-                // সফল হলে
-                showToast('✅ রিভিউ সফলভাবে জমা হয়েছে! অ্যাডমিন প্যানেলে চেক করুন।', false);
+                // সফল হলে সবুজ মেসেজ দেখাবে
+                showToast('✅ রিভিউ সফলভাবে জমা হয়েছে!', false);
                 document.getElementById('reviewForm').reset();
 
             } catch (err) {
-                // এরর হলে
+                // এরর হলে লাল মেসেজ দেখাবে
                 showToast('❌ রিভিউ সেভ হয়নি! কারণ: ' + err.message, true);
             } finally {
                 btn.innerText = 'রিভিউ সাবমিট করুন'; 
