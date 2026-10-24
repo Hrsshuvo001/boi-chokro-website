@@ -155,6 +155,11 @@
                                     </button>
                                 </div>
                             `}
+                            
+                            <!-- নতুন রিভিউ পেজে যাওয়ার বাটন -->
+                            <a href="/reviews.html?id=${book.id}" class="w-full mt-2 bg-yellow-50 text-yellow-700 hover:bg-yellow-100 border border-yellow-300 font-bold py-3.5 rounded-xl transition text-lg flex justify-center items-center gap-2">
+                                ⭐ কাস্টমার রিভিউ দেখুন
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -171,7 +176,6 @@
             const grid = document.getElementById('recommendGrid');
             if (!grid) return;
 
-            // ক্যাটাগরি বা লেখক ছাড়া শুধু র্যান্ডম ৪টি বই আনা হচ্ছে, যাতে কোনো ডেটা মিসিং এরর না হয়
             const { data: recs } = await supabaseClient.from('books').select('*').neq('id', currentBook.id).limit(4);
 
             if (recs && recs.length > 0) {
