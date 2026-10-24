@@ -13,6 +13,7 @@
 </head>
 <body class="bg-gray-50 min-h-screen flex flex-col text-gray-800">
 
+    <!-- নেভিগেশন বার -->
     <nav class="bg-white shadow-sm sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
             <a href="/index.html" class="text-2xl font-bold text-blue-600 tracking-tight">Boi Chokro</a>
@@ -26,8 +27,10 @@
         </div>
     </nav>
 
+    <!-- মেইন কন্টেন্ট -->
     <main class="flex-grow max-w-7xl mx-auto w-full px-4 py-8">
         
+        <!-- বইয়ের ডিটেইলস কন্টেইনার -->
         <div id="bookDetailsContainer" class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-10 mb-12">
             <div class="text-center py-20">
                 <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
@@ -35,6 +38,7 @@
             </div>
         </div>
 
+        <!-- রিভিউ সেকশন -->
         <section class="mb-12 bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8">
             <h2 class="text-2xl font-bold text-gray-900 mb-6 border-b pb-4 flex items-center gap-2">
                 <span class="text-3xl">⭐</span> কাস্টমার রিভিউ
@@ -76,22 +80,15 @@
                 </div>
             </div>
         </section>
-
-        <section class="mt-12">
-            <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                <span class="text-3xl">💡</span> আপনার পছন্দ হতে পারে
-            </h2>
-            <div id="recommendGrid" class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-                <p class="text-gray-500 col-span-full text-center">রিকমেন্ডেশন লোড হচ্ছে...</p>
-            </div>
-        </section>
     </main>
 
+    <!-- ফুটার -->
     <footer class="bg-gray-900 text-gray-400 py-6 text-center mt-auto">
         <p class="text-sm font-medium">&copy; 2024 Boi Chokro. All rights reserved.</p>
     </footer>
 
     <script>
+        // ১. সুপাবেস কানেকশন
         const SUPABASE_URL = 'https://jhbpaezbpkfwjfmazdcn.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_oBzutzPKvIvujmSG7icXug_SwwveL5g';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -100,12 +97,14 @@
         const urlParams = new URLSearchParams(window.location.search);
         const currentBookId = urlParams.get('id');
 
+        // ২. কার্ট কাউন্ট আপডেট
         function updateCartCount() {
             const cart = JSON.parse(localStorage.getItem('boiChokroCart')) || [];
             const cartEl = document.getElementById('cartCount');
             if(cartEl) cartEl.innerText = cart.length;
         }
 
+        // ৩. ইউজার লগইন চেক
         async function checkAuth() {
             const { data: { session } } = await supabaseClient.auth.getSession();
             const authButtons = document.getElementById('authButtons');
@@ -124,7 +123,7 @@
         }
 
         // ==========================================
-        // ১. বইয়ের ডিটেইলস লোড করা (এরর প্রুফ)
+        // ৪. বইয়ের ডিটেইলস লোড করা (এখানেই আসল ফিক্স)
         // ==========================================
         async function loadBookDetails() {
             const container = document.getElementById('bookDetailsContainer');
@@ -134,86 +133,86 @@
                 return;
             }
 
-            try {
-                const { data: book, error } = await supabaseClient.from('books').select('*').eq('id', currentBookId).maybeSingle();
-                
-                if (error) throw new Error("ডেটাবেস এরর: " + error.message);
-                if (!book) throw new Error("বইটি ডেটাবেসে খুঁজে পাওয়া যায়নি!");
+            // সুপাবেস থেকে ডেটা আনা
+            const { data: book, error } = await supabaseClient.from('books').select('*').eq('id', currentBookId).maybeSingle();
+            
+            if (error) {
+                container.innerHTML = `<div class="text-center py-10"><p class="text-red-500 font-bold text-lg mb-2">⚠️ ডেটাবেস এরর!</p><p class="text-sm bg-red-50 p-4 rounded-lg">${error.message}</p></div>`;
+                return;
+            }
 
-                const currentPrice = book.discount_price || book.original_price || 0;
-                const hasDiscount = book.original_price && book.discount_price && book.original_price > book.discount_price;
-                const isOutOfStock = (book.stock_quantity !== undefined && book.stock_quantity !== null) ? book.stock_quantity <= 0 : false;
-                
-                let discountPercent = 0;
-                if (hasDiscount) discountPercent = Math.round(((book.original_price - book.discount_price) / book.original_price) * 100);
+            if (!book) {
+                container.innerHTML = `<div class="text-center py-10"><p class="text-red-500 font-bold text-lg mb-2">❌ বইটি পাওয়া যায়নি!</p><p class="text-gray-500 text-sm">URL-এর আইডির সাথে কোনো বই ম্যাচ করেনি।</p><a href="/index.html" class="mt-4 inline-block bg-blue-600 text-white px-6 py-2 rounded-lg">হোমে ফিরে যান</a></div>`;
+                return;
+            }
 
-                container.innerHTML = `
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
-                        <div class="bg-gray-50 rounded-xl overflow-hidden p-4 flex items-center justify-center border relative h-96 md:h-[500px]">
-                            ${hasDiscount ? `<div class="absolute top-4 left-4 bg-red-500 text-white font-bold px-3 py-1 rounded shadow z-10">${discountPercent}% ছাড়</div>` : ''}
-                            ${isOutOfStock ? `<div class="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-10"><span class="bg-red-600 text-white font-bold px-4 py-2 rounded-lg text-lg">স্টক নেই</span></div>` : ''}
-                            <img src="${book.cover_url || 'https://via.placeholder.com/300x400?text=No+Image'}" class="max-h-full w-auto object-contain drop-shadow-xl">
-                        </div>
+            // ডেটা পাওয়া গেলে বইয়ের তথ্য রেন্ডার করা
+            const currentPrice = book.discount_price || book.original_price || 0;
+            const hasDiscount = book.original_price && book.discount_price && book.original_price > book.discount_price;
+            const isOutOfStock = (book.stock_quantity !== undefined && book.stock_quantity !== null) ? book.stock_quantity <= 0 : false;
+            let discountPercent = 0;
+            if (hasDiscount) discountPercent = Math.round(((book.original_price - book.discount_price) / book.original_price) * 100);
+
+            container.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
+                    <div class="bg-gray-50 rounded-xl overflow-hidden p-4 flex items-center justify-center border relative h-96 md:h-[500px]">
+                        ${hasDiscount ? `<div class="absolute top-4 left-4 bg-red-500 text-white font-bold px-3 py-1 rounded shadow z-10">${discountPercent}% ছাড়</div>` : ''}
+                        ${isOutOfStock ? `<div class="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-10"><span class="bg-red-600 text-white font-bold px-4 py-2 rounded-lg text-lg">স্টক নেই</span></div>` : ''}
+                        <img src="${book.cover_url || 'https://via.placeholder.com/300x400?text=No+Image'}" class="max-h-full w-auto object-contain drop-shadow-xl">
+                    </div>
+                    
+                    <div class="flex flex-col">
+                        <span class="text-sm font-bold text-blue-600 tracking-wider mb-2 uppercase">${book.category || 'সাধারণ'}</span>
+                        <h1 class="text-3xl md:text-4xl font-extrabold text-gray-900 leading-tight mb-2">${book.title || 'নামহীন বই'}</h1>
                         
-                        <div class="flex flex-col">
-                            <span class="text-sm font-bold text-blue-600 tracking-wider mb-2 uppercase">${book.category || 'সাধারণ'}</span>
-                            <h1 class="text-3xl md:text-4xl font-extrabold text-gray-900 leading-tight mb-2">${book.title || 'নামহীন বই'}</h1>
-                            
-                            <p class="text-lg text-gray-600 mb-1">লেখক: <span class="font-semibold text-blue-600">${book.author || 'অজানা'}</span></p>
-                            <p class="text-lg text-gray-600 mb-4">প্রকাশনী: <span class="font-semibold text-blue-600">${book.publisher || 'অজানা'}</span></p>
-                            
-                            <div class="flex items-end gap-3 mb-4 bg-gray-50 p-4 rounded-lg w-fit border border-gray-200">
-                                <span class="text-4xl font-bold text-green-600">৳ ${currentPrice}</span>
-                                ${hasDiscount ? `<span class="text-gray-400 line-through text-lg mb-1">৳ ${book.original_price}</span>` : ''}
-                            </div>
+                        <p class="text-lg text-gray-600 mb-1">লেখক: <span class="font-semibold text-blue-600">${book.author || 'অজানা'}</span></p>
+                        <p class="text-lg text-gray-600 mb-4">প্রকাশনী: <span class="font-semibold text-blue-600">${book.publisher || 'অজানা'}</span></p>
+                        
+                        <div class="flex items-end gap-3 mb-4 bg-gray-50 p-4 rounded-lg w-fit border border-gray-200">
+                            <span class="text-4xl font-bold text-green-600">৳ ${currentPrice}</span>
+                            ${hasDiscount ? `<span class="text-gray-400 line-through text-lg mb-1">৳ ${book.original_price}</span>` : ''}
+                        </div>
 
-                            <p class="text-sm font-bold mb-6 ${isOutOfStock ? 'text-red-500' : 'text-green-600'}">
-                                ${isOutOfStock ? '❌ বর্তমানে স্টকে নেই' : `✅ স্টকে আছে (${book.stock_quantity || 0} কপি)`}
-                            </p>
+                        <p class="text-sm font-bold mb-6 ${isOutOfStock ? 'text-red-500' : 'text-green-600'}">
+                            ${isOutOfStock ? '❌ বর্তমানে স্টকে নেই' : `✅ স্টকে আছে (${book.stock_quantity || 0} কপি)`}
+                        </p>
 
-                            <div class="prose text-gray-600 mb-8">
-                                <h3 class="text-sm font-bold text-gray-900 mb-1">বইয়ের বিবরণ:</h3>
-                                <p class="text-sm leading-relaxed whitespace-pre-line">${book.description || 'এই বইটির কোনো বিবরণ দেওয়া হয়নি।'}</p>
-                            </div>
+                        <div class="prose text-gray-600 mb-8">
+                            <h3 class="text-sm font-bold text-gray-900 mb-1">বইয়ের বিবরণ:</h3>
+                            <p class="text-sm leading-relaxed whitespace-pre-line">${book.description || 'এই বইটির কোনো বিবরণ দেওয়া হয়নি।'}</p>
+                        </div>
 
-                            <div class="mt-auto pt-6 border-t flex flex-col gap-3">
-                                ${isOutOfStock ? `
-                                    <button disabled class="w-full bg-gray-200 text-gray-500 font-bold py-3.5 rounded-xl text-lg cursor-not-allowed">স্টক নেই</button>
-                                ` : `
-                                    <div class="grid grid-cols-2 gap-3">
-                                        <button onclick="addToCart('${book.id}', '${book.title.replace(/'/g, "\\'")}', ${currentPrice}, '${book.cover_url}', false)" class="w-full bg-green-100 text-green-700 hover:bg-green-200 border border-green-300 font-bold py-3.5 rounded-xl transition text-lg flex justify-center items-center gap-2">
-                                            কার্টে যোগ করুন
-                                        </button>
-                                        <button onclick="addToCart('${book.id}', '${book.title.replace(/'/g, "\\'")}', ${currentPrice}, '${book.cover_url}', true)" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3.5 rounded-xl transition text-lg flex justify-center items-center gap-2 shadow-lg">
-                                            বায় নাও
-                                        </button>
-                                    </div>
-                                `}
-                            </div>
+                        <div class="mt-auto pt-6 border-t flex flex-col gap-3">
+                            ${isOutOfStock ? `
+                                <button disabled class="w-full bg-gray-200 text-gray-500 font-bold py-3.5 rounded-xl text-lg cursor-not-allowed">স্টক নেই</button>
+                            ` : `
+                                <div class="grid grid-cols-2 gap-3">
+                                    <button onclick="addToCart('${book.id}', '${book.title.replace(/'/g, "\\'")}', ${currentPrice}, '${book.cover_url}', false)" class="w-full bg-green-100 text-green-700 hover:bg-green-200 border border-green-300 font-bold py-3.5 rounded-xl transition text-lg flex justify-center items-center gap-2">
+                                        কার্টে যোগ করুন
+                                    </button>
+                                    <button onclick="addToCart('${book.id}', '${book.title.replace(/'/g, "\\'")}', ${currentPrice}, '${book.cover_url}', true)" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3.5 rounded-xl transition text-lg flex justify-center items-center gap-2 shadow-lg">
+                                        বায় নাও
+                                    </button>
+                                </div>
+                            `}
                         </div>
                     </div>
-                `;
+                </div>
+            `;
 
-                // বই লোড সফল হলে এবার রিভিউ লোড করব
-                loadReviews();
-                loadRecommendations(book);
-
-            } catch (err) {
-                // কোনো এরর হলে এখানে ধরা পড়বে এবং স্ক্রিনে দেখাবে
-                container.innerHTML = `<div class="text-center py-10"><p class="text-red-500 font-bold text-lg mb-2">⚠️ সমস্যা হয়েছে!</p><p class="text-gray-600 text-sm bg-red-50 p-4 rounded-lg inline-block">${err.message}</p></div>`;
-            }
+            // বই লোড সফল হলে, এরপর আলাদাভাবে রিভিউ কল করা হবে
+            fetchReviews();
         }
 
         // ==========================================
-        // ২. রিভিউ লোড করা (নিরাপদ এবং এরর প্রুফ)
+        // ৫. রিভিউ লোড করা (বই লোড হওয়ার পর)
         // ==========================================
-        async function loadReviews() {
+        async function fetchReviews() {
             const list = document.getElementById('reviewsList');
             if (!list) return;
             
             list.innerHTML = `<p class="text-gray-500 text-center py-4">রিভিউ লোড হচ্ছে...</p>`;
 
-            // try-catch দিয়ে রিভিউ লোড করা হচ্ছে
             try {
                 const { data: reviews, error } = await supabaseClient
                     .from('reviews')
@@ -221,7 +220,7 @@
                     .eq('book_id', currentBookId)
                     .order('created_at', { ascending: false });
 
-                if (error) throw new Error("রিভিউ লোড এরর: " + error.message);
+                if (error) throw new Error(error.message);
 
                 if (!reviews || reviews.length === 0) {
                     list.innerHTML = `<div class="text-center py-10 bg-gray-50 rounded-xl border border-gray-100"><p class="text-gray-500">এই বইয়ের জন্য এখনো কোনো রিভিউ নেই।</p><p class="text-sm text-gray-400 mt-1">আপনি প্রথম রিভিউটি দিতে পারেন!</p></div>`;
@@ -248,18 +247,16 @@
                     </div>
                     `;
                 }).join('');
-                
             } catch (err) {
-                // যদি রিভিউ লোড করতে কোনো সমস্যা হয়, তবে এখানে লাল রঙে দেখাবে
                 list.innerHTML = `<div class="text-center py-6 bg-red-50 rounded-xl border border-red-200">
-                    <p class="text-red-600 font-bold mb-1">⚠️ রিভিউ লোড করতে সমস্যা হচ্ছে!</p>
+                    <p class="text-red-600 font-bold mb-1">⚠️ রিভিউ লোড করতে সমস্যা!</p>
                     <p class="text-gray-700 text-xs">${err.message}</p>
                 </div>`;
             }
         }
 
         // ==========================================
-        // ৩. রিভিউ সাবমিট
+        // ৬. রিভিউ সাবমিট
         // ==========================================
         const reviewForm = document.getElementById('reviewForm');
         if (reviewForm) {
@@ -294,7 +291,7 @@
                     msg.className = 'mt-3 text-sm text-center font-bold text-green-600 block bg-green-50 p-2 rounded border border-green-200';
                     reviewForm.reset();
                 } catch (err) {
-                    msg.innerText = '⚠️ রিভিউ দিতে সমস্যা হয়েছে: ' + err.message;
+                    msg.innerText = '⚠️ রিভিউ দিতে সমস্যা: ' + err.message;
                     msg.className = 'mt-3 text-sm text-center font-bold text-red-600 block';
                 } finally {
                     btn.innerText = 'রিভিউ সাবমিট করুন'; btn.disabled = false;
@@ -303,45 +300,7 @@
         }
 
         // ==========================================
-        // ৪. রিকমেন্ডেশন লোড করা
-        // ==========================================
-        async function loadRecommendations(currentBook) {
-            const grid = document.getElementById('recommendGrid');
-            if (!grid) return;
-            
-            try {
-                const { data: recs } = await supabaseClient
-                    .from('books')
-                    .select('*')
-                    .neq('id', currentBook.id)
-                    .limit(4);
-
-                if (recs && recs.length > 0) {
-                    grid.innerHTML = recs.map(book => {
-                        const currentPrice = book.discount_price || book.original_price || 0;
-                        return `
-                        <div onclick="window.location.href='/book-details.html?id=${book.id}'" class="bg-white rounded-xl shadow-sm hover:shadow-xl transition duration-300 overflow-hidden flex flex-col border border-gray-100 relative cursor-pointer group">
-                            <div class="h-48 sm:h-56 bg-gray-100 overflow-hidden relative">
-                                <img src="${book.cover_url || 'https://via.placeholder.com/150'}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
-                            </div>
-                            <div class="p-3 sm:p-4 flex flex-col flex-grow">
-                                <h3 class="font-bold text-sm sm:text-base text-gray-800 leading-tight mb-1 line-clamp-2">${book.title}</h3>
-                                <p class="text-xs text-gray-500 mb-2 truncate">${book.author}</p>
-                                <div class="mt-auto"><span class="text-base sm:text-lg font-bold text-blue-600">৳ ${currentPrice}</span></div>
-                            </div>
-                        </div>
-                        `;
-                    }).join('');
-                } else {
-                    grid.innerHTML = `<p class="text-gray-500 col-span-full text-center py-6">কোনো রিকমেন্ডেশন পাওয়া যায়নি।</p>`;
-                }
-            } catch(e) {
-                grid.innerHTML = `<p class="text-red-500 col-span-full text-center py-6">রিকমেন্ডেশন লোড করা যায়নি।</p>`;
-            }
-        }
-
-        // ==========================================
-        // ৫. কার্ট ও অন্যান্য ফাংশন
+        // ৭. কার্ট ও অন্যান্য ফাংশন
         // ==========================================
         window.addToCart = (id, title, price, image, buyNow = false) => {
             if (!currentUser) {
