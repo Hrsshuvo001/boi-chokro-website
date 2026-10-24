@@ -21,6 +21,7 @@
 
     <div id="toast-container" class="fixed top-5 right-5 z-[100] flex flex-col gap-3 pointer-events-none"></div>
 
+    <!-- সাইডবার -->
     <aside id="sidebar" class="fixed md:sticky top-0 left-0 z-40 h-[100dvh] w-64 bg-slate-800 text-slate-300 flex flex-col shadow-xl transition-transform duration-300 transform -translate-x-full md:translate-x-0 flex-shrink-0">
         <div class="p-4 border-b border-slate-700 flex justify-between items-center flex-shrink-0">
             <div class="flex items-center gap-2">
@@ -41,9 +42,7 @@
                 <button onclick="showSection('review-management')" class="nav-item text-left px-4 py-3 rounded-md hover:bg-slate-700 transition flex items-center gap-3 w-full">⭐ রিভিউ ম্যানেজমেন্ট</button>
                 <button onclick="showSection('coupon-management')" class="nav-item text-left px-4 py-3 rounded-md hover:bg-slate-700 transition flex items-center gap-3 w-full">🎟️ কুপন ম্যানেজমেন্ট</button>
                 <button id="menu-customers" onclick="showSection('customer-list')" class="nav-item text-left px-4 py-3 rounded-md hover:bg-slate-700 transition flex items-center gap-3 w-full hidden">👥 কাস্টমার লিস্ট</button>
-                
                 <button id="menu-newsletter" onclick="showSection('newsletter-list')" class="nav-item text-left px-4 py-3 rounded-md hover:bg-slate-700 transition flex items-center gap-3 w-full hidden">📧 নিউজলেটার লিস্ট</button>
-                
                 <button onclick="showSection('report')" class="nav-item text-left px-4 py-3 rounded-md hover:bg-slate-700 transition flex items-center gap-3 w-full">📄 রিপোর্ট</button>
                 <a href="/admin-chat.html" class="nav-item text-left px-4 py-3 rounded-md hover:bg-slate-700 transition flex items-center gap-3 w-full">💬 লাইভ চ্যাট</a>
                 <button id="menu-employee" onclick="showSection('employee')" class="nav-item text-left px-4 py-3 rounded-md hover:bg-slate-700 transition flex items-center gap-3 w-full hidden">⚙️ ইম্পলয়ি ম্যানেজমেন্ট</button>
@@ -57,8 +56,10 @@
         </nav>
     </aside>
 
+    <!-- মেইন কন্টেন্ট -->
     <div class="flex-1 flex flex-col h-[100dvh] overflow-hidden w-full relative">
         
+        <!-- হেডার -->
         <header class="bg-white shadow-sm p-4 flex justify-between items-center z-30 flex-shrink-0">
             <div class="flex items-center gap-3">
                 <button onclick="toggleSidebar()" class="text-gray-700 text-2xl focus:outline-none md:hidden">☰</button>
@@ -80,6 +81,7 @@
             </div>
         </header>
 
+        <!-- সেকশনগুলো -->
         <main class="flex-grow p-4 md:p-8 overflow-y-auto relative">
 
             <!-- ১. হোম (KPI) -->
@@ -205,12 +207,10 @@
                 <div id="pendingBlogsList" class="space-y-4"></div>
             </section>
 
-            <!-- ৭. রিভিউ ম্যানেজমেন্ট (লোডিং ছাড়া, এরর ফিক্স করা) -->
+            <!-- ৭. রিভিউ ম্যানেজমেন্ট -->
             <section id="section-review-management" class="section-content">
                 <h2 class="text-2xl font-bold text-gray-800 mb-6">রিভিউ ম্যানেজমেন্ট (পেন্ডিং)</h2>
-                <div id="pendingReviewsList" class="space-y-4">
-                    <!-- ডেটা সরাসরি এখানে লোড হবে -->
-                </div>
+                <div id="pendingReviewsList" class="space-y-4"></div>
             </section>
 
             <!-- ৮. কুপন ম্যানেজমেন্ট -->
@@ -389,6 +389,7 @@
         </main>
     </div>
 
+    <!-- এডিট বুক মডাল -->
     <div id="editBookModal" class="fixed inset-0 z-[100] hidden items-center justify-center modal-overlay p-4">
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <div class="p-4 border-b flex justify-between items-center bg-gray-50 sticky top-0 z-10">
@@ -544,7 +545,7 @@
             if(sectionId === 'confirm-booking') loadPendingBookings();
             if(sectionId === 'report') loadReportData(); 
             if(sectionId === 'blog-management') loadPendingBlogs();
-            if(sectionId === 'review-management') loadPendingReviews(); // নতুন লোডিং ছাড়া
+            if(sectionId === 'review-management') loadPendingReviews(); 
             if(sectionId === 'coupon-management') loadCoupons(); 
             if(sectionId === 'customer-list') loadCustomers(); 
             if(sectionId === 'newsletter-list') loadSubscribers(); 
@@ -596,6 +597,110 @@
                     sLogo.src = data.logo_url;
                     sLogo.classList.remove('hidden');
                 }
+            }
+        }
+
+        // ==========================================
+        // সব বই লোড করার কোড
+        // ==========================================
+        async function loadAllBooks() {
+            const tbody = document.getElementById('allBooksTableBody');
+            if(!tbody) return;
+            tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4">বই লোড হচ্ছে...</td></tr>`;
+
+            try {
+                const { data: books, error } = await supabaseClient.from('books').select('*').order('created_at', { ascending: false });
+                if (error) throw error;
+
+                if (!books || books.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-gray-500">কোনো বই পাওয়া যায়নি। নতুন বই যোগ করুন।</td></tr>`;
+                    return;
+                }
+
+                tbody.innerHTML = books.map(book => {
+                    const price = book.discount_price || book.original_price || 0;
+                    return `
+                    <tr class="border-b hover:bg-gray-50">
+                        <td class="p-4"><img src="${book.cover_url || 'https://via.placeholder.com/50'}" class="w-10 h-14 object-cover rounded shadow-sm"></td>
+                        <td class="p-4">
+                            <p class="font-bold text-gray-800">${book.title}</p>
+                            <p class="text-xs text-gray-500">${book.author}</p>
+                        </td>
+                        <td class="p-4">
+                            <p class="text-sm">${book.category}</p>
+                            <p class="text-xs text-gray-500">${book.publisher || 'N/A'}</p>
+                        </td>
+                        <td class="p-4 font-bold text-green-600">৳ ${price}</td>
+                        <td class="p-4 font-bold ${book.stock_quantity > 0 ? 'text-blue-600' : 'text-red-600'}">${book.stock_quantity || 0}</td>
+                        <td class="p-4 text-center">
+                            <button onclick="openEditModal('${book.id}')" class="bg-blue-100 text-blue-600 px-3 py-1 rounded text-sm hover:bg-blue-200 mr-2">এডিট</button>
+                            <button onclick="deleteBook('${book.id}')" class="bg-red-100 text-red-600 px-3 py-1 rounded text-sm hover:bg-red-200">ডিলিট</button>
+                        </td>
+                    </tr>
+                    `;
+                }).join('');
+            } catch (error) {
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-red-500">ডেটা লোড করতে সমস্যা হয়েছে: ${error.message}</td></tr>`;
+            }
+        }
+
+        // ==========================================
+        // ড্যাশবোর্ড ডেটা লোড করার কোড
+        // ==========================================
+        async function loadDashboardData() {
+            try {
+                const { count: bookCount } = await supabaseClient.from('books').select('*', { count: 'exact', head: true });
+                document.getElementById('kpi-total-sales').innerText = bookCount || 0; 
+
+                const { data: orders } = await supabaseClient.from('orders').select('total_amount, status, created_at');
+                let totalRevenue = 0;
+                let todaySales = 0;
+                const today = new Date().toISOString().split('T')[0];
+
+                if (orders) {
+                    orders.forEach(o => {
+                        if (o.status !== 'cancelled') totalRevenue += Number(o.total_amount);
+                        if (o.created_at && o.created_at.startsWith(today) && o.status !== 'cancelled') {
+                            todaySales += Number(o.total_amount);
+                        }
+                    });
+                }
+
+                document.getElementById('kpi-today-sales').innerText = todaySales;
+                document.getElementById('kpi-total-sales').innerText = totalRevenue;
+
+                document.getElementById('kpi-profit').innerText = (totalRevenue * 0.2).toFixed(0); 
+                document.getElementById('kpi-loss').innerText = "0";
+
+            } catch (err) {
+                console.error("Dashboard data error:", err);
+            }
+        }
+
+        // ==========================================
+        // ড্রপডাউন লোড করার কোড
+        // ==========================================
+        async function loadDropdowns() {
+            try {
+                const { data: authors } = await supabaseClient.from('authors').select('name');
+                const { data: categories } = await supabaseClient.from('categories').select('name');
+                const { data: publishers } = await supabaseClient.from('publishers').select('name');
+
+                const authorSelect = document.getElementById('author');
+                const categorySelect = document.getElementById('category');
+                const publisherSelect = document.getElementById('publisher');
+
+                if (authorSelect && authors) {
+                    authorSelect.innerHTML = `<option value="" disabled selected>লেখক সিলেক্ট করুন</option>` + authors.map(a => `<option value="${a.name}">${a.name}</option>`).join('');
+                }
+                if (categorySelect && categories) {
+                    categorySelect.innerHTML = `<option value="" disabled selected>ক্যাটাগরি সিলেক্ট করুন</option>` + categories.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
+                }
+                if (publisherSelect && publishers) {
+                    publisherSelect.innerHTML = `<option value="" disabled selected>প্রকাশনী সিলেক্ট করুন</option>` + publishers.map(p => `<option value="${p.name}">${p.name}</option>`).join('');
+                }
+            } catch (error) {
+                console.error("Dropdown load error:", error);
             }
         }
 
@@ -673,7 +778,7 @@
         });
 
         // ==========================================
-        // নতুন ফাংশন: রিভিউ ম্যানেজমেন্ট (এরর ফিক্স করা)
+        // রিভিউ ম্যানেজমেন্ট
         // ==========================================
         async function loadPendingReviews() {
             const list = document.getElementById('pendingReviewsList');
@@ -699,7 +804,6 @@
                     const date = new Date(rev.created_at).toLocaleDateString('bn-BD');
                     const stars = Array(rev.rating || 5).fill('⭐').join('');
                     
-                    // বুক আইডি চেক করা (যদি নাম্বার হয় তবে স্ট্রিং এ কনভার্ট করা)
                     let shortBookId = 'N/A';
                     if (rev.book_id) {
                         shortBookId = String(rev.book_id).split('-')[0];
@@ -742,7 +846,7 @@
             else { showToast('রিভিউ ডিলিট হয়েছে!'); loadPendingReviews(); }
         }
 
-        // --- অন্যান্য ফাংশন (আপনার আগের কোড থেকে) ---
+        // --- অন্যান্য ফাংশন ---
         async function loadSubscribers() {
             const tbody = document.getElementById('subscriberTableBody');
             tbody.innerHTML = ''; 
@@ -762,15 +866,6 @@
             `).join('');
         }
 
-        async function loadDashboardData() { /* আপনার আগের কোড */ }
-        function renderChart(data) { /* আপনার আগের কোড */ }
-        async function loadDropdowns() { /* আপনার আগের কোড */ }
-        async function loadAllBooks() { /* আপনার আগের কোড */ }
-        window.openEditModal = async (bookId) => { /* আপনার আগের কোড */ };
-        window.closeEditModal = () => { document.getElementById('editBookModal').classList.add('hidden'); document.getElementById('editBookModal').classList.remove('flex'); };
-        document.getElementById('editBookForm').addEventListener('submit', async (e) => { /* আপনার আগের কোড */ });
-        window.deleteBook = async (id) => { /* আপনার আগের কোড */ };
-        document.getElementById('addBookForm').addEventListener('submit', async (e) => { /* আপনার আগের কোড */ });
         async function loadPendingBookings() { /* আপনার আগের কোড */ };
         window.updateOrderStatus = async (orderId, newStatus) => { /* আপনার আগের কোড */ };
         async function loadPendingBlogs() { /* আপনার আগের কোড */ };
