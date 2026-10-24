@@ -33,7 +33,7 @@
         
         <!-- ১. বইয়ের ডিটেইলস কন্টেইনার -->
         <div id="bookDetailsContainer" class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-10 mb-12">
-            <!-- সরাসরি ডেটা বসবে, লোডিং স্পিনার নেই -->
+            <!-- জাভাস্ক্রিপ্ট দিয়ে সরাসরি ডেটা বসবে -->
         </div>
 
         <!-- ২. রিভিউ সেকশন -->
@@ -43,7 +43,6 @@
             </h2>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <!-- বাম দিক: রিভিউ লেখার ফর্ম -->
                 <div class="md:col-span-1">
                     <div class="bg-gray-50 p-5 rounded-xl border border-gray-200 sticky top-24">
                         <h3 class="font-bold text-lg mb-2 text-gray-800">রিভিউ দিন</h3>
@@ -72,7 +71,6 @@
                     </div>
                 </div>
 
-                <!-- ডান দিক: অন্যান্য কাস্টমারদের রিভিউ -->
                 <div class="md:col-span-2">
                     <div id="reviewsList" class="space-y-4">
                         <p class="text-gray-500 text-center py-10">রিভিউ লোড হচ্ছে...</p>
@@ -130,7 +128,7 @@
         }
 
         // ==========================================
-        // ১. বইয়ের ডিটেইলস লোড করা (এটাই এখন ঠিক আছে)
+        // ১. বইয়ের ডিটেইলস লোড করা (আগে এটাই লোড হবে)
         // ==========================================
         async function loadBookDetails() {
             const container = document.getElementById('bookDetailsContainer');
@@ -205,24 +203,25 @@
                 </div>
             `;
 
-            // বই সফলভাবে লোড হওয়ার পর রিভিউ এবং রিকমেন্ডেশন আলাদাভাবে কল হবে
+            // ডিটেইলস সফলভাবে লোড হওয়ার পর, আলাদাভাবে রিভিউ এবং রিকমেন্ডেশন কল করা হবে
+            // এতে রিভিউ বা রিকমেন্ডেশনে এরর হলেও ডিটেইলস নষ্ট হবে না
             loadReviews();
             loadRecommendations(book);
         }
 
         // ==========================================
-        // ২. রিভিউ লোড করা (এরর হ্যান্ডলিং সহ)
+        // ২. রিভিউ লোড করা (ডিটেইলস থেকে সম্পূর্ণ আলাদা)
         // ==========================================
         async function loadReviews() {
             const list = document.getElementById('reviewsList');
             if (!list) return;
             
             try {
+                // জয়েন ছাড়া শুধু রিভিউ ডেটা আনা হচ্ছে
                 const { data: reviews, error } = await supabaseClient
                     .from('reviews')
                     .select('*')
                     .eq('book_id', currentBookId)
-                    .eq('status', 'approved')
                     .order('created_at', { ascending: false });
 
                 if (error) throw new Error(error.message);
@@ -305,14 +304,13 @@
         }
 
         // ==========================================
-        // ৪. রিকমেন্ডেশন লোড করা
+        // ৪. রিকমেন্ডেশন লোড করা (ডিটেইলস থেকে সম্পূর্ণ আলাদা)
         // ==========================================
         async function loadRecommendations(currentBook) {
             const grid = document.getElementById('recommendGrid');
             if (!grid) return;
             
             try {
-                // ক্যাটাগরি বা লেখক দিয়ে রিলেটেড বই খোঁজা
                 const { data: recs, error } = await supabaseClient
                     .from('books')
                     .select('*')
