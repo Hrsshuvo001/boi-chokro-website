@@ -119,16 +119,13 @@
         </section>
     </main>
 
-    <!-- ফুটার (নিউজলেটার সাবস্ক্রিপশনসহ) -->
+    <!-- ফুটার -->
     <footer class="bg-gray-900 dark:bg-black text-gray-400 pt-12 pb-6 mt-auto border-t-4 border-blue-600 no-print">
         <div class="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
-            <!-- ব্র্যান্ড ইনফো -->
             <div>
                 <h3 class="text-xl font-bold text-white mb-4" id="footer_company_name">Boi Chokro</h3>
                 <p class="text-sm mb-4">আপনার পছন্দের বই, এক জায়গায়। সেরা লেখকদের বইয়ের বিশাল সংগ্রহ।</p>
             </div>
-            
-            <!-- কুইক লিংক -->
             <div>
                 <h4 class="text-white font-semibold mb-4">গুরুত্বপূর্ণ লিংক</h4>
                 <ul class="space-y-2 text-sm">
@@ -138,8 +135,6 @@
                     <li><a href="/contact.html" class="hover:text-blue-500 transition">যোগাযোগ</a></li>
                 </ul>
             </div>
-            
-            <!-- নিউজলেটার সাবস্ক্রিপশন -->
             <div class="md:col-span-2">
                 <h4 class="text-white font-semibold mb-4">নিউজলেটারে সাবস্ক্রাইব করুন</h4>
                 <p class="text-sm mb-3">নতুন বই ও বিশেষ অফারের খবর সবার আগে পেতে আপনার ইমেইল দিন।</p>
@@ -150,7 +145,6 @@
                 <div id="subMsg" class="text-sm mt-2 hidden"></div>
             </div>
         </div>
-        
         <div class="text-center border-t border-gray-800 pt-6 text-xs">
             <p id="web_footer_text">&copy; 2024 Boi Chokro. All rights reserved.</p>
         </div>
@@ -169,8 +163,10 @@
         let itemsToShow = 12; 
         let currentSort = 'newest';
         let currentCategory = 'all';
-        let minPriceFilter = null;
-        let maxPriceFilter = null;
+        
+        // এখানে বাগ ফিক্স করা হয়েছে (undefined এর বদলে ডিফল্ট ভ্যালু)
+        let minPriceFilter = 0; 
+        let maxPriceFilter = Infinity; 
 
         if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
             document.documentElement.classList.add('dark');
@@ -183,8 +179,10 @@
 
         function updateCartCount() {
             const cart = JSON.parse(localStorage.getItem('boiChokroCart')) || [];
-            document.getElementById('cartCountMobile').innerText = cart.length;
-            document.getElementById('cartCountDesktop').innerText = cart.length;
+            const mobEl = document.getElementById('cartCountMobile');
+            const deskEl = document.getElementById('cartCountDesktop');
+            if(mobEl) mobEl.innerText = cart.length;
+            if(deskEl) deskEl.innerText = cart.length;
         }
 
         async function checkAuth() {
@@ -274,15 +272,26 @@
         }
 
         async function loadHomePage() {
+            // ফিল্টার ভ্যালু আগে থেকেই সেট করে দেওয়া হলো
+            minPriceFilter = 0;
+            maxPriceFilter = Infinity;
+
+            // Supabase থেকে বই লোড করা
             const { data: books, error } = await supabaseClient.from('books').select('*'); 
             
+            // লোডার লুকানো এবং গ্রিড দেখানো
             document.getElementById('skeletonLoader').classList.add('hidden');
             document.getElementById('bookGrid').classList.remove('hidden');
 
-            if (error || !books) return;
+            if (error || !books) {
+                document.getElementById('bookGrid').innerHTML = `<p class="text-gray-500 col-span-full text-center py-12 text-sm">ডেটা লোড করতে সমস্যা হয়েছে। আপনার ইন্টারনেট বা সুপাবেস কানেকশন চেক করুন।</p>`;
+                return;
+            }
+            
             allBooksData = books;
             filteredBooksData = [...books]; 
 
+            // ক্যাটাগরি লোড করা
             const { data: categories } = await supabaseClient.from('categories').select('*').order('name');
             const categoryButtons = document.getElementById('categoryButtons');
 
