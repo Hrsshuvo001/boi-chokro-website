@@ -133,7 +133,7 @@
         }
 
         // ==========================================
-        // ১. বইয়ের ডিটেইলস লোড করা
+        // ১. বইয়ের ডিটেইলস লোড করা (৫ সেকেন্ডের টাইমআউটসহ)
         // ==========================================
         async function loadBookDetails() {
             const container = document.getElementById('bookDetailsContainer');
@@ -143,16 +143,32 @@
                 return;
             }
 
+            // ৫ সেকেন্ডের টাইমআউট সেট করা হলো
+            let isTimedOut = false;
+            const timeoutId = setTimeout(() => {
+                isTimedOut = true;
+                container.innerHTML = `
+                    <div class="text-center py-10 bg-red-50 rounded-xl border border-red-200 m-4">
+                        <p class="text-red-600 font-bold text-lg mb-2">⚠️ সার্ভার রেসপন্স করছে না!</p>
+                        <p class="text-gray-700 text-sm mb-4">Supabase-এর সাথে কানেক্ট করা যাচ্ছে না অথবা ডেটাবেসে <b>books</b> টেবিলের RLS পলিসি ঠিক নেই।</p>
+                        <button onclick="window.location.reload()" class="bg-red-600 text-white px-6 py-2 rounded-lg">আবার চেষ্টা করুন</button>
+                    </div>
+                `;
+            }, 5000);
+
             try {
                 const { data: book, error } = await supabaseClient.from('books').select('*').eq('id', currentBookId).maybeSingle();
                 
+                clearTimeout(timeoutId); // ডেটা এসে গেলে টাইমআউট বন্ধ
+                if (isTimedOut) return;
+
                 if (error) {
                     container.innerHTML = `<div class="text-center py-10"><p class="text-red-500 font-bold text-lg mb-2">⚠️ ডেটাবেস এরর!</p><p class="text-gray-600 text-sm bg-red-50 p-4 rounded-lg inline-block">${error.message}</p></div>`;
                     return;
                 }
 
                 if (!book) {
-                    container.innerHTML = `<div class="text-center py-10"><p class="text-red-500 font-bold text-lg mb-2">❌ বইটি পাওয়া যায়নি!</p><p class="text-gray-500 text-sm">সম্ভবত বইটি ডিলিট করা হয়েছে অথবা লিংকটি ভুল।</p><a href="/index.html" class="mt-4 inline-block bg-blue-600 text-white px-6 py-2 rounded-lg">হোমে ফিরে যান</a></div>`;
+                    container.innerHTML = `<div class="text-center py-10"><p class="text-red-500 font-bold text-lg mb-2">❌ বইটি পাওয়া যায়নি!</p><p class="text-gray-500 text-sm">URL-এ যে আইডি আছে, সেই আইডির কোনো বই ডেটাবেসে নেই।</p><a href="/index.html" class="mt-4 inline-block bg-blue-600 text-white px-6 py-2 rounded-lg">হোমে ফিরে যান</a></div>`;
                     return;
                 }
 
@@ -214,6 +230,7 @@
                 loadRecommendations(book);
 
             } catch (err) {
+                if (isTimedOut) return;
                 container.innerHTML = `<div class="text-center py-10"><p class="text-red-500 font-bold text-lg mb-2">⚠️ অপ্রত্যাশিত সমস্যা!</p><p class="text-gray-600 text-sm">${err.message}</p></div>`;
             }
         }
