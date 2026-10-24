@@ -28,8 +28,16 @@
     </nav>
 
     <!-- মেইন কন্টেন্ট -->
-    <main class="flex-grow max-w-4xl mx-auto w-full px-4 py-8">
+    <main class="flex-grow max-w-4xl mx-auto w-full px-4 py-8 relative">
         
+        <!-- টোস্ট নোটিফিকেশন (মেসেজ দেখানোর জন্য) -->
+        <div id="toastMessage" class="fixed top-24 right-4 md:right-10 transform translate-x-[150%] transition-transform duration-300 ease-in-out z-[100]">
+            <div class="bg-green-600 text-white px-6 py-3 rounded-lg shadow-xl flex items-center gap-3 font-semibold">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                <span id="toastText">রিভিউ সফলভাবে জমা হয়েছে!</span>
+            </div>
+        </div>
+
         <!-- বইয়ের নাম দেখানোর এরিয়া -->
         <div class="mb-6 bg-white p-4 rounded-xl shadow-sm border border-gray-100">
             <a href="#" id="backToBookBtn" class="text-blue-600 text-sm font-semibold hover:underline mb-2 inline-block">&larr; বইয়ের পেজে ফিরে যান</a>
@@ -63,7 +71,6 @@
                             রিভিউ সাবমিট করুন
                         </button>
                     </form>
-                    <div id="reviewMessage" class="mt-3 text-sm text-center font-bold hidden"></div>
                 </div>
             </div>
 
@@ -90,14 +97,37 @@
         const urlParams = new URLSearchParams(window.location.search);
         const currentBookId = urlParams.get('id');
 
-        // কার্ট কাউন্ট আপডেট
+        // টোস্ট মেসেজ দেখানোর ফাংশন
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toastMessage');
+            const toastText = document.getElementById('toastText');
+            
+            // কালার পরিবর্তন (সফল হলে সবুজ, এরর হলে লাল)
+            if (isError) {
+                toast.querySelector('div').className = 'bg-red-600 text-white px-6 py-3 rounded-lg shadow-xl flex items-center gap-3 font-semibold';
+            } else {
+                toast.querySelector('div').className = 'bg-green-600 text-white px-6 py-3 rounded-lg shadow-xl flex items-center gap-3 font-semibold';
+            }
+            
+            toastText.innerText = message;
+            
+            // ডান দিক থেকে এনে দেখানো
+            toast.classList.remove('translate-x-[150%]');
+            toast.classList.add('translate-x-0');
+            
+            // ৪ সেকেন্ড পর আবার ডান দিকে লুকিয়ে ফেলা
+            setTimeout(() => {
+                toast.classList.remove('translate-x-0');
+                toast.classList.add('translate-x-[150%]');
+            }, 4000);
+        }
+
         function updateCartCount() {
             const cart = JSON.parse(localStorage.getItem('boiChokroCart')) || [];
             const cartEl = document.getElementById('cartCount');
             if(cartEl) cartEl.innerText = cart.length;
         }
 
-        // ইউজার চেক
         async function checkAuth() {
             const { data: { session } } = await supabaseClient.auth.getSession();
             const authButtons = document.getElementById('authButtons');
@@ -116,7 +146,7 @@
         }
 
         // ==========================================
-        // ১. বইয়ের নাম ও পেজ সেটআপ
+        // ১. পেজ সেটআপ (বইয়ের নাম)
         // ==========================================
         async function initPage() {
             if (!currentBookId) {
@@ -125,7 +155,6 @@
                 return;
             }
 
-            // বইয়ের নাম বের করা
             const { data: book } = await supabaseClient.from('books').select('title').eq('id', currentBookId).maybeSingle();
             if (book) {
                 document.getElementById('pageTitle').innerText = `"${book.title}" এর রিভিউ`;
@@ -133,15 +162,12 @@
                 document.getElementById('pageTitle').innerText = "বইটি খুঁজে পাওয়া যায়নি";
             }
 
-            // ফিরে যাওয়ার বাটনের লিংক সেট করা
             document.getElementById('backToBookBtn').href = `/book-details.html?id=${currentBookId}`;
-
-            // রিভিউ লোড করা
             fetchReviews();
         }
 
         // ==========================================
-        // ২. রিভিউ লোড করা (শুধুমাত্র Approved)
+        // ২. রিভিউ লোড করা
         // ==========================================
         async function fetchReviews() {
             const list = document.getElementById('reviewsList');
@@ -151,7 +177,7 @@
                     .from('reviews')
                     .select('*')
                     .eq('book_id', currentBookId)
-                    .eq('status', 'approved') // অ্যাডমিন অ্যাপ্রুভড রিভিউ
+                    .eq('status', 'approved') // শুধুমাত্র অ্যাডমিন অ্যাপ্রুভড রিভিউ দেখাবে
                     .order('created_at', { ascending: false });
 
                 if (error) throw new Error(error.message);
@@ -190,25 +216,25 @@
         }
 
         // ==========================================
-        // ৩. নতুন রিভিউ সাবমিট করা
+        // ৩. নতুন রিভিউ সাবমিট করা (মেসেজ সহ)
         // ==========================================
         document.getElementById('reviewForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             if (!currentUser) {
-                alert('রিভিউ দিতে অনুগ্রহ করে প্রথমে লগইন করুন!');
-                window.location.href = '/login.html';
+                showToast('রিভিউ দিতে অনুগ্রহ করে প্রথমে লগইন করুন!', true);
+                setTimeout(() => { window.location.href = '/login.html'; }, 1500);
                 return;
             }
 
             const btn = document.getElementById('submitReviewBtn');
-            const msg = document.getElementById('reviewMessage');
             const rating = parseInt(document.getElementById('reviewRating').value);
             const comment = document.getElementById('reviewComment').value;
 
-            btn.innerText = 'সাবমিট হচ্ছে...'; btn.disabled = true;
-            msg.classList.add('hidden');
+            btn.innerText = 'সাবমিট হচ্ছে...'; 
+            btn.disabled = true;
 
             try {
+                // রিভিউ ইনসার্ট করা
                 const { error } = await supabaseClient.from('reviews').insert([{
                     book_id: currentBookId,
                     user_id: currentUser.id,
@@ -217,16 +243,19 @@
                     status: 'pending' // ডিফল্টভাবে পেন্ডিং থাকবে
                 }]);
 
+                // যদি সুপাবেস কোনো এরর দেয়, তবে সেটা থ্রো করব
                 if (error) throw new Error(error.message);
 
-                msg.innerText = '✅ আপনার রিভিউটি সফলভাবে জমা হয়েছে। অ্যাডমিন অ্যাপ্রুভ করলে এটি প্রকাশিত হবে।';
-                msg.className = 'mt-3 text-sm text-center font-bold text-green-600 block bg-green-50 p-2 rounded border border-green-200';
+                // সফল হলে মেসেজ দেখাবে
+                showToast('রিভিউ সফলভাবে জমা হয়েছে! অ্যাডমিন অ্যাপ্রুভ করলে প্রকাশ পাবে।', false);
                 document.getElementById('reviewForm').reset();
+
             } catch (err) {
-                msg.innerText = '⚠️ রিভিউ দিতে সমস্যা: ' + err.message;
-                msg.className = 'mt-3 text-sm text-center font-bold text-red-600 block';
+                // এরর হলে মেসেজ দেখাবে
+                showToast('রিভিউ সেভ হয়নি: ' + err.message, true);
             } finally {
-                btn.innerText = 'রিভিউ সাবমিট করুন'; btn.disabled = false;
+                btn.innerText = 'রিভিউ সাবমিট করুন'; 
+                btn.disabled = false;
             }
         });
 
