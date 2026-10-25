@@ -615,11 +615,10 @@
             const list = document.getElementById('allBlogsList');
             list.innerHTML = `<p class="text-center text-gray-500 py-6">লোড হচ্ছে...</p>`;
 
-            // এখানে শুধুমাত্র approved ব্লগগুলো লোড করা হচ্ছে
             const { data: blogs, error } = await supabaseClient
                 .from('blogs')
                 .select('*, profiles(full_name)')
-                .eq('status', 'approved') // ফিক্স: শুধুমাত্র অ্যাপ্রুভড ব্লগ
+                .eq('status', 'approved') // শুধুমাত্র অ্যাপ্রুভড
                 .order('created_at', { ascending: false });
 
             if (error || !blogs) {
