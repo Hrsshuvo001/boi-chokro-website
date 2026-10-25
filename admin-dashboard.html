@@ -203,17 +203,14 @@
             <section id="section-blog-management" class="section-content">
                 <h2 class="text-2xl font-bold text-gray-800 mb-6">ব্লগ ম্যানেজমেন্ট</h2>
                 
-                <!-- ট্যাব বাটন -->
                 <div class="flex border-b border-gray-200 mb-6">
                     <button onclick="switchBlogTab('pending')" id="tab-btn-pending" class="px-6 py-3 font-bold text-blue-600 border-b-2 border-blue-600 focus:outline-none">পেন্ডিং ব্লগ</button>
                     <button onclick="switchBlogTab('all')" id="tab-btn-all" class="px-6 py-3 font-bold text-gray-500 hover:text-blue-600 border-b-2 border-transparent focus:outline-none">সব ব্লগ</button>
                     <button onclick="switchBlogTab('add')" id="tab-btn-add" class="px-6 py-3 font-bold text-gray-500 hover:text-blue-600 border-b-2 border-transparent focus:outline-none">অ্যাডমিনের ব্লগ লিখুন</button>
                 </div>
 
-                <!-- পেন্ডিং ব্লগ কন্টেন্ট -->
                 <div id="blog-tab-pending" class="space-y-4"></div>
 
-                <!-- সব ব্লগ কন্টেন্ট -->
                 <div id="blog-tab-all" class="hidden">
                     <div class="mb-4">
                         <input type="text" id="blogSearchInput" placeholder="ব্লগের টাইটেল বা লেখকের নাম দিয়ে খুঁজুন..." class="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none" oninput="searchBlogs()">
@@ -221,18 +218,14 @@
                     <div id="allBlogsList" class="space-y-4"></div>
                 </div>
 
-                <!-- অ্যাড ব্লগ কন্টেন্ট -->
                 <div id="blog-tab-add" class="hidden bg-white p-6 rounded-xl shadow-sm border-t-4 border-blue-500 max-w-2xl">
                     <h3 class="text-xl font-bold mb-4 text-gray-800">নতুন ব্লগ লিখুন</h3>
                     <form id="addBlogForm" class="space-y-4">
                         <div><label class="block text-sm font-medium text-gray-700">ব্লগের শিরোনাম</label><input type="text" id="blogTitle" required class="mt-1 w-full px-4 py-2 border rounded-md"></div>
-                        
-                        <!-- নতুন ছবি আপলোড অপশন -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700">ব্লগের ছবি (ঐচ্ছিক)</label>
                             <input type="file" id="blogImage" accept="image/*" class="mt-1 w-full px-4 py-2 border rounded-md bg-gray-50 text-sm">
                         </div>
-
                         <div><label class="block text-sm font-medium text-gray-700">ব্লগের বিষয়বস্তু</label><textarea id="blogContent" required rows="5" class="mt-1 w-full px-4 py-2 border rounded-md"></textarea></div>
                         <button type="submit" id="submitBlogBtn" class="w-full bg-blue-600 text-white font-bold py-2 rounded hover:bg-blue-700 transition">ব্লগ পাবলিশ করুন</button>
                     </form>
@@ -622,7 +615,12 @@
             const list = document.getElementById('allBlogsList');
             list.innerHTML = `<p class="text-center text-gray-500 py-6">লোড হচ্ছে...</p>`;
 
-            const { data: blogs, error } = await supabaseClient.from('blogs').select('*, profiles(full_name)').order('created_at', { ascending: false });
+            // এখানে শুধুমাত্র approved ব্লগগুলো লোড করা হচ্ছে
+            const { data: blogs, error } = await supabaseClient
+                .from('blogs')
+                .select('*, profiles(full_name)')
+                .eq('status', 'approved') // ফিক্স: শুধুমাত্র অ্যাপ্রুভড ব্লগ
+                .order('created_at', { ascending: false });
 
             if (error || !blogs) {
                 list.innerHTML = `<p class="text-red-500 text-center">ডেটা লোড এরর!</p>`;
@@ -635,18 +633,17 @@
         function renderAllBlogs(blogs) {
             const list = document.getElementById('allBlogsList');
             if(blogs.length === 0) {
-                list.innerHTML = `<p class="text-center text-gray-500 py-6">কোনো ব্লগ খুঁজে পাওয়া যায়নি।</p>`;
+                list.innerHTML = `<p class="text-center text-gray-500 py-6">কোনো অ্যাপ্রুভড ব্লগ খুঁজে পাওয়া যায়নি।</p>`;
                 return;
             }
 
             list.innerHTML = blogs.map(blog => {
                 const author = blog.profiles?.full_name || 'Unknown';
-                const statusColor = blog.status === 'approved' ? 'text-green-600' : 'text-yellow-600';
                 return `
                 <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 mb-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div>
                         <h3 class="font-bold text-gray-800 text-lg mb-1">${escapeHTML(blog.title)}</h3>
-                        <p class="text-xs text-gray-500 mb-2">লেখক: <span class="font-semibold text-blue-600">${escapeHTML(author)}</span> | স্ট্যাটাস: <span class="${statusColor} font-bold">${blog.status}</span></p>
+                        <p class="text-xs text-gray-500 mb-2">লেখক: <span class="font-semibold text-blue-600">${escapeHTML(author)}</span></p>
                         <p class="text-gray-600 text-sm line-clamp-2">${escapeHTML(blog.content)}</p>
                     </div>
                     <div class="flex gap-2">
@@ -690,7 +687,7 @@
                     author_id: currentUser.id,
                     title: title,
                     content: content,
-                    image_url: image_url, // ছবি যোগ করা হলো
+                    image_url: image_url,
                     status: 'approved'
                 }]);
 
@@ -710,7 +707,10 @@
             if(!confirm('অ্যাপ্রুভ করতে চান?')) return;
             const { error } = await supabaseClient.from('blogs').update({ status: 'approved' }).eq('id', id);
             if(error) showToast(error.message, true);
-            else { showToast('অ্যাপ্রুভড!'); loadPendingBlogs(); }
+            else { 
+                showToast('✅ ব্লগ অ্যাপ্রুভ হয়েছে!'); 
+                loadPendingBlogs(); // পেন্ডিং লিস্ট থেকে সরানোর জন্য
+            }
         }
 
         window.deleteBlog = async (id) => {
