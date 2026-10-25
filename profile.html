@@ -23,7 +23,6 @@
     <nav class="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-40 no-print">
         <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
             <a href="/index.html" class="text-2xl font-extrabold text-blue-600 dark:text-blue-400 tracking-tight">Boi Chokro</a>
-            
             <div class="flex items-center gap-4">
                 <a href="/cart.html" class="relative flex items-center gap-1.5 bg-blue-50 dark:bg-gray-700 text-blue-600 dark:text-blue-400 px-4 py-2 rounded-lg font-semibold transition border border-blue-100 dark:border-gray-600">
                     <span class="text-sm hidden sm:inline">কার্ট</span>
@@ -35,81 +34,64 @@
     </nav>
 
     <main class="flex-grow max-w-6xl mx-auto w-full px-4 py-8 no-print">
-        
-        <div class="flex justify-between items-end mb-8 border-b dark:border-gray-700 pb-4">
-            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">আমার প্রোফাইল</h1>
-            
-            <div class="relative">
-                <button onclick="toggleNotifs()" class="relative p-2 bg-white dark:bg-gray-800 rounded-full shadow-sm hover:bg-gray-100 transition">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 text-gray-600 dark:text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
-                    <span id="notifBadge" class="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold rounded-full h-5 w-5 flex items-center justify-center border-2 border-white hidden">0</span>
-                </button>
-                <div id="notifDropdown" class="hidden absolute right-0 mt-2 w-72 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-50 max-h-80 overflow-y-auto">
-                    <div class="p-3 bg-gray-50 dark:bg-gray-900 border-b dark:border-gray-700 font-bold text-sm rounded-t-lg">নোটিফিকেশন</div>
-                    <div id="notifList" class="divide-y divide-gray-100 dark:divide-gray-700"></div>
-                </div>
-            </div>
-        </div>
-
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
             
+            <!-- বাম দিক: প্রোফাইল কার্ড ও মেনু -->
             <div class="md:col-span-1">
                 <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 flex flex-col items-center sticky top-24">
-                    <div class="relative group">
-                        <img id="profileDisplayImage" src="https://via.placeholder.com/150" class="w-32 h-32 rounded-full object-cover border-4 border-blue-100 shadow-sm">
-                        <label for="profileImageUpload" class="absolute bottom-0 right-0 bg-blue-600 text-white p-2 rounded-full cursor-pointer hover:bg-blue-700 transition shadow-md">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                        </label>
-                        <input type="file" id="profileImageUpload" accept="image/*" class="hidden">
-                    </div>
-
+                    <img id="profileDisplayImage" src="https://via.placeholder.com/150" class="w-32 h-32 rounded-full object-cover border-4 border-blue-100 shadow-sm">
                     <h2 id="displayName" class="text-xl font-bold mt-4 text-gray-900 dark:text-white">লোড হচ্ছে...</h2>
                     <p id="displayEmail" class="text-sm text-gray-500 mb-6">...</p>
 
                     <div class="w-full flex flex-col gap-2">
-                        <button onclick="switchTab('info')" id="tabBtnInfo" class="w-full text-left px-4 py-3 rounded-xl bg-blue-50 dark:bg-gray-700 text-blue-700 dark:text-white font-semibold transition border border-blue-100 dark:border-gray-600 flex items-center gap-3">ব্যক্তিগত তথ্য</button>
-                        <button onclick="switchTab('orders')" id="tabBtnOrders" class="w-full text-left px-4 py-3 rounded-xl text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 font-semibold transition border border-transparent flex items-center gap-3">আমার অর্ডার</button>
-                        <button onclick="switchTab('reviews')" id="tabBtnReviews" class="w-full text-left px-4 py-3 rounded-xl text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 font-semibold transition border border-transparent flex items-center gap-3">আমার রিভিউ</button>
+                        <button onclick="switchTab('info')" id="tabBtnInfo" class="w-full text-left px-4 py-3 rounded-xl bg-blue-50 dark:bg-gray-700 text-blue-700 dark:text-white font-semibold transition border border-blue-100 dark:border-gray-600 flex items-center gap-3">👤 ব্যক্তিগত তথ্য</button>
+                        <button onclick="switchTab('orders')" id="tabBtnOrders" class="w-full text-left px-4 py-3 rounded-xl text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 font-semibold transition border border-transparent flex items-center gap-3">📦 আমার অর্ডার</button>
+                        <button onclick="switchTab('friends')" id="tabBtnFriends" class="w-full text-left px-4 py-3 rounded-xl text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 font-semibold transition border border-transparent flex items-center gap-3">👥 ফ্রেন্ড লিস্ট</button>
+                        <button onclick="switchTab('myBlogs')" id="tabBtnMyBlogs" class="w-full text-left px-4 py-3 rounded-xl text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 font-semibold transition border border-transparent flex items-center gap-3">📝 আমার ব্লগ</button>
                     </div>
                 </div>
             </div>
 
+            <!-- ডান দিক: কন্টেন্ট এরিয়া -->
             <div class="md:col-span-2">
                 
+                <!-- পার্সোনাল ইনফো -->
                 <div id="tabContentInfo" class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 md:p-8">
                     <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-6">ব্যক্তিগত তথ্য আপডেট করুন</h3>
                     <form id="profileForm" class="space-y-4">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div><label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">পুরো নাম</label><input type="text" id="profName" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 bg-gray-50 dark:bg-gray-700 dark:border-gray-600"></div>
-                            <div><label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">মোবাইল নম্বর</label><input type="text" id="profPhone" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 bg-gray-50 dark:bg-gray-700 dark:border-gray-600"></div>
+                            <div><label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">পুরো নাম</label><input type="text" id="profName" class="w-full px-4 py-2 border rounded-lg bg-gray-50 dark:bg-gray-700 dark:border-gray-600"></div>
+                            <div><label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">মোবাইল নম্বর</label><input type="text" id="profPhone" class="w-full px-4 py-2 border rounded-lg bg-gray-50 dark:bg-gray-700 dark:border-gray-600"></div>
                         </div>
-                        <div><label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">ঠিকানা</label><textarea id="profAddress" rows="3" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 bg-gray-50 dark:bg-gray-700 dark:border-gray-600"></textarea></div>
-                        <div><label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">ইমেইল (পরিবর্তনযোগ্য নয়)</label><input type="email" id="profEmail" class="w-full px-4 py-2 border rounded-lg bg-gray-200 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed" readonly></div>
+                        <div><label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">ঠিকানা</label><textarea id="profAddress" rows="3" class="w-full px-4 py-2 border rounded-lg bg-gray-50 dark:bg-gray-700 dark:border-gray-600"></textarea></div>
+                        <div><label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">ইমেইল (পরিবর্তনযোগ্য নয়)</label><input type="email" id="profEmail" class="w-full px-4 py-2 border rounded-lg bg-gray-200 dark:bg-gray-600 text-gray-500 cursor-not-allowed" readonly></div>
                         <button type="submit" id="updateProfileBtn" class="bg-blue-600 text-white font-bold py-2.5 px-6 rounded-lg hover:bg-blue-700 transition shadow-md mt-4">তথ্য সেভ করুন</button>
                     </form>
                 </div>
 
+                <!-- অর্ডারস -->
                 <div id="tabContentOrders" class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 md:p-8 hidden">
                     <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-6">আমার অর্ডারসমূহ</h3>
                     <div id="ordersList" class="space-y-6"><p class="text-gray-500 text-center">লোড হচ্ছে...</p></div>
                 </div>
 
-                <div id="tabContentReviews" class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 md:p-8 hidden">
-                    <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-6">আমার দেওয়া রিভিউ</h3>
-                    <div id="reviewsList" class="space-y-4"><p class="text-gray-500 text-center">লোড হচ্ছে...</p></div>
+                <!-- ফ্রেন্ড লিস্ট (নতুন) -->
+                <div id="tabContentFriends" class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 md:p-8 hidden">
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-6">আমার ফ্রেন্ড লিস্ট</h3>
+                    <div id="friendList" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <p class="text-gray-500 text-center col-span-full">লোড হচ্ছে...</p>
+                    </div>
+                </div>
+
+                <!-- আমার ব্লগ -->
+                <div id="tabContentMyBlogs" class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 md:p-8 hidden">
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-6">আমার লেখা ব্লগ</h3>
+                    <div id="myBlogsList" class="space-y-4"><p class="text-gray-500 text-center">লোড হচ্ছে...</p></div>
                 </div>
 
             </div>
         </div>
     </main>
-
-    <div id="invoiceModal" class="fixed inset-0 z-[100] hidden items-center justify-center modal-overlay p-4 no-print">
-        <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto" id="printableInvoice"></div>
-    </div>
-
-    <footer class="bg-gray-900 text-gray-400 py-6 text-center mt-auto no-print">
-        <p class="text-sm">&copy; 2024 Boi Chokro. All rights reserved.</p>
-    </footer>
 
     <script>
         const SUPABASE_URL = 'https://jhbpaezbpkfwjfmazdcn.supabase.co';
@@ -118,14 +100,7 @@
 
         let currentUser = null;
 
-        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-            document.documentElement.classList.add('dark');
-        }
-
-        function updateCartCount() {
-            const cart = JSON.parse(localStorage.getItem('boiChokroCart')) || [];
-            document.getElementById('cartCount').innerText = cart.length;
-        }
+        if (localStorage.getItem('theme') === 'dark') document.documentElement.classList.add('dark');
 
         async function checkAuthAndLoadProfile() {
             const { data: { session } } = await supabaseClient.auth.getSession();
@@ -144,177 +119,100 @@
 
                 if(profile.profile_image) document.getElementById('profileDisplayImage').src = profile.profile_image;
             }
-            loadNotifications();
         }
-
-        async function loadNotifications() {
-            const { data: notifs } = await supabaseClient.from('notifications').select('*').eq('user_id', currentUser.id).order('created_at', { ascending: false });
-            const badge = document.getElementById('notifBadge');
-            const list = document.getElementById('notifList');
-            
-            if(!notifs || notifs.length === 0) { list.innerHTML = `<div class="p-4 text-center text-sm text-gray-500">কোনো নোটিফিকেশন নেই</div>`; badge.classList.add('hidden'); return; }
-
-            const unreadCount = notifs.filter(n => !n.is_read).length;
-            if(unreadCount > 0) { badge.innerText = unreadCount; badge.classList.remove('hidden'); }
-            else badge.classList.add('hidden');
-
-            list.innerHTML = notifs.map(n => `
-                <div onclick="markAsRead('${n.id}')" class="p-3 text-sm border-b dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 ${!n.is_read ? 'bg-blue-50 dark:bg-gray-700 font-semibold' : 'text-gray-600 dark:text-gray-400'}">
-                    ${n.message}
-                    <p class="text-[10px] text-gray-400 mt-1">${new Date(n.created_at).toLocaleString('bn-BD')}</p>
-                </div>
-            `).join('');
-        }
-
-        window.toggleNotifs = () => document.getElementById('notifDropdown').classList.toggle('hidden');
-        window.markAsRead = async (id) => { await supabaseClient.from('notifications').update({ is_read: true }).eq('id', id); loadNotifications(); }
 
         window.switchTab = (tabName) => {
             document.getElementById('tabContentInfo').classList.add('hidden');
             document.getElementById('tabContentOrders').classList.add('hidden');
-            document.getElementById('tabContentReviews').classList.add('hidden');
+            document.getElementById('tabContentFriends').classList.add('hidden');
+            document.getElementById('tabContentMyBlogs').classList.add('hidden');
 
             const baseClass = "w-full text-left px-4 py-3 rounded-xl text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 font-semibold transition border border-transparent flex items-center gap-3";
             document.getElementById('tabBtnInfo').className = baseClass;
             document.getElementById('tabBtnOrders').className = baseClass;
-            document.getElementById('tabBtnReviews').className = baseClass;
+            document.getElementById('tabBtnFriends').className = baseClass;
+            document.getElementById('tabBtnMyBlogs').className = baseClass;
 
             const activeClass = "w-full text-left px-4 py-3 rounded-xl bg-blue-50 dark:bg-gray-700 text-blue-700 dark:text-white font-semibold transition border border-blue-100 dark:border-gray-600 flex items-center gap-3";
 
-            if(tabName === 'info') {
-                document.getElementById('tabContentInfo').classList.remove('hidden');
-                document.getElementById('tabBtnInfo').className = activeClass;
-            } else if (tabName === 'orders') {
-                document.getElementById('tabContentOrders').classList.remove('hidden');
-                document.getElementById('tabBtnOrders').className = activeClass;
-                loadOrders();
-            } else if (tabName === 'reviews') {
-                document.getElementById('tabContentReviews').classList.remove('hidden');
-                document.getElementById('tabBtnReviews').className = activeClass;
-                loadReviews();
-            }
+            if(tabName === 'info') { document.getElementById('tabContentInfo').classList.remove('hidden'); document.getElementById('tabBtnInfo').className = activeClass; }
+            else if (tabName === 'orders') { document.getElementById('tabContentOrders').classList.remove('hidden'); document.getElementById('tabBtnOrders').className = activeClass; loadOrders(); }
+            else if (tabName === 'friends') { document.getElementById('tabContentFriends').classList.remove('hidden'); document.getElementById('tabBtnFriends').className = activeClass; loadFriends(); }
+            else if (tabName === 'myBlogs') { document.getElementById('tabContentMyBlogs').classList.remove('hidden'); document.getElementById('tabBtnMyBlogs').className = activeClass; loadMyBlogs(); }
         }
 
-        // ==========================================
-        // অর্ডার ট্র্যাকিং লজিক (নতুন)
-        // ==========================================
-        async function loadOrders() {
-            const list = document.getElementById('ordersList');
-            list.innerHTML = `<p class="text-gray-500 text-center py-4">লোড হচ্ছে...</p>`;
+        // ফ্রেন্ড লিস্ট লোড করা
+        async function loadFriends() {
+            const list = document.getElementById('friendList');
+            list.innerHTML = '<p class="text-gray-500 text-center col-span-full">লোড হচ্ছে...</p>';
 
-            const { data: orders, error } = await supabaseClient.from('orders')
-                .select('*')
-                .eq('user_id', currentUser.id)
-                .order('created_at', { ascending: false });
+            // যারা আমাকে ফলো করছে বা আমি যাদের ফলো করছি
+            const { data: follows, error } = await supabaseClient
+                .from('followers')
+                .select('following_id, profiles!followers_following_id_fkey(full_name, email, profile_image)')
+                .eq('follower_id', currentUser.id);
 
-            if(error || !orders || orders.length === 0) {
-                list.innerHTML = `<p class="text-gray-500 text-center py-8">আপনি এখনো কোনো অর্ডার করেননি।</p>`;
+            if (error || !follows || follows.length === 0) {
+                list.innerHTML = `<p class="text-gray-500 text-center col-span-full py-10">আপনার কোনো ফ্রেন্ড নেই। ব্লগ পেজ থেকে লেখকদের ফলো করুন।</p>`;
                 return;
             }
 
-            list.innerHTML = orders.map(order => {
-                // প্রোগ্রেস বার লজিক
-                const status = order.status;
-                let pPending = 'bg-blue-600', pProcessing = 'bg-gray-300 dark:bg-gray-600', pShipped = 'bg-gray-300 dark:bg-gray-600', pCompleted = 'bg-gray-300 dark:bg-gray-600';
-                let textPending = 'text-blue-600 font-bold', textProcessing = 'text-gray-400', textShipped = 'text-gray-400', textCompleted = 'text-gray-400';
-
-                if(status === 'processing') {
-                    pProcessing = 'bg-blue-600'; textProcessing = 'text-blue-600 font-bold';
-                } else if(status === 'shipped') {
-                    pProcessing = 'bg-blue-600'; textProcessing = 'text-blue-600';
-                    pShipped = 'bg-blue-600'; textShipped = 'text-blue-600 font-bold';
-                } else if(status === 'completed') {
-                    pProcessing = 'bg-green-500'; textProcessing = 'text-green-500';
-                    pShipped = 'bg-green-500'; textShipped = 'text-green-500';
-                    pCompleted = 'bg-green-500'; textCompleted = 'text-green-500 font-bold';
-                } else if(status === 'cancelled') {
-                    // ক্যানসেলড হলে ট্র্যাকার হাইড করে দেওয়া ভাল
-                }
-
-                const showTracker = status !== 'cancelled';
-
+            list.innerHTML = follows.map(f => {
+                const p = f.profiles;
+                const name = p?.full_name || p?.email?.split('@')[0] || 'Unknown';
+                const img = p?.profile_image || 'https://via.placeholder.com/50';
                 return `
-                <div class="border border-gray-200 dark:border-gray-700 rounded-xl p-5 bg-white dark:bg-gray-800 shadow-sm">
-                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4 border-b dark:border-gray-700 pb-4">
-                        <div>
-                            <p class="text-sm font-bold text-gray-800 dark:text-white">অর্ডার আইডি: <span class="text-blue-600 dark:text-blue-400">#${order.id.split('-')[0]}</span></p>
-                            <p class="text-xs text-gray-500 mt-1">তারিখ: ${new Date(order.created_at).toLocaleDateString('bn-BD')}</p>
-                        </div>
-                        <div class="text-right">
-                            <p class="text-lg font-extrabold text-gray-900 dark:text-white">৳ ${order.total_amount}</p>
-                            ${status === 'cancelled' ? `<span class="text-xs font-bold text-red-500">অর্ডার বাতিল</span>` : ''}
-                        </div>
-                    </div>
-
-                    <!-- ভিজ্যুয়াল প্রোগ্রেস বার -->
-                    ${showTracker ? `
-                    <div class="flex justify-between relative mt-8 mb-8">
-                        <div class="absolute top-1/2 left-0 w-full h-1 bg-gray-200 dark:bg-gray-600 -z-10 transform -translate-y-1/2"></div>
-                        <div class="absolute top-1/2 left-0 h-1 ${pCompleted} -z-10 transform -translate-y-1/2 transition-all duration-500" style="width: ${status==='completed'?'100%':status==='shipped'?'66%':status==='processing'?'33%':'0%'}"></div>
-                        
-                        <div class="flex flex-col items-center">
-                            <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs ${pPending}">✓</div>
-                            <span class="text-[10px] sm:text-xs mt-2 ${textPending}">প্লেসড</span>
-                        </div>
-                        <div class="flex flex-col items-center">
-                            <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs ${pProcessing}">⚙️</div>
-                            <span class="text-[10px] sm:text-xs mt-2 ${textProcessing}">প্রসেসিং</span>
-                        </div>
-                        <div class="flex flex-col items-center">
-                            <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs ${pShipped}">🚚</div>
-                            <span class="text-[10px] sm:text-xs mt-2 ${textShipped}">শিপড</span>
-                        </div>
-                        <div class="flex flex-col items-center">
-                            <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs ${pCompleted}">🏠</div>
-                            <span class="text-[10px] sm:text-xs mt-2 ${textCompleted}">ডেলিভারড</span>
-                        </div>
-                    </div>
-                    ` : `
-                    <div class="mb-4 text-center bg-red-50 text-red-600 p-3 rounded-lg text-sm font-bold border border-red-200">এই অর্ডারটি বাতিল করা হয়েছে।</div>
-                    `}
-
-                    <div class="text-right mt-4">
-                        <button onclick="viewInvoice('${order.id}')" class="text-sm text-blue-600 hover:underline">ইনভয়েস ডাউনলোড করুন</button>
+                <div class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-100 dark:border-gray-600">
+                    <img src="${img}" class="w-12 h-12 rounded-full object-cover">
+                    <div>
+                        <p class="font-bold text-sm text-gray-800 dark:text-white">${name}</p>
+                        <p class="text-xs text-gray-500">${p?.email || ''}</p>
                     </div>
                 </div>
-            `}).join('');
+                `;
+            }).join('');
         }
 
-        window.viewInvoice = async (orderId) => {
-            const { data: order } = await supabaseClient.from('orders').select('*').eq('id', orderId).single();
-            if(!order) return;
+        // আমার ব্লগ লোড করা
+        async function loadMyBlogs() {
+            const list = document.getElementById('myBlogsList');
+            list.innerHTML = '<p class="text-gray-500 text-center">লোড হচ্ছে...</p>';
 
-            const cartItems = order.cart_items || [];
-            const itemsHtml = cartItems.map(item => `
-                <div class="flex justify-between text-sm mb-1"><span>${item.title} (x1)</span><span>৳ ${item.price}</span></div>
-            `).join('');
+            const { data: blogs, error } = await supabaseClient.from('blogs').select('*').eq('author_id', currentUser.id).order('created_at', { ascending: false });
 
-            const subTotal = cartItems.reduce((sum, item) => sum + Number(item.price), 0);
-            const discount = Number(order.discount_amount || 0);
-            const delivery = Number(order.delivery_charge || 0);
+            if (error || !blogs || blogs.length === 0) {
+                list.innerHTML = `<p class="text-gray-500 text-center py-8">আপনি এখনো কোনো ব্লগ লেখেননি।</p>`;
+                return;
+            }
 
-            document.getElementById('printableInvoice').innerHTML = `
-                <div class="p-8 bg-white text-gray-900">
-                    <div class="flex justify-between border-b-2 border-gray-800 pb-4 mb-4">
-                        <div><h1 class="text-2xl font-bold">Boi Chokro</h1><p class="text-xs text-gray-500">ঢাকা, বাংলাদেশ</p></div>
-                        <div class="text-right"><h2 class="text-xl font-bold">ইনভয়েস</h2><p class="text-xs text-gray-500">#${order.id.split('-')[0]}</p><p class="text-xs text-gray-500">${new Date(order.created_at).toLocaleDateString('bn-BD')}</p></div>
+            list.innerHTML = blogs.map(blog => {
+                const statusColor = blog.status === 'approved' ? 'bg-green-100 text-green-700' : (blog.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700');
+                const statusText = blog.status === 'approved' ? 'প্রকাশিত' : (blog.status === 'pending' ? 'অ্যাপ্রুভালের অপেক্ষায়' : 'বাতিল');
+                return `
+                <div class="border border-gray-200 dark:border-gray-700 rounded-xl p-4 bg-gray-50 dark:bg-gray-800 mb-3">
+                    <div class="flex justify-between items-start mb-2">
+                        <h4 class="font-bold text-gray-800 dark:text-white">${blog.title}</h4>
+                        <span class="text-xs font-bold px-2 py-1 rounded ${statusColor}">${statusText}</span>
                     </div>
-                    <div class="mb-6"><h3 class="font-bold text-sm mb-1">বিল টু:</h3><p class="text-sm">${order.customer_name}</p><p class="text-sm">${order.customer_phone}</p><p class="text-sm">${order.address}</p></div>
-                    <div class="border-t border-b border-gray-200 py-3 mb-4">${itemsHtml || '<p class="text-sm text-gray-500">আইটেম ডিটেইলস নেই</p>'}</div>
-                    <div class="flex flex-col items-end text-sm space-y-1">
-                        <div class="flex justify-between w-48"><span>সাবটোটাল:</span> <span>৳ ${subTotal}</span></div>
-                        <div class="flex justify-between w-48"><span>ডেলিভারি:</span> <span>৳ ${delivery}</span></div>
-                        <div class="flex justify-between w-48 text-red-500"><span>ডিসকাউন্ট:</span> <span>- ৳ ${discount}</span></div>
-                        <div class="flex justify-between w-48 font-bold text-lg border-t pt-2 mt-2"><span>সর্বমোট:</span> <span>৳ ${order.total_amount}</span></div>
-                    </div>
-                    <div class="mt-8 text-center no-print">
-                        <button onclick="window.print()" class="bg-blue-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-700">প্রিন্ট / সেভ করুন</button>
-                        <button onclick="document.getElementById('invoiceModal').classList.add('hidden')" class="bg-gray-200 text-gray-700 px-6 py-2 rounded-lg font-bold hover:bg-gray-300 ml-2">বন্ধ করুন</button>
-                    </div>
+                    <p class="text-sm text-gray-600 dark:text-gray-300 line-clamp-2">${blog.content}</p>
                 </div>
-            `;
-            document.getElementById('invoiceModal').classList.remove('hidden');
-            document.getElementById('invoiceModal').classList.add('flex');
+                `;
+            }).join('');
+        }
+
+        // অর্ডার লোড (আগের কোড অনুযায়ী)
+        async function loadOrders() {
+            const list = document.getElementById('ordersList');
+            const { data: orders } = await supabaseClient.from('orders').select('*').eq('user_id', currentUser.id).order('created_at', { ascending: false });
+            if(!orders || orders.length === 0) { list.innerHTML = `<p class="text-gray-500 text-center">কোনো অর্ডার নেই।</p>`; return; }
+            
+            list.innerHTML = orders.map(o => `
+                <div class="border rounded-xl p-4 bg-gray-50 dark:bg-gray-700 mb-3">
+                    <p class="font-bold text-sm">অর্ডার আইডি: #${o.id.split('-')[0]}</p>
+                    <p class="text-sm">মোট: ৳ ${o.total_amount}</p>
+                    <p class="text-xs text-gray-500">স্ট্যাটাস: ${o.status}</p>
+                </div>
+            `).join('');
         }
 
         document.getElementById('profileForm').addEventListener('submit', async (e) => {
@@ -333,31 +231,7 @@
             btn.innerText = 'তথ্য সেভ করুন'; btn.disabled = false;
         });
 
-        async function loadReviews() {
-            const list = document.getElementById('reviewsList');
-            const { data: reviews } = await supabaseClient.from('reviews').select(`*, books (title)`).eq('user_id', currentUser.id).order('created_at', { ascending: false });
-
-            if(!reviews || reviews.length === 0) {
-                list.innerHTML = `<p class="text-gray-500 text-center py-8">আপনি এখনো কোনো রিভিউ দেননি।</p>`;
-                return;
-            }
-
-            list.innerHTML = reviews.map(rev => `
-                <div class="border border-gray-200 dark:border-gray-700 rounded-xl p-4 bg-gray-50 dark:bg-gray-800">
-                    <div class="flex justify-between items-start mb-2">
-                        <p class="font-bold text-gray-800 dark:text-white">${rev.books?.title || 'অজানা বই'}</p>
-                        <div class="flex text-yellow-400">${'⭐'.repeat(rev.rating)}</div>
-                    </div>
-                    <p class="text-sm text-gray-600 dark:text-gray-300 mb-2">${rev.comment || 'কোনো মন্তব্য নেই'}</p>
-                    <span class="text-xs font-bold px-2 py-1 rounded ${rev.status === 'approved' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">
-                        ${rev.status === 'approved' ? 'প্রকাশিত' : 'অ্যাপ্রুভালের অপেক্ষায়'}
-                    </span>
-                </div>
-            `).join('');
-        }
-
-        checkAuthAndLoadProfile(); 
-        updateCartCount();
+        checkAuthAndLoadProfile();
     </script>
 </body>
 </html>
