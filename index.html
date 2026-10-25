@@ -17,8 +17,6 @@
         .dark .card-shadow { box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); }
         .card-shadow:hover { transform: translateY(-4px); box-shadow: 0 10px 35px rgba(0, 0, 0, 0.12); }
         .search-dropdown-custom { z-index: 9999 !important; position: absolute; top: 100%; left: 0; width: 100%; margin-top: 0.5rem; }
-        
-        /* কাস্টম টোস্ট অ্যানিমেশন */
         @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         .toast-animate { animation: slideInRight 0.3s ease-out forwards; }
     </style>
@@ -161,23 +159,13 @@
         let filteredBooksData = [];
         let userWishlist = [];
 
-        // ==========================================
-        // কাস্টম টোস্ট মেসেজ ফাংশন (সুন্দর পপ-আপ)
-        // ==========================================
+        // কাস্টম টোস্ট মেসেজ
         window.showToast = (message, isError = false) => {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
-            
-            // সাকসেস হলে সবুজ, এরর হলে লাল
             toast.className = `toast-animate px-5 py-4 rounded-lg shadow-2xl text-white font-bold flex items-center gap-3 ${isError ? 'bg-red-600 border-l-4 border-red-800' : 'bg-green-600 border-l-4 border-green-800'}`;
-            toast.innerHTML = `
-                <span class="text-2xl">${isError ? '⚠️' : '✅'}</span>
-                <span class="text-sm md:text-base pr-2">${message}</span>
-            `;
-            
+            toast.innerHTML = `<span class="text-2xl">${isError ? '⚠️' : '✅'}</span><span class="text-sm md:text-base pr-2">${message}</span>`;
             container.appendChild(toast);
-            
-            // ৪ সেকেন্ড পর মেসেজটি মুছে যাবে
             setTimeout(() => { 
                 toast.style.opacity = '0'; 
                 toast.style.transform = 'translateX(100%)'; 
@@ -186,13 +174,11 @@
             }, 4000);
         };
 
-        // XSS প্রোটেকশন ফাংশন
         function escapeHTML(str) {
             if (!str) return '';
             return str.replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
         }
 
-        // সার্চ স্যানিটাইজার
         function sanitizeSearchQuery(query) {
             return query.replace(/[<>]/g, '').trim(); 
         }
@@ -382,12 +368,15 @@
             }
         }
 
-        // ==========================================
-        // ব্লগ সিস্টেম (XSS এবং ইমেজ ভ্যালিডেশন সহ)
-        // ==========================================
+        // ব্লগ সিস্টেম (লেখকের নাম ও ছবি সহ)
         async function loadBlogs() {
             const blogList = document.getElementById('blogList');
-            const { data: blogs } = await supabaseClient.from('blogs').select('*, profiles(full_name)').eq('status', 'approved').order('created_at', { ascending: false });
+            // এখানে profiles(full_name, email, profile_image) দিয়ে লেখকের নাম ও ছবি আনা হচ্ছে
+            const { data: blogs, error } = await supabaseClient
+                .from('blogs')
+                .select('*, profiles(full_name, email, profile_image)')
+                .eq('status', 'approved')
+                .order('created_at', { ascending: false });
             
             if (!blogs || blogs.length === 0) {
                 blogList.innerHTML = `<div class="col-span-full text-center py-10 bg-white dark:bg-gray-800 rounded-xl"><p class="text-gray-500">এখনো কোনো ব্লগ প্রকাশিত হয়নি।</p></div>`;
@@ -395,17 +384,26 @@
             }
 
             blogList.innerHTML = blogs.map(blog => {
-                const authorName = escapeHTML(blog.profiles?.full_name || 'Unknown');
+                // লেখকের নাম না পেলে ইমেইলের প্রথম অংশ দেখাবে, তাও না পেলে 'একজন পাঠক'
+                const authorName = blog.profiles?.full_name || blog.profiles?.email?.split('@')[0] || 'একজন পাঠক';
                 const safeTitle = escapeHTML(blog.title);
                 const safeContent = escapeHTML(blog.content);
+                const safeAuthor = escapeHTML(authorName);
                 const safeImage = blog.image_url ? blog.image_url : null;
+                const authorImage = blog.profiles?.profile_image || `https://ui-avatars.com/api/?name=${encodeURIComponent(authorName)}&background=random`;
 
                 return `
                 <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col h-full overflow-hidden">
                     ${safeImage ? `<img src="${safeImage}" class="w-full h-48 object-cover">` : ''}
                     <div class="p-6 flex flex-col flex-grow">
-                        <h3 class="text-xl font-bold mb-2 text-gray-900 dark:text-white line-clamp-2">${safeTitle}</h3>
-                        <p class="text-sm text-gray-500 mb-4">লেখক: <span class="text-blue-600 font-semibold">${authorName}</span></p>
+                        <h3 class="text-xl font-bold mb-3 text-gray-900 dark:text-white line-clamp-2">${safeTitle}</h3>
+                        
+                        <!-- লেখকের প্রোফাইল তথ্য -->
+                        <div class="flex items-center gap-2 mb-4">
+                            <img src="${authorImage}" class="w-8 h-8 rounded-full object-cover">
+                            <p class="text-sm text-gray-600 dark:text-gray-400">লেখক: <span class="text-blue-600 font-semibold">${safeAuthor}</span></p>
+                        </div>
+
                         <p class="text-gray-700 dark:text-gray-300 text-sm mb-4 line-clamp-3">${safeContent}</p>
                     </div>
                 </div>
