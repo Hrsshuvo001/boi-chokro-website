@@ -199,10 +199,11 @@
                 </div>
             </section>
 
-            <!-- ৬. ব্লগ ম্যানেজমেন্ট (নতুন ৩টি ট্যাব) -->
+            <!-- ৬. ব্লগ ম্যানেজমেন্ট (৩টি ট্যাব) -->
             <section id="section-blog-management" class="section-content">
                 <h2 class="text-2xl font-bold text-gray-800 mb-6">ব্লগ ম্যানেজমেন্ট</h2>
                 
+                <!-- ট্যাব বাটন -->
                 <div class="flex border-b border-gray-200 mb-6">
                     <button onclick="switchBlogTab('pending')" id="tab-btn-pending" class="px-6 py-3 font-bold text-blue-600 border-b-2 border-blue-600 focus:outline-none">পেন্ডিং ব্লগ</button>
                     <button onclick="switchBlogTab('all')" id="tab-btn-all" class="px-6 py-3 font-bold text-gray-500 hover:text-blue-600 border-b-2 border-transparent focus:outline-none">সব ব্লগ</button>
@@ -225,6 +226,13 @@
                     <h3 class="text-xl font-bold mb-4 text-gray-800">নতুন ব্লগ লিখুন</h3>
                     <form id="addBlogForm" class="space-y-4">
                         <div><label class="block text-sm font-medium text-gray-700">ব্লগের শিরোনাম</label><input type="text" id="blogTitle" required class="mt-1 w-full px-4 py-2 border rounded-md"></div>
+                        
+                        <!-- নতুন ছবি আপলোড অপশন -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">ব্লগের ছবি (ঐচ্ছিক)</label>
+                            <input type="file" id="blogImage" accept="image/*" class="mt-1 w-full px-4 py-2 border rounded-md bg-gray-50 text-sm">
+                        </div>
+
                         <div><label class="block text-sm font-medium text-gray-700">ব্লগের বিষয়বস্তু</label><textarea id="blogContent" required rows="5" class="mt-1 w-full px-4 py-2 border rounded-md"></textarea></div>
                         <button type="submit" id="submitBlogBtn" class="w-full bg-blue-600 text-white font-bold py-2 rounded hover:bg-blue-700 transition">ব্লগ পাবলিশ করুন</button>
                     </form>
@@ -466,7 +474,7 @@
         let notifications = [];
         let mutedNotifications = JSON.parse(localStorage.getItem('muted_notifs')) || [];
         let userEmails = {}; 
-        let allBlogsData = []; // ব্লগ সার্চের জন্য
+        let allBlogsData = []; 
 
         window.onload = function() {
             const urlHash = window.location.hash.replace('#', '');
@@ -488,9 +496,6 @@
             return str.replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
         }
 
-        window.toggleNotifications = () => { document.getElementById('notif-dropdown').classList.toggle('hidden'); };
-        window.clearAllNotifications = () => { notifications = []; renderNotifications(); showToast('সব নোটিফিকেশন মুছে ফেলা হয়েছে'); };
-        
         window.toggleSidebar = () => { document.getElementById('sidebar').classList.toggle('-translate-x-full'); };
 
         window.showSection = (sectionId) => {
@@ -558,7 +563,7 @@
         }
 
         // ==========================================
-        // ব্লগ ম্যানেজমেন্ট (৩টি ট্যাব)
+        // ব্লগ ম্যানেজমেন্ট
         // ==========================================
         window.switchBlogTab = (tabName) => {
             document.getElementById('blog-tab-pending').classList.add('hidden');
@@ -668,21 +673,37 @@
 
             const title = document.getElementById('blogTitle').value;
             const content = document.getElementById('blogContent').value;
+            const imageFile = document.getElementById('blogImage').files[0];
+            let image_url = null;
 
-            const { error } = await supabaseClient.from('blogs').insert([{
-                author_id: currentUser.id,
-                title: title,
-                content: content,
-                status: 'approved'
-            }]);
+            try {
+                if (imageFile) {
+                    const fileName = `blog_${Date.now()}.${imageFile.name.split('.').pop()}`;
+                    const { error: uploadError } = await supabaseClient.storage.from('book-covers').upload(fileName, imageFile);
+                    if (uploadError) throw new Error("ছবি আপলোডে সমস্যা: " + uploadError.message);
+                    
+                    const { data } = supabaseClient.storage.from('book-covers').getPublicUrl(fileName);
+                    image_url = data.publicUrl;
+                }
 
-            if (error) showToast('সমস্যা: ' + error.message, true);
-            else { 
+                const { error } = await supabaseClient.from('blogs').insert([{
+                    author_id: currentUser.id,
+                    title: title,
+                    content: content,
+                    image_url: image_url, // ছবি যোগ করা হলো
+                    status: 'approved'
+                }]);
+
+                if (error) throw new Error(error.message);
+
                 showToast('✅ ব্লগ পাবলিশ হয়েছে!'); 
                 document.getElementById('addBlogForm').reset();
                 switchBlogTab('all'); 
+            } catch (err) {
+                showToast(err.message, true);
+            } finally {
+                btn.innerText = 'ব্লগ পাবলিশ করুন'; btn.disabled = false;
             }
-            btn.innerText = 'ব্লগ পাবলিশ করুন'; btn.disabled = false;
         });
 
         window.approveBlog = async (id) => {
@@ -704,7 +725,7 @@
         }
 
         // ==========================================
-        // সব বই (এডিট ও ডিলিট ফাংশন ঠিক করা হলো)
+        // সব বই
         // ==========================================
         async function loadAllBooks() {
             const tbody = document.getElementById('allBooksTableBody');
