@@ -90,7 +90,9 @@
                     // ২. ছবি আপলোড
                     if (imageFile) {
                         const fileName = `user_${authData.user.id}_${Date.now()}.${imageFile.name.split('.').pop()}`;
-                        await supabaseClient.storage.from('book-covers').upload(fileName, imageFile);
+                        const { error: uploadError } = await supabaseClient.storage.from('book-covers').upload(fileName, imageFile);
+                        if(uploadError) throw new Error("ছবি আপলোডে সমস্যা: " + uploadError.message);
+                        
                         const { data } = supabaseClient.storage.from('book-covers').getPublicUrl(fileName);
                         image_url = data.publicUrl;
                     }
