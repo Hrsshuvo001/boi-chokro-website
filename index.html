@@ -10,15 +10,23 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap');
         body { font-family: 'Hind Siliguri', sans-serif; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
         .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
         .line-clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
         .card-shadow { box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05); transition: all 0.3s ease; }
         .dark .card-shadow { box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); }
         .card-shadow:hover { transform: translateY(-4px); box-shadow: 0 10px 35px rgba(0, 0, 0, 0.12); }
         .search-dropdown-custom { z-index: 9999 !important; position: absolute; top: 100%; left: 0; width: 100%; margin-top: 0.5rem; }
+        
+        /* কাস্টম টোস্ট অ্যানিমেশন */
+        @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        .toast-animate { animation: slideInRight 0.3s ease-out forwards; }
     </style>
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 transition-colors duration-300 min-h-screen flex flex-col">
+
+    <!-- কাস্টম টোস্ট নোটিফিকেশন কন্টেইনার -->
+    <div id="toast-container" class="fixed top-20 right-4 md:right-10 z-[100] flex flex-col gap-3 pointer-events-none"></div>
 
     <!-- নেভিগেশন বার -->
     <nav class="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-50 transition-colors duration-300 no-print">
@@ -120,7 +128,6 @@
                 <div class="space-y-4">
                     <input type="text" id="newBlogTitle" placeholder="ব্লগের শিরোনাম" class="w-full px-4 py-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 focus:outline-none">
                     
-                    <!-- ছবি আপলোড অপশন -->
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">ব্লগের ছবি (শুধুমাত্র JPG/PNG)</label>
                         <input type="file" id="newBlogImage" accept="image/jpeg, image/png" class="w-full px-4 py-2 border rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600 text-sm">
@@ -155,26 +162,38 @@
         let userWishlist = [];
 
         // ==========================================
-        // ১. XSS সিকিউরিটি ফাংশন (HTML এস্কেপ করা)
+        // কাস্টম টোস্ট মেসেজ ফাংশন (সুন্দর পপ-আপ)
         // ==========================================
+        window.showToast = (message, isError = false) => {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            
+            // সাকসেস হলে সবুজ, এরর হলে লাল
+            toast.className = `toast-animate px-5 py-4 rounded-lg shadow-2xl text-white font-bold flex items-center gap-3 ${isError ? 'bg-red-600 border-l-4 border-red-800' : 'bg-green-600 border-l-4 border-green-800'}`;
+            toast.innerHTML = `
+                <span class="text-2xl">${isError ? '⚠️' : '✅'}</span>
+                <span class="text-sm md:text-base pr-2">${message}</span>
+            `;
+            
+            container.appendChild(toast);
+            
+            // ৪ সেকেন্ড পর মেসেজটি মুছে যাবে
+            setTimeout(() => { 
+                toast.style.opacity = '0'; 
+                toast.style.transform = 'translateX(100%)'; 
+                toast.style.transition = 'all 0.3s ease'; 
+                setTimeout(() => toast.remove(), 300); 
+            }, 4000);
+        };
+
+        // XSS প্রোটেকশন ফাংশন
         function escapeHTML(str) {
             if (!str) return '';
-            return str.replace(/[&<>'"]/g, 
-                tag => ({
-                    '&': '&amp;',
-                    '<': '&lt;',
-                    '>': '&gt;',
-                    "'": '&#39;',
-                    '"': '&quot;'
-                }[tag] || tag)
-            );
+            return str.replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
         }
 
-        // ==========================================
-        // ২. সার্চ ইঞ্জিনের জন্য স্যানিটাইজার
-        // ==========================================
+        // সার্চ স্যানিটাইজার
         function sanitizeSearchQuery(query) {
-            // শুধু অক্ষর, সংখ্যা এবং স্পেস রাখবে। HTML ট্যাগ বা স্ক্রিপ্ট রিমুভ করবে।
             return query.replace(/[<>]/g, '').trim(); 
         }
 
@@ -246,9 +265,6 @@
 
         window.toggleNotifications = () => { document.getElementById('notifDropdown').classList.toggle('hidden'); };
 
-        // ==========================================
-        // ৩. বই লোড (সার্চ ও ব্লগে XSS প্রোটেকশন যুক্ত)
-        // ==========================================
         async function loadBooks() {
             const grid = document.getElementById('bookGrid');
             const { data: books, error } = await supabaseClient.from('books').select('*');
@@ -279,7 +295,6 @@
             let discountPercent = 0;
             if (hasDiscount) discountPercent = Math.round(((book.original_price - book.discount_price) / book.original_price) * 100);
             
-            // বুক টাইটেল ও লেখকের নাম স্যানিটাইজ করা হয়েছে
             const safeTitle = escapeHTML(book.title);
             const safeAuthor = escapeHTML(book.author);
             const safeImage = book.cover_url ? book.cover_url : 'https://via.placeholder.com/300x400';
@@ -331,7 +346,6 @@
             renderBooks(filteredBooksData);
         }
 
-        // সার্চ বার স্যানিটাইজেশন
         window.handleSearch = (source) => {
             const input = source === 'desktop' ? document.getElementById('searchInput') : document.getElementById('searchInputMobile');
             const query = sanitizeSearchQuery(input.value.toLowerCase());
@@ -369,7 +383,7 @@
         }
 
         // ==========================================
-        // ৪. ব্লগ সিস্টেম (XSS এবং ইমেজ ভ্যালিডেশন সহ)
+        // ব্লগ সিস্টেম (XSS এবং ইমেজ ভ্যালিডেশন সহ)
         // ==========================================
         async function loadBlogs() {
             const blogList = document.getElementById('blogList');
@@ -381,7 +395,6 @@
             }
 
             blogList.innerHTML = blogs.map(blog => {
-                // ব্লগের ডেটা স্যানিটাইজ করা হয়েছে যাতে XSS অ্যাটাক না হয়
                 const authorName = escapeHTML(blog.profiles?.full_name || 'Unknown');
                 const safeTitle = escapeHTML(blog.title);
                 const safeContent = escapeHTML(blog.content);
@@ -401,24 +414,23 @@
         }
 
         window.submitBlog = async () => {
-            if(!currentUser) { alert('ব্লগ লিখতে লগইন করুন!'); return; }
+            if(!currentUser) { showToast('ব্লগ লিখতে প্রথমে লগইন করুন!', true); return; }
             
             const title = document.getElementById('newBlogTitle').value.trim();
             const content = document.getElementById('newBlogContent').value.trim();
             const imageFile = document.getElementById('newBlogImage').files[0];
             const btn = document.getElementById('submitBlogBtn');
             
-            if(!title || !content) { alert('শিরোনাম এবং বিষয়বস্তু লিখুন!'); return; }
+            if(!title || !content) { showToast('শিরোনাম এবং বিষয়বস্তু লিখুন!', true); return; }
 
-            // ইমেজ ফরম্যাট ভ্যালিডেশন (শুধু JPG/PNG)
             if (imageFile) {
                 const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
                 if (!allowedTypes.includes(imageFile.type)) {
-                    alert('⚠️ দুঃখিত! শুধুমাত্র JPG এবং PNG ফরম্যাটের ছবি আপলোড করা যাবে।');
+                    showToast('শুধুমাত্র JPG এবং PNG ফরম্যাটের ছবি আপলোড করা যাবে।', true);
                     return;
                 }
-                if (imageFile.size > 5 * 1024 * 1024) { // ৫ মেগাবাইটের বেশি নয়
-                    alert('⚠️ ছবির সাইজ ৫ মেগাবাইটের কম হতে হবে।');
+                if (imageFile.size > 5 * 1024 * 1024) {
+                    showToast('ছবির সাইজ ৫ মেগাবাইটের কম হতে হবে।', true);
                     return;
                 }
             }
@@ -428,7 +440,6 @@
             try {
                 let image_url = null;
 
-                // ১. ছবি থাকলে সুপাবেস স্টোরেজে আপলোড
                 if (imageFile) {
                     const fileName = `blog_${Date.now()}.${imageFile.name.split('.').pop()}`;
                     const { error: uploadError } = await supabaseClient.storage.from('book-covers').upload(fileName, imageFile);
@@ -438,7 +449,6 @@
                     image_url = data.publicUrl;
                 }
 
-                // ২. ডাটাবেসে ব্লগ ইনসার্ট (pending)
                 const { error } = await supabaseClient.from('blogs').insert([{ 
                     author_id: currentUser.id, 
                     title: title, 
@@ -449,20 +459,20 @@
                 
                 if (error) throw new Error(error.message);
 
-                alert('✅ আপনার ব্লগটি সফলভাবে জমা হয়েছে। অ্যাডমিন অ্যাপ্রুভ করলে প্রকাশ পাবে।');
+                showToast('✅ আপনার ব্লগটি সফলভাবে জমা হয়েছে। অ্যাডমিন অ্যাপ্রুভ করলে প্রকাশ পাবে।', false);
                 document.getElementById('newBlogTitle').value = '';
                 document.getElementById('newBlogContent').value = '';
                 document.getElementById('newBlogImage').value = '';
                 document.getElementById('writeBlogForm').classList.add('hidden');
 
             } catch (err) {
-                alert('⚠️ সমস্যা: ' + err.message);
+                showToast('সমস্যা: ' + err.message, true);
             } finally {
                 btn.innerText = 'সাবমিট করুন'; btn.disabled = false;
             }
         }
 
-        window.handleLogout = async () => { await supabaseClient.auth.signOut(); checkAuth(); alert('লগআউট হয়েছে।'); }
+        window.handleLogout = async () => { await supabaseClient.auth.signOut(); checkAuth(); showToast('লগআউট হয়েছে।', false); }
 
         checkAuth();
         loadBooks();
