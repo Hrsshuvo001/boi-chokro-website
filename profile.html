@@ -15,6 +15,7 @@
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 transition-colors min-h-screen flex flex-col">
 
+    <!-- নেভিগেশন বার -->
     <nav class="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-40 no-print">
         <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
             <a href="/index.html" class="text-2xl font-extrabold text-blue-600 dark:text-blue-400 tracking-tight">Boi Chokro</a>
@@ -31,17 +32,17 @@
     <main class="flex-grow max-w-6xl mx-auto w-full px-4 py-8 no-print">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
             
-            <!-- বাম দিক: প্রোফাইল কার্ড ও অ্যাকশন -->
+            <!-- বাম দিক: প্রোফাইল কার্ড -->
             <div class="md:col-span-1">
                 <div id="profileCard" class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 flex flex-col items-center sticky top-24">
                     <p class="text-gray-500">লোড হচ্ছে...</p>
                 </div>
             </div>
 
-            <!-- ডান দিক: কন্টেন্ট এরিয়া (ব্লগ, ফ্রেন্ড লিস্ট ইত্যাদি) -->
+            <!-- ডান দিক: কন্টেন্ট এরিয়া -->
             <div class="md:col-span-2">
                 
-                <!-- নিজের প্রোফাইল হলে এই ট্যাবগুলো দেখাবে -->
+                <!-- নিজের প্রোফাইল হলে ট্যাব দেখাবে -->
                 <div id="myProfileTabs" class="hidden mb-6 border-b border-gray-200 dark:border-gray-700">
                     <button onclick="switchTab('myBlogs')" id="tabBtnMyBlogs" class="px-4 py-2 font-bold text-blue-600 border-b-2 border-blue-600 focus:outline-none">আমার ব্লগ</button>
                     <button onclick="switchTab('friends')" id="tabBtnFriends" class="px-4 py-2 font-bold text-gray-500 hover:text-blue-600 focus:outline-none border-b-2 border-transparent">বন্ধু তালিকা</button>
@@ -49,15 +50,15 @@
                     <button onclick="switchTab('edit')" id="tabBtnEdit" class="px-4 py-2 font-bold text-gray-500 hover:text-blue-600 focus:outline-none border-b-2 border-transparent">তথ্য এডিট</button>
                 </div>
 
-                <!-- ব্লগ ট্যাব কন্টেন্ট -->
+                <!-- ব্লগ ট্যাব -->
                 <div id="tabContentMyBlogs" class="hidden">
-                    <h3 class="text-xl font-bold mb-4 text-gray-900 dark:text-white">ব্লগসমূহ</h3>
+                    <h3 id="blogHeaderTitle" class="text-xl font-bold mb-4 text-gray-900 dark:text-white">ব্লগসমূহ</h3>
                     <div id="blogsList" class="space-y-4">
                         <p class="text-gray-500">লোড হচ্ছে...</p>
                     </div>
                 </div>
 
-                <!-- ফ্রেন্ড লিস্ট ট্যাব কন্টেন্ট -->
+                <!-- ফ্রেন্ড লিস্ট ট্যাব -->
                 <div id="tabContentFriends" class="hidden">
                     <h3 class="text-xl font-bold mb-4 text-gray-900 dark:text-white">বন্ধু তালিকা</h3>
                     <div id="friendsList" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -65,7 +66,7 @@
                     </div>
                 </div>
 
-                <!-- ফ্রেন্ড রিকোয়েস্ট ট্যাব কন্টেন্ট -->
+                <!-- ফ্রেন্ড রিকোয়েস্ট ট্যাব -->
                 <div id="tabContentRequests" class="hidden">
                     <h3 class="text-xl font-bold mb-4 text-gray-900 dark:text-white">ফ্রেন্ড রিকোয়েস্ট</h3>
                     <div id="requestsList" class="space-y-3">
@@ -73,7 +74,7 @@
                     </div>
                 </div>
 
-                <!-- এডিট প্রোফাইল ট্যাব কন্টেন্ট -->
+                <!-- এডিট প্রোফাইল ট্যাব -->
                 <div id="tabContentEdit" class="hidden">
                     <h3 class="text-xl font-bold mb-4 text-gray-900 dark:text-white">তথ্য আপডেট করুন</h3>
                     <form id="profileForm" class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 space-y-4">
@@ -95,7 +96,7 @@
 
         let currentUser = null;
         const urlParams = new URLSearchParams(window.location.search);
-        const profileId = urlParams.get('id'); // URL-এ id থাকলে সেটি অন্য কারও প্রোফাইল, না থাকলে নিজের প্রোফাইল
+        const profileId = urlParams.get('id'); 
         let isOwnProfile = false;
         let viewingUserId = null;
 
@@ -115,7 +116,10 @@
             viewingUserId = profileId || currentUser?.id;
             isOwnProfile = (currentUser && viewingUserId === currentUser.id);
 
-            loadProfileDetails();
+            // ডেটা লোড করার আগে ৫০০ মিলি সেকেন্ড অপেক্ষা করা, যাতে সুপাবেস নতুন কলাম রিফ্রেশ করতে পারে
+            setTimeout(() => {
+                loadProfileDetails();
+            }, 500);
         }
 
         async function loadProfileDetails() {
@@ -148,12 +152,10 @@
 
             // বাটন তৈরি
             if (isOwnProfile) {
-                // নিজের প্রোফাইল হলে ট্যাব দেখাবে
                 document.getElementById('myProfileTabs').classList.remove('hidden');
                 switchTab('myBlogs');
                 loadMyBlogs();
             } else if (currentUser) {
-                // অন্যের প্রোফাইল হলে ফ্রেন্ড/মেসেজ বাটন দেখাবে
                 if (friendStatus === 'none') {
                     actionButtons = `<button onclick="sendFriendRequest()" class="w-full mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-700 transition">➕ ফ্রেন্ড রিকোয়েস্ট</button>`;
                 } else if (friendStatus === 'pending_sent') {
@@ -176,14 +178,12 @@
             if (isOwnProfile) {
                 loadFriends();
                 loadFriendRequests();
-                // এডিট ফর্মে ডেটা বসানো
                 document.getElementById('profName').value = profile.full_name || '';
                 document.getElementById('profPhone').value = profile.phone || '';
                 document.getElementById('profAddress').value = profile.address || '';
             } else {
-                // অন্যের প্রোফাইলে তার ব্লগ দেখানো
                 document.getElementById('tabContentMyBlogs').classList.remove('hidden');
-                document.getElementById('tabContentMyBlogs').querySelector('h3').innerText = "এই ব্যবহারকারীর ব্লগ";
+                document.getElementById('blogHeaderTitle').innerText = "এই ব্যবহারকারীর ব্লগ";
                 loadMyBlogs(viewingUserId);
             }
         }
