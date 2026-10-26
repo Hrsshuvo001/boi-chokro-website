@@ -31,13 +31,43 @@
     <main class="flex-grow max-w-6xl mx-auto w-full px-4 py-8 no-print">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
             
+            <!-- বাম দিক: প্রোফাইল কার্ড -->
             <div class="md:col-span-1">
-                <div id="profileCard" class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 flex flex-col items-center sticky top-24">
-                    <p class="text-gray-500">লোড হচ্ছে...</p>
+                <div id="profileCard" class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden sticky top-24">
+                    <!-- কভার ছবি -->
+                    <div class="h-32 bg-blue-600 relative group">
+                        <img id="coverImageDisplay" src="" class="w-full h-full object-cover hidden">
+                        <label id="coverUploadLabel" for="coverImageInput" class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 cursor-pointer text-white text-sm font-bold transition hidden">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                            কভার পরিবর্তন
+                        </label>
+                        <input type="file" id="coverImageInput" accept="image/*" class="hidden" onchange="uploadCoverImage(event)">
+                    </div>
+                    
+                    <!-- প্রোফাইল ছবি ও নাম -->
+                    <div class="px-6 pb-6 relative">
+                        <div class="absolute -top-12 left-1/2 transform -translate-x-1/2">
+                            <div class="relative group w-24 h-24">
+                                <img id="profileImageDisplay" src="" class="w-24 h-24 rounded-full object-cover border-4 border-white dark:border-gray-800 shadow-md bg-gray-200">
+                                <label id="profileUploadLabel" for="profileImageInput" class="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 cursor-pointer text-white transition hidden">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                                </label>
+                                <input type="file" id="profileImageInput" accept="image/*" class="hidden" onchange="uploadProfileImage(event)">
+                            </div>
+                        </div>
+                        <div class="mt-14 text-center">
+                            <h2 id="displayName" class="text-2xl font-bold text-gray-900 dark:text-white mb-1">লোড হচ্ছে...</h2>
+                            <p id="displayEmail" class="text-sm text-gray-500 mb-2">...</p>
+                            <p id="displayAddress" class="text-sm text-gray-500"></p>
+                        </div>
+                        <div id="actionButtonsContainer" class="mt-4 flex justify-center"></div>
+                    </div>
                 </div>
             </div>
 
+            <!-- ডান দিক: কন্টেন্ট এরিয়া -->
             <div class="md:col-span-2">
+                
                 <div id="myProfileTabs" class="hidden mb-6 border-b border-gray-200 dark:border-gray-700">
                     <button onclick="switchTab('myBlogs')" id="tabBtnMyBlogs" class="px-4 py-2 font-bold text-blue-600 border-b-2 border-blue-600 focus:outline-none">আমার ব্লগ</button>
                     <button onclick="switchTab('friends')" id="tabBtnFriends" class="px-4 py-2 font-bold text-gray-500 hover:text-blue-600 focus:outline-none border-b-2 border-transparent">বন্ধু তালিকা</button>
@@ -47,23 +77,17 @@
 
                 <div id="tabContentMyBlogs" class="hidden">
                     <h3 id="blogHeaderTitle" class="text-xl font-bold mb-4 text-gray-900 dark:text-white">ব্লগসমূহ</h3>
-                    <div id="blogsList" class="space-y-4">
-                        <p class="text-gray-500">লোড হচ্ছে...</p>
-                    </div>
+                    <div id="blogsList" class="space-y-4"></div>
                 </div>
 
                 <div id="tabContentFriends" class="hidden">
                     <h3 class="text-xl font-bold mb-4 text-gray-900 dark:text-white">বন্ধু তালিকা</h3>
-                    <div id="friendsList" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <p class="text-gray-500 col-span-full">লোড হচ্ছে...</p>
-                    </div>
+                    <div id="friendsList" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
                 </div>
 
                 <div id="tabContentRequests" class="hidden">
                     <h3 class="text-xl font-bold mb-4 text-gray-900 dark:text-white">ফ্রেন্ড রিকোয়েস্ট</h3>
-                    <div id="requestsList" class="space-y-3">
-                        <p class="text-gray-500">লোড হচ্ছে...</p>
-                    </div>
+                    <div id="requestsList" class="space-y-3"></div>
                 </div>
 
                 <div id="tabContentEdit" class="hidden">
@@ -107,23 +131,27 @@
             viewingUserId = profileId || currentUser?.id;
             isOwnProfile = (currentUser && viewingUserId === currentUser.id);
 
-            // সুপাবেসের নতুন কলাম রিফ্রেশ হওয়ার জন্য সামান্য অপেক্ষা
             setTimeout(() => {
                 loadProfileDetails();
             }, 500);
         }
 
         async function loadProfileDetails() {
-            const card = document.getElementById('profileCard');
             const { data: profile, error } = await supabaseClient.from('profiles').select('*').eq('id', viewingUserId).maybeSingle();
             
             if (error || !profile) {
-                card.innerHTML = `<p class="text-red-500">প্রোফাইল পাওয়া যায়নি!</p>`;
+                document.getElementById('displayName').innerText = "প্রোফাইল পাওয়া যায়নি!";
                 return;
             }
 
             const profileImg = profile.profile_image || `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.full_name || 'User')}&background=random&size=200`;
+            document.getElementById('profileImageDisplay').src = profileImg;
             
+            if(profile.cover_image) {
+                document.getElementById('coverImageDisplay').src = profile.cover_image;
+                document.getElementById('coverImageDisplay').classList.remove('hidden');
+            }
+
             let actionButtons = '';
             let friendStatus = 'none';
 
@@ -142,6 +170,8 @@
 
             if (isOwnProfile) {
                 document.getElementById('myProfileTabs').classList.remove('hidden');
+                document.getElementById('coverUploadLabel').classList.remove('hidden');
+                document.getElementById('profileUploadLabel').classList.remove('hidden');
                 switchTab('myBlogs');
                 loadMyBlogs();
             } else if (currentUser) {
@@ -156,13 +186,10 @@
                 }
             }
 
-            card.innerHTML = `
-                <img src="${profileImg}" class="w-32 h-32 rounded-full object-cover shadow-md border-4 border-blue-100 mb-4">
-                <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-1">${escapeHTML(profile.full_name || 'নামহীন ব্যবহারকারী')}</h2>
-                <p class="text-sm text-gray-500 mb-2">${escapeHTML(profile.email || '')}</p>
-                ${profile.address ? `<p class="text-sm text-gray-500">📍 ${escapeHTML(profile.address)}</p>` : ''}
-                ${actionButtons}
-            `;
+            document.getElementById('actionButtonsContainer').innerHTML = actionButtons;
+            document.getElementById('displayName').innerText = profile.full_name || 'নামহীন ব্যবহারকারী';
+            document.getElementById('displayEmail').innerText = profile.email || '';
+            document.getElementById('displayAddress').innerText = profile.address ? `📍 ${profile.address}` : '';
 
             if (isOwnProfile) {
                 loadFriends();
@@ -175,6 +202,36 @@
                 document.getElementById('blogHeaderTitle').innerText = "এই ব্যবহারকারীর ব্লগ";
                 loadMyBlogs(viewingUserId);
             }
+        }
+
+        // কভার ছবি আপলোড
+        window.uploadCoverImage = async (event) => {
+            const file = event.target.files[0];
+            if(!file || !currentUser) return;
+
+            const fileName = `cover_${currentUser.id}_${Date.now()}.${file.name.split('.').pop()}`;
+            const { error: uploadError } = await supabaseClient.storage.from('book-covers').upload(fileName, file);
+            
+            if(uploadError) { alert('সমস্যা: ' + uploadError.message); return; }
+
+            const { data } = supabaseClient.storage.from('book-covers').getPublicUrl(fileName);
+            await supabaseClient.from('profiles').update({ cover_image: data.publicUrl }).eq('id', currentUser.id);
+            loadProfileDetails();
+        }
+
+        // প্রোফাইল ছবি আপলোড
+        window.uploadProfileImage = async (event) => {
+            const file = event.target.files[0];
+            if(!file || !currentUser) return;
+
+            const fileName = `profile_${currentUser.id}_${Date.now()}.${file.name.split('.').pop()}`;
+            const { error: uploadError } = await supabaseClient.storage.from('book-covers').upload(fileName, file);
+            
+            if(uploadError) { alert('সমস্যা: ' + uploadError.message); return; }
+
+            const { data } = supabaseClient.storage.from('book-covers').getPublicUrl(fileName);
+            await supabaseClient.from('profiles').update({ profile_image: data.publicUrl }).eq('id', currentUser.id);
+            loadProfileDetails();
         }
 
         window.switchTab = (tab) => {
