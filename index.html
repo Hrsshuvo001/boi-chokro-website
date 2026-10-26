@@ -365,6 +365,7 @@
         async function loadBlogs() {
             const blogList = document.getElementById('blogList');
             
+            // approved ব্লগগুলো আনছি, সাথে লেখকের নাম ও ছবি
             const { data: blogs, error } = await supabaseClient
                 .from('blogs')
                 .select('*, profiles(full_name, profile_image)')
@@ -388,7 +389,7 @@
                     <div class="p-6 flex flex-col flex-grow">
                         <h3 class="text-xl font-bold mb-3 text-gray-900 dark:text-white line-clamp-2">${escapeHTML(blog.title)}</h3>
                         
-                        <!-- লেখকের প্রোফাইল লিংক (এখানে profile.html এ যাবে) -->
+                        <!-- লেখকের প্রোফাইল লিংক -->
                         <a href="/profile.html?id=${blog.author_id}" class="flex items-center gap-2 mb-4 hover:bg-gray-50 dark:hover:bg-gray-700 p-1 rounded transition">
                             <img src="${authorImage}" class="w-8 h-8 rounded-full object-cover">
                             <p class="text-sm text-gray-600 dark:text-gray-400">লেখক: <span class="text-blue-600 font-semibold hover:underline">${escapeHTML(authorName)}</span></p>
