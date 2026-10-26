@@ -3,19 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>আমার প্রোফাইল - Boi Chokro</title>
+    <title>প্রোফাইল - Boi Chokro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script> tailwind.config = { darkMode: 'class' } </script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap');
         body { font-family: 'Hind Siliguri', sans-serif; }
-        @media print {
-            body * { visibility: hidden; }
-            #printableInvoice, #printableInvoice * { visibility: visible; }
-            #printableInvoice { position: absolute; left: 0; top: 0; width: 100%; padding: 20px; }
-            .no-print { display: none !important; }
-        }
+        .line-clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
     </style>
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 transition-colors min-h-screen flex flex-col">
@@ -36,57 +31,57 @@
     <main class="flex-grow max-w-6xl mx-auto w-full px-4 py-8 no-print">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
             
-            <!-- বাম দিক: প্রোফাইল কার্ড ও মেনু -->
+            <!-- বাম দিক: প্রোফাইল কার্ড ও অ্যাকশন -->
             <div class="md:col-span-1">
-                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 flex flex-col items-center sticky top-24">
-                    <img id="profileDisplayImage" src="https://via.placeholder.com/150" class="w-32 h-32 rounded-full object-cover border-4 border-blue-100 shadow-sm">
-                    <h2 id="displayName" class="text-xl font-bold mt-4 text-gray-900 dark:text-white">লোড হচ্ছে...</h2>
-                    <p id="displayEmail" class="text-sm text-gray-500 mb-6">...</p>
-
-                    <div class="w-full flex flex-col gap-2">
-                        <button onclick="switchTab('info')" id="tabBtnInfo" class="w-full text-left px-4 py-3 rounded-xl bg-blue-50 dark:bg-gray-700 text-blue-700 dark:text-white font-semibold transition border border-blue-100 dark:border-gray-600 flex items-center gap-3">👤 ব্যক্তিগত তথ্য</button>
-                        <button onclick="switchTab('orders')" id="tabBtnOrders" class="w-full text-left px-4 py-3 rounded-xl text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 font-semibold transition border border-transparent flex items-center gap-3">📦 আমার অর্ডার</button>
-                        <button onclick="switchTab('friends')" id="tabBtnFriends" class="w-full text-left px-4 py-3 rounded-xl text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 font-semibold transition border border-transparent flex items-center gap-3">👥 ফ্রেন্ড লিস্ট</button>
-                        <button onclick="switchTab('myBlogs')" id="tabBtnMyBlogs" class="w-full text-left px-4 py-3 rounded-xl text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 font-semibold transition border border-transparent flex items-center gap-3">📝 আমার ব্লগ</button>
-                    </div>
+                <div id="profileCard" class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 flex flex-col items-center sticky top-24">
+                    <p class="text-gray-500">লোড হচ্ছে...</p>
                 </div>
             </div>
 
-            <!-- ডান দিক: কন্টেন্ট এরিয়া -->
+            <!-- ডান দিক: কন্টেন্ট এরিয়া (ব্লগ, ফ্রেন্ড লিস্ট ইত্যাদি) -->
             <div class="md:col-span-2">
                 
-                <!-- পার্সোনাল ইনফো -->
-                <div id="tabContentInfo" class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 md:p-8">
-                    <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-6">ব্যক্তিগত তথ্য আপডেট করুন</h3>
-                    <form id="profileForm" class="space-y-4">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div><label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">পুরো নাম</label><input type="text" id="profName" class="w-full px-4 py-2 border rounded-lg bg-gray-50 dark:bg-gray-700 dark:border-gray-600"></div>
-                            <div><label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">মোবাইল নম্বর</label><input type="text" id="profPhone" class="w-full px-4 py-2 border rounded-lg bg-gray-50 dark:bg-gray-700 dark:border-gray-600"></div>
-                        </div>
-                        <div><label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">ঠিকানা</label><textarea id="profAddress" rows="3" class="w-full px-4 py-2 border rounded-lg bg-gray-50 dark:bg-gray-700 dark:border-gray-600"></textarea></div>
-                        <div><label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">ইমেইল (পরিবর্তনযোগ্য নয়)</label><input type="email" id="profEmail" class="w-full px-4 py-2 border rounded-lg bg-gray-200 dark:bg-gray-600 text-gray-500 cursor-not-allowed" readonly></div>
-                        <button type="submit" id="updateProfileBtn" class="bg-blue-600 text-white font-bold py-2.5 px-6 rounded-lg hover:bg-blue-700 transition shadow-md mt-4">তথ্য সেভ করুন</button>
-                    </form>
+                <!-- নিজের প্রোফাইল হলে এই ট্যাবগুলো দেখাবে -->
+                <div id="myProfileTabs" class="hidden mb-6 border-b border-gray-200 dark:border-gray-700">
+                    <button onclick="switchTab('myBlogs')" id="tabBtnMyBlogs" class="px-4 py-2 font-bold text-blue-600 border-b-2 border-blue-600 focus:outline-none">আমার ব্লগ</button>
+                    <button onclick="switchTab('friends')" id="tabBtnFriends" class="px-4 py-2 font-bold text-gray-500 hover:text-blue-600 focus:outline-none border-b-2 border-transparent">বন্ধু তালিকা</button>
+                    <button onclick="switchTab('requests')" id="tabBtnRequests" class="px-4 py-2 font-bold text-gray-500 hover:text-blue-600 focus:outline-none border-b-2 border-transparent">ফ্রেন্ড রিকোয়েস্ট</button>
+                    <button onclick="switchTab('edit')" id="tabBtnEdit" class="px-4 py-2 font-bold text-gray-500 hover:text-blue-600 focus:outline-none border-b-2 border-transparent">তথ্য এডিট</button>
                 </div>
 
-                <!-- অর্ডারস -->
-                <div id="tabContentOrders" class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 md:p-8 hidden">
-                    <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-6">আমার অর্ডারসমূহ</h3>
-                    <div id="ordersList" class="space-y-6"><p class="text-gray-500 text-center">লোড হচ্ছে...</p></div>
-                </div>
-
-                <!-- ফ্রেন্ড লিস্ট (নতুন) -->
-                <div id="tabContentFriends" class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 md:p-8 hidden">
-                    <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-6">আমার ফ্রেন্ড লিস্ট</h3>
-                    <div id="friendList" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <p class="text-gray-500 text-center col-span-full">লোড হচ্ছে...</p>
+                <!-- ব্লগ ট্যাব কন্টেন্ট -->
+                <div id="tabContentMyBlogs" class="hidden">
+                    <h3 class="text-xl font-bold mb-4 text-gray-900 dark:text-white">ব্লগসমূহ</h3>
+                    <div id="blogsList" class="space-y-4">
+                        <p class="text-gray-500">লোড হচ্ছে...</p>
                     </div>
                 </div>
 
-                <!-- আমার ব্লগ -->
-                <div id="tabContentMyBlogs" class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 md:p-8 hidden">
-                    <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-6">আমার লেখা ব্লগ</h3>
-                    <div id="myBlogsList" class="space-y-4"><p class="text-gray-500 text-center">লোড হচ্ছে...</p></div>
+                <!-- ফ্রেন্ড লিস্ট ট্যাব কন্টেন্ট -->
+                <div id="tabContentFriends" class="hidden">
+                    <h3 class="text-xl font-bold mb-4 text-gray-900 dark:text-white">বন্ধু তালিকা</h3>
+                    <div id="friendsList" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <p class="text-gray-500 col-span-full">লোড হচ্ছে...</p>
+                    </div>
+                </div>
+
+                <!-- ফ্রেন্ড রিকোয়েস্ট ট্যাব কন্টেন্ট -->
+                <div id="tabContentRequests" class="hidden">
+                    <h3 class="text-xl font-bold mb-4 text-gray-900 dark:text-white">ফ্রেন্ড রিকোয়েস্ট</h3>
+                    <div id="requestsList" class="space-y-3">
+                        <p class="text-gray-500">লোড হচ্ছে...</p>
+                    </div>
+                </div>
+
+                <!-- এডিট প্রোফাইল ট্যাব কন্টেন্ট -->
+                <div id="tabContentEdit" class="hidden">
+                    <h3 class="text-xl font-bold mb-4 text-gray-900 dark:text-white">তথ্য আপডেট করুন</h3>
+                    <form id="profileForm" class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 space-y-4">
+                        <div><label class="block text-sm font-semibold mb-1">পুরো নাম</label><input type="text" id="profName" class="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600"></div>
+                        <div><label class="block text-sm font-semibold mb-1">মোবাইল নম্বর</label><input type="text" id="profPhone" class="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600"></div>
+                        <div><label class="block text-sm font-semibold mb-1">ঠিকানা</label><textarea id="profAddress" rows="2" class="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600"></textarea></div>
+                        <button type="submit" id="updateProfileBtn" class="bg-blue-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-700 transition">সেভ করুন</button>
+                    </form>
                 </div>
 
             </div>
@@ -99,120 +94,205 @@
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let currentUser = null;
+        const urlParams = new URLSearchParams(window.location.search);
+        const profileId = urlParams.get('id'); // URL-এ id থাকলে সেটি অন্য কারও প্রোফাইল, না থাকলে নিজের প্রোফাইল
+        let isOwnProfile = false;
+        let viewingUserId = null;
 
-        if (localStorage.getItem('theme') === 'dark') document.documentElement.classList.add('dark');
+        function escapeHTML(str) {
+            if (!str) return '';
+            return str.replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
+        }
 
-        async function checkAuthAndLoadProfile() {
+        async function init() {
             const { data: { session } } = await supabaseClient.auth.getSession();
-            if (!session) { window.location.href = '/login.html'; return; }
-            currentUser = session.user;
+            if (session) currentUser = session.user;
 
-            const { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', currentUser.id).single();
-            if (profile) {
-                document.getElementById('displayName').innerText = profile.full_name || currentUser.email.split('@')[0];
-                document.getElementById('displayEmail').innerText = currentUser.email;
-                
-                document.getElementById('profName').value = profile.full_name || '';
-                document.getElementById('profPhone').value = profile.phone || '';
-                document.getElementById('profAddress').value = profile.address || '';
-                document.getElementById('profEmail').value = currentUser.email;
-
-                if(profile.profile_image) document.getElementById('profileDisplayImage').src = profile.profile_image;
+            if (!profileId && !currentUser) { 
+                window.location.href = '/login.html'; return; 
             }
+
+            viewingUserId = profileId || currentUser?.id;
+            isOwnProfile = (currentUser && viewingUserId === currentUser.id);
+
+            loadProfileDetails();
         }
 
-        window.switchTab = (tabName) => {
-            document.getElementById('tabContentInfo').classList.add('hidden');
-            document.getElementById('tabContentOrders').classList.add('hidden');
-            document.getElementById('tabContentFriends').classList.add('hidden');
-            document.getElementById('tabContentMyBlogs').classList.add('hidden');
-
-            const baseClass = "w-full text-left px-4 py-3 rounded-xl text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 font-semibold transition border border-transparent flex items-center gap-3";
-            document.getElementById('tabBtnInfo').className = baseClass;
-            document.getElementById('tabBtnOrders').className = baseClass;
-            document.getElementById('tabBtnFriends').className = baseClass;
-            document.getElementById('tabBtnMyBlogs').className = baseClass;
-
-            const activeClass = "w-full text-left px-4 py-3 rounded-xl bg-blue-50 dark:bg-gray-700 text-blue-700 dark:text-white font-semibold transition border border-blue-100 dark:border-gray-600 flex items-center gap-3";
-
-            if(tabName === 'info') { document.getElementById('tabContentInfo').classList.remove('hidden'); document.getElementById('tabBtnInfo').className = activeClass; }
-            else if (tabName === 'orders') { document.getElementById('tabContentOrders').classList.remove('hidden'); document.getElementById('tabBtnOrders').className = activeClass; loadOrders(); }
-            else if (tabName === 'friends') { document.getElementById('tabContentFriends').classList.remove('hidden'); document.getElementById('tabBtnFriends').className = activeClass; loadFriends(); }
-            else if (tabName === 'myBlogs') { document.getElementById('tabContentMyBlogs').classList.remove('hidden'); document.getElementById('tabBtnMyBlogs').className = activeClass; loadMyBlogs(); }
-        }
-
-        // ফ্রেন্ড লিস্ট লোড করা
-        async function loadFriends() {
-            const list = document.getElementById('friendList');
-            list.innerHTML = '<p class="text-gray-500 text-center col-span-full">লোড হচ্ছে...</p>';
-
-            // যারা আমাকে ফলো করছে বা আমি যাদের ফলো করছি
-            const { data: follows, error } = await supabaseClient
-                .from('followers')
-                .select('following_id, profiles!followers_following_id_fkey(full_name, email, profile_image)')
-                .eq('follower_id', currentUser.id);
-
-            if (error || !follows || follows.length === 0) {
-                list.innerHTML = `<p class="text-gray-500 text-center col-span-full py-10">আপনার কোনো ফ্রেন্ড নেই। ব্লগ পেজ থেকে লেখকদের ফলো করুন।</p>`;
+        async function loadProfileDetails() {
+            const card = document.getElementById('profileCard');
+            const { data: profile, error } = await supabaseClient.from('profiles').select('*').eq('id', viewingUserId).maybeSingle();
+            
+            if (error || !profile) {
+                card.innerHTML = `<p class="text-red-500">প্রোফাইল পাওয়া যায়নি!</p>`;
                 return;
             }
 
-            list.innerHTML = follows.map(f => {
-                const p = f.profiles;
-                const name = p?.full_name || p?.email?.split('@')[0] || 'Unknown';
-                const img = p?.profile_image || 'https://via.placeholder.com/50';
-                return `
-                <div class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-100 dark:border-gray-600">
-                    <img src="${img}" class="w-12 h-12 rounded-full object-cover">
-                    <div>
-                        <p class="font-bold text-sm text-gray-800 dark:text-white">${name}</p>
-                        <p class="text-xs text-gray-500">${p?.email || ''}</p>
-                    </div>
-                </div>
-                `;
-            }).join('');
+            const profileImg = profile.profile_image || `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.full_name || 'User')}&background=random&size=200`;
+            
+            let actionButtons = '';
+            let friendStatus = 'none';
+
+            // ফ্রেন্ড স্ট্যাটাস চেক
+            if (currentUser && !isOwnProfile) {
+                const { data: friendReq } = await supabaseClient.from('friends')
+                    .select('*')
+                    .or(`and(sender_id.eq.${currentUser.id},receiver_id.eq.${viewingUserId}),and(sender_id.eq.${viewingUserId},receiver_id.eq.${currentUser.id})`)
+                    .maybeSingle();
+
+                if (friendReq) {
+                    if (friendReq.status === 'accepted') friendStatus = 'friends';
+                    else if (friendReq.sender_id === currentUser.id) friendStatus = 'pending_sent';
+                    else if (friendReq.receiver_id === currentUser.id) friendStatus = 'pending_received';
+                }
+            }
+
+            // বাটন তৈরি
+            if (isOwnProfile) {
+                // নিজের প্রোফাইল হলে ট্যাব দেখাবে
+                document.getElementById('myProfileTabs').classList.remove('hidden');
+                switchTab('myBlogs');
+                loadMyBlogs();
+            } else if (currentUser) {
+                // অন্যের প্রোফাইল হলে ফ্রেন্ড/মেসেজ বাটন দেখাবে
+                if (friendStatus === 'none') {
+                    actionButtons = `<button onclick="sendFriendRequest()" class="w-full mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-700 transition">➕ ফ্রেন্ড রিকোয়েস্ট</button>`;
+                } else if (friendStatus === 'pending_sent') {
+                    actionButtons = `<button disabled class="w-full mt-4 bg-gray-300 text-gray-600 px-4 py-2 rounded-lg font-bold cursor-not-allowed">রিকোয়েস্ট পাঠানো হয়েছে</button>`;
+                } else if (friendStatus === 'pending_received') {
+                    actionButtons = `<button onclick="acceptFriendRequest()" class="w-full mt-4 bg-green-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-green-700 transition">✅ রিকোয়েস্ট একসেপ্ট</button>`;
+                } else if (friendStatus === 'friends') {
+                    actionButtons = `<a href="/inbox.html?user=${viewingUserId}" class="block text-center w-full mt-4 bg-green-100 text-green-700 border border-green-300 px-4 py-2 rounded-lg font-bold hover:bg-green-200 transition">💬 মেসেজ পাঠান</a>`;
+                }
+            }
+
+            card.innerHTML = `
+                <img src="${profileImg}" class="w-32 h-32 rounded-full object-cover shadow-md border-4 border-blue-100 mb-4">
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-1">${escapeHTML(profile.full_name || 'নামহীন ব্যবহারকারী')}</h2>
+                <p class="text-sm text-gray-500 mb-2">${escapeHTML(profile.email || '')}</p>
+                ${profile.address ? `<p class="text-sm text-gray-500">📍 ${escapeHTML(profile.address)}</p>` : ''}
+                ${actionButtons}
+            `;
+
+            if (isOwnProfile) {
+                loadFriends();
+                loadFriendRequests();
+                // এডিট ফর্মে ডেটা বসানো
+                document.getElementById('profName').value = profile.full_name || '';
+                document.getElementById('profPhone').value = profile.phone || '';
+                document.getElementById('profAddress').value = profile.address || '';
+            } else {
+                // অন্যের প্রোফাইলে তার ব্লগ দেখানো
+                document.getElementById('tabContentMyBlogs').classList.remove('hidden');
+                document.getElementById('tabContentMyBlogs').querySelector('h3').innerText = "এই ব্যবহারকারীর ব্লগ";
+                loadMyBlogs(viewingUserId);
+            }
         }
 
-        // আমার ব্লগ লোড করা
-        async function loadMyBlogs() {
-            const list = document.getElementById('myBlogsList');
-            list.innerHTML = '<p class="text-gray-500 text-center">লোড হচ্ছে...</p>';
+        window.switchTab = (tab) => {
+            const tabs = ['myBlogs', 'friends', 'requests', 'edit'];
+            tabs.forEach(t => {
+                document.getElementById(`tabContent${t.charAt(0).toUpperCase() + t.slice(1)}`).classList.add('hidden');
+                document.getElementById(`tabBtn${t.charAt(0).toUpperCase() + t.slice(1)}`).className = "px-4 py-2 font-bold text-gray-500 hover:text-blue-600 focus:outline-none border-b-2 border-transparent";
+            });
 
-            const { data: blogs, error } = await supabaseClient.from('blogs').select('*').eq('author_id', currentUser.id).order('created_at', { ascending: false });
+            document.getElementById(`tabContent${tab.charAt(0).toUpperCase() + tab.slice(1)}`).classList.remove('hidden');
+            document.getElementById(`tabBtn${tab.charAt(0).toUpperCase() + tab.slice(1)}`).className = "px-4 py-2 font-bold text-blue-600 border-b-2 border-blue-600 focus:outline-none";
+        }
 
-            if (error || !blogs || blogs.length === 0) {
-                list.innerHTML = `<p class="text-gray-500 text-center py-8">আপনি এখনো কোনো ব্লগ লেখেননি।</p>`;
+        async function loadMyBlogs(userId = null) {
+            const targetId = userId || currentUser.id;
+            const list = document.getElementById('blogsList');
+            list.innerHTML = '<p class="text-gray-500">লোড হচ্ছে...</p>';
+
+            const { data: blogs } = await supabaseClient.from('blogs').select('*').eq('author_id', targetId).order('created_at', { ascending: false });
+
+            if (!blogs || blogs.length === 0) {
+                list.innerHTML = `<p class="text-gray-500">কোনো ব্লগ পাওয়া যায়নি।</p>`;
                 return;
             }
 
             list.innerHTML = blogs.map(blog => {
-                const statusColor = blog.status === 'approved' ? 'bg-green-100 text-green-700' : (blog.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700');
-                const statusText = blog.status === 'approved' ? 'প্রকাশিত' : (blog.status === 'pending' ? 'অ্যাপ্রুভালের অপেক্ষায়' : 'বাতিল');
+                const statusColor = blog.status === 'approved' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700';
+                const statusText = blog.status === 'approved' ? 'প্রকাশিত' : 'অ্যাপ্রুভালের অপেক্ষায়';
                 return `
-                <div class="border border-gray-200 dark:border-gray-700 rounded-xl p-4 bg-gray-50 dark:bg-gray-800 mb-3">
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-4">
+                    ${blog.image_url ? `<img src="${blog.image_url}" class="w-full h-40 object-cover rounded-lg mb-3">` : ''}
                     <div class="flex justify-between items-start mb-2">
-                        <h4 class="font-bold text-gray-800 dark:text-white">${blog.title}</h4>
-                        <span class="text-xs font-bold px-2 py-1 rounded ${statusColor}">${statusText}</span>
+                        <h4 class="text-lg font-bold text-gray-900 dark:text-white">${escapeHTML(blog.title)}</h4>
+                        ${isOwnProfile ? `<span class="text-xs font-bold px-2 py-1 rounded ${statusColor}">${statusText}</span>` : ''}
                     </div>
-                    <p class="text-sm text-gray-600 dark:text-gray-300 line-clamp-2">${blog.content}</p>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-3">${escapeHTML(blog.content)}</p>
                 </div>
                 `;
             }).join('');
         }
 
-        // অর্ডার লোড (আগের কোড অনুযায়ী)
-        async function loadOrders() {
-            const list = document.getElementById('ordersList');
-            const { data: orders } = await supabaseClient.from('orders').select('*').eq('user_id', currentUser.id).order('created_at', { ascending: false });
-            if(!orders || orders.length === 0) { list.innerHTML = `<p class="text-gray-500 text-center">কোনো অর্ডার নেই।</p>`; return; }
-            
-            list.innerHTML = orders.map(o => `
-                <div class="border rounded-xl p-4 bg-gray-50 dark:bg-gray-700 mb-3">
-                    <p class="font-bold text-sm">অর্ডার আইডি: #${o.id.split('-')[0]}</p>
-                    <p class="text-sm">মোট: ৳ ${o.total_amount}</p>
-                    <p class="text-xs text-gray-500">স্ট্যাটাস: ${o.status}</p>
+        async function loadFriends() {
+            const list = document.getElementById('friendsList');
+            const { data: friends } = await supabaseClient.from('friends')
+                .select('*')
+                .or(`sender_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`)
+                .eq('status', 'accepted');
+
+            if (!friends || friends.length === 0) {
+                list.innerHTML = `<p class="text-gray-500 col-span-full">আপনার কোনো বন্ধু নেই। ব্লগারদের প্রোফাইলে গিয়ে ফ্রেন্ড রিকোয়েস্ট পাঠান।</p>`;
+                return;
+            }
+
+            const friendIds = friends.map(f => f.sender_id === currentUser.id ? f.receiver_id : f.sender_id);
+            const { data: profiles } = await supabaseClient.from('profiles').select('id, full_name, profile_image').in('id', friendIds);
+
+            list.innerHTML = profiles.map(p => `
+                <div class="flex items-center gap-3 p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-100 dark:border-gray-700">
+                    <img src="${p.profile_image || 'https://via.placeholder.com/40'}" class="w-10 h-10 rounded-full object-cover">
+                    <a href="/profile.html?id=${p.id}" class="font-bold text-sm text-gray-800 dark:text-white hover:text-blue-600">${escapeHTML(p.full_name)}</a>
                 </div>
             `).join('');
+        }
+
+        async function loadFriendRequests() {
+            const list = document.getElementById('requestsList');
+            const { data: requests } = await supabaseClient.from('friends')
+                .select('*')
+                .eq('receiver_id', currentUser.id)
+                .eq('status', 'pending');
+
+            if (!requests || requests.length === 0) {
+                list.innerHTML = `<p class="text-gray-500">আপনার কোনো নতুন ফ্রেন্ড রিকোয়েস্ট নেই।</p>`;
+                return;
+            }
+
+            const senderIds = requests.map(r => r.sender_id);
+            const { data: profiles } = await supabaseClient.from('profiles').select('id, full_name, profile_image').in('id', senderIds);
+
+            list.innerHTML = profiles.map(p => `
+                <div class="flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-100 dark:border-gray-700">
+                    <div class="flex items-center gap-3">
+                        <img src="${p.profile_image || 'https://via.placeholder.com/40'}" class="w-10 h-10 rounded-full object-cover">
+                        <span class="font-bold text-sm text-gray-800 dark:text-white">${escapeHTML(p.full_name)}</span>
+                    </div>
+                    <button onclick="acceptFriendRequest('${p.id}')" class="bg-green-500 hover:bg-green-600 text-white px-4 py-1.5 rounded-lg text-xs font-bold transition">একসেপ্ট</button>
+                </div>
+            `).join('');
+        }
+
+        window.sendFriendRequest = async () => {
+            if (!currentUser) return;
+            const { error } = await supabaseClient.from('friends').insert([{ sender_id: currentUser.id, receiver_id: viewingUserId, status: 'pending' }]);
+            if (error) alert('সমস্যা: ' + error.message);
+            else { alert('রিকোয়েস্ট পাঠানো হয়েছে!'); loadProfileDetails(); }
+        }
+
+        window.acceptFriendRequest = async (senderId = null) => {
+            if (!currentUser) return;
+            const targetId = senderId || viewingUserId;
+            const { error } = await supabaseClient.from('friends')
+                .update({ status: 'accepted' })
+                .eq('sender_id', targetId)
+                .eq('receiver_id', currentUser.id);
+            
+            if (error) alert('সমস্যা: ' + error.message);
+            else { alert('বন্ধু হয়েছেন!'); loadProfileDetails(); }
         }
 
         document.getElementById('profileForm').addEventListener('submit', async (e) => {
@@ -227,11 +307,11 @@
             };
             const { error } = await supabaseClient.from('profiles').update(updates).eq('id', currentUser.id);
             if(error) alert('সমস্যা: ' + error.message);
-            else { alert('তথ্য সেভ হয়েছে!'); document.getElementById('displayName').innerText = updates.full_name; }
-            btn.innerText = 'তথ্য সেভ করুন'; btn.disabled = false;
+            else { alert('তথ্য সেভ হয়েছে!'); loadProfileDetails(); }
+            btn.innerText = 'সেভ করুন'; btn.disabled = false;
         });
 
-        checkAuthAndLoadProfile();
+        init();
     </script>
 </body>
 </html>
