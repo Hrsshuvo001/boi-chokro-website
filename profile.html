@@ -15,7 +15,6 @@
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 transition-colors min-h-screen flex flex-col">
 
-    <!-- নেভিগেশন বার -->
     <nav class="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-40 no-print">
         <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
             <a href="/index.html" class="text-2xl font-extrabold text-blue-600 dark:text-blue-400 tracking-tight">Boi Chokro</a>
@@ -32,17 +31,13 @@
     <main class="flex-grow max-w-6xl mx-auto w-full px-4 py-8 no-print">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
             
-            <!-- বাম দিক: প্রোফাইল কার্ড -->
             <div class="md:col-span-1">
                 <div id="profileCard" class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 flex flex-col items-center sticky top-24">
                     <p class="text-gray-500">লোড হচ্ছে...</p>
                 </div>
             </div>
 
-            <!-- ডান দিক: কন্টেন্ট এরিয়া -->
             <div class="md:col-span-2">
-                
-                <!-- নিজের প্রোফাইল হলে ট্যাব দেখাবে -->
                 <div id="myProfileTabs" class="hidden mb-6 border-b border-gray-200 dark:border-gray-700">
                     <button onclick="switchTab('myBlogs')" id="tabBtnMyBlogs" class="px-4 py-2 font-bold text-blue-600 border-b-2 border-blue-600 focus:outline-none">আমার ব্লগ</button>
                     <button onclick="switchTab('friends')" id="tabBtnFriends" class="px-4 py-2 font-bold text-gray-500 hover:text-blue-600 focus:outline-none border-b-2 border-transparent">বন্ধু তালিকা</button>
@@ -50,7 +45,6 @@
                     <button onclick="switchTab('edit')" id="tabBtnEdit" class="px-4 py-2 font-bold text-gray-500 hover:text-blue-600 focus:outline-none border-b-2 border-transparent">তথ্য এডিট</button>
                 </div>
 
-                <!-- ব্লগ ট্যাব -->
                 <div id="tabContentMyBlogs" class="hidden">
                     <h3 id="blogHeaderTitle" class="text-xl font-bold mb-4 text-gray-900 dark:text-white">ব্লগসমূহ</h3>
                     <div id="blogsList" class="space-y-4">
@@ -58,7 +52,6 @@
                     </div>
                 </div>
 
-                <!-- ফ্রেন্ড লিস্ট ট্যাব -->
                 <div id="tabContentFriends" class="hidden">
                     <h3 class="text-xl font-bold mb-4 text-gray-900 dark:text-white">বন্ধু তালিকা</h3>
                     <div id="friendsList" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -66,7 +59,6 @@
                     </div>
                 </div>
 
-                <!-- ফ্রেন্ড রিকোয়েস্ট ট্যাব -->
                 <div id="tabContentRequests" class="hidden">
                     <h3 class="text-xl font-bold mb-4 text-gray-900 dark:text-white">ফ্রেন্ড রিকোয়েস্ট</h3>
                     <div id="requestsList" class="space-y-3">
@@ -74,7 +66,6 @@
                     </div>
                 </div>
 
-                <!-- এডিট প্রোফাইল ট্যাব -->
                 <div id="tabContentEdit" class="hidden">
                     <h3 class="text-xl font-bold mb-4 text-gray-900 dark:text-white">তথ্য আপডেট করুন</h3>
                     <form id="profileForm" class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 space-y-4">
@@ -116,7 +107,7 @@
             viewingUserId = profileId || currentUser?.id;
             isOwnProfile = (currentUser && viewingUserId === currentUser.id);
 
-            // ডেটা লোড করার আগে ৫০০ মিলি সেকেন্ড অপেক্ষা করা, যাতে সুপাবেস নতুন কলাম রিফ্রেশ করতে পারে
+            // সুপাবেসের নতুন কলাম রিফ্রেশ হওয়ার জন্য সামান্য অপেক্ষা
             setTimeout(() => {
                 loadProfileDetails();
             }, 500);
@@ -136,7 +127,6 @@
             let actionButtons = '';
             let friendStatus = 'none';
 
-            // ফ্রেন্ড স্ট্যাটাস চেক
             if (currentUser && !isOwnProfile) {
                 const { data: friendReq } = await supabaseClient.from('friends')
                     .select('*')
@@ -150,7 +140,6 @@
                 }
             }
 
-            // বাটন তৈরি
             if (isOwnProfile) {
                 document.getElementById('myProfileTabs').classList.remove('hidden');
                 switchTab('myBlogs');
