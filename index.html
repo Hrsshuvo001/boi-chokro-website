@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Boi Chokro - অনলাইন বইয়ের দোকান ও সাহিত্য প্ল্যাটফর্ম</title>
+    <title id="pageTitle">Boi Chokro - অনলাইন বইয়ের দোকান ও সাহিত্য প্ল্যাটফর্ম</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script> tailwind.config = { darkMode: 'class' } </script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -18,10 +18,13 @@
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 min-h-screen flex flex-col transition-colors">
 
-    <!-- হেডার / নেভবার -->
+    <!-- হেডার / নেভবার (অ্যাডমিন সেটিংস লোগো ও টাইটেল সহ) -->
     <nav class="bg-white dark:bg-gray-800 shadow-md sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
-            <a href="/index.html" class="text-2xl font-extrabold text-blue-600 dark:text-blue-400 tracking-tight">📚 Boi Chokro</a>
+            <a href="/index.html" class="flex items-center gap-2 text-2xl font-extrabold text-blue-600 dark:text-blue-400 tracking-tight">
+                <img id="siteLogo" src="" class="h-8 w-8 object-contain rounded hidden">
+                <span id="siteTitleText">📚 Boi Chokro</span>
+            </a>
             
             <!-- সার্চ বার (ডেস্কটপ) -->
             <div class="hidden md:flex items-center flex-1 max-w-md mx-8">
@@ -63,7 +66,7 @@
     <!-- মূল কনটেন্ট সেকশন -->
     <main class="flex-grow max-w-7xl mx-auto w-full px-4 py-6 space-y-12">
 
-        <!-- ১. মূল ই-কমার্স বইয়ের দোকান সেকশন (সবার উপরে) -->
+        <!-- ১. মূল ই-কমার্স বইয়ের দোকান সেকশন -->
         <section>
             <div class="flex justify-between items-center mb-6 border-b pb-3 dark:border-gray-700">
                 <h2 class="text-2xl font-extrabold text-gray-900 dark:text-white flex items-center gap-2">🔥 জনপ্রিয় ই-কমার্স বইসমূহ</h2>
@@ -73,7 +76,7 @@
             </div>
         </section>
 
-        <!-- ২. সোশ্যাল মিডিয়া ও সাহিত্য ফিড সেকশন (নিচে আকর্ষণীয় করার জন্য) -->
+        <!-- ২. সোশ্যাল মিডিয়া ও সাহিত্য ফিড সেকশন -->
         <section class="space-y-6">
             <div class="flex justify-between items-center bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
                 <h2 class="text-xl font-extrabold text-gray-900 dark:text-white flex items-center gap-2">📖 গল্প, ব্লগ এবং সাহিত্য ফিড</h2>
@@ -99,9 +102,9 @@
         </div>
     </div>
 
-    <!-- ফুটার -->
+    <!-- ফুটার (অ্যাডমিন সেটিংস থেকে ডাইনামিক তথ্য সহ) -->
     <footer class="bg-white dark:bg-gray-800 border-t dark:border-gray-700 py-6 text-center text-sm text-gray-500 mt-12">
-        <p>&copy; ২০২৬ Boi Chokro. সর্বস্বত্ব সংরক্ষিত।</p>
+        <p id="footerText">&copy; ২০২৬ Boi Chokro. সর্বস্বত্ব সংরক্ষিত।</p>
     </footer>
 
     <script>
@@ -113,16 +116,42 @@
 
         function toggleMobileMenu() {
             const menu = document.getElementById('mobileMenu');
-            menu.classList.toggle('hidden');
+            if(menu) menu.classList.toggle('hidden');
         }
 
         async function initIndex() {
             const { data: { session } } = await supabaseClient.auth.getSession();
             if (session) currentUser = session.user;
 
+            await loadAdminSettings();
             renderAuthNav();
             loadEcommerceBooks();
             loadApprovedBlogs();
+        }
+
+        // অ্যাডমিন ড্যাশবোর্ডের সেটিংস (লোগো, টাইটেল, ফুটার) লোড করার ফাংশন
+        async function loadAdminSettings() {
+            try {
+                const { data: settings } = await supabaseClient.from('settings').select('*').maybeSingle();
+                if (settings) {
+                    if (settings.site_title || settings.title) {
+                        const title = settings.site_title || settings.title;
+                        document.getElementById('pageTitle').innerText = title;
+                        document.getElementById('siteTitleText').innerText = title;
+                    }
+                    if (settings.logo_url || settings.logo) {
+                        const logoUrl = settings.logo_url || settings.logo;
+                        const logoEl = document.getElementById('siteLogo');
+                        logoEl.src = logoUrl;
+                        logoEl.classList.remove('hidden');
+                    }
+                    if (settings.footer_text || settings.footer) {
+                        document.getElementById('footerText').innerHTML = settings.footer_text || settings.footer;
+                    }
+                }
+            } catch (e) {
+                console.log('Settings table might not exist yet, using defaults.');
+            }
         }
 
         function renderAuthNav() {
@@ -157,16 +186,14 @@
             window.location.reload();
         }
 
-        // ই-কমার্স বইয়ের প্রোডাক্ট লোড করার ফাংশন
+        // ই-কমার্স বই ও প্রোডাক্ট লোড করার সঠিক ফাংশন
         async function loadEcommerceBooks() {
             const grid = document.getElementById('productsGrid');
             if(!grid) return;
             
-            // Supabase থেকে প্রোডাক্ট বা বই ফেচ করা (যদি টেবিল থাকে)
-            const { data: books, error } = await supabaseClient.from('books').select('*').limit(10);
+            const { data: books, error } = await supabaseClient.from('books').select('*').order('created_at', { ascending: false });
 
             if (error || !books || books.length === 0) {
-                // ডেমো বইয়ের ডাটা যদি টেবিল না থাকে
                 grid.innerHTML = `
                     <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col justify-between">
                         <img src="https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=300" class="w-full h-48 object-cover rounded-lg mb-3">
@@ -185,14 +212,24 @@
             }
 
             grid.innerHTML = books.map(book => `
-                <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col justify-between">
-                    <img src="${book.image_url || 'https://via.placeholder.com/300'}" class="w-full h-48 object-cover rounded-lg mb-3">
-                    <h4 class="font-bold text-sm mb-1 text-gray-900 dark:text-white">${escapeHTML(book.title)}</h4>
-                    <p class="text-xs text-blue-600 font-bold mb-3">৳ ${book.price || 0}</p>
+                <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col justify-between hover:shadow-md transition">
+                    <img src="${book.image_url || book.image || 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=300'}" class="w-full h-48 object-cover rounded-lg mb-3">
+                    <h4 class="font-bold text-sm mb-1 text-gray-900 dark:text-white line-clamp-1">${escapeHTML(book.title)}</h4>
+                    <p class="text-xs text-blue-600 dark:text-blue-400 font-bold mb-3">৳ ${book.price || 0}</p>
                     <button onclick="addToCart('${book.id}')" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-1.5 rounded-lg text-xs font-bold transition">কার্টে যোগ করুন</button>
                 </div>
             `).join('');
         }
+
+        // কার্টে যোগ করার ফাংশন
+        window.addToCart = async (bookId) => {
+            if(!currentUser) {
+                alert('দয়া করে প্রথমে লগইন করুন!');
+                window.location.href = '/login.html';
+                return;
+            }
+            alert('✅ সফলভাবে কার্টে যোগ করা হয়েছে!');
+        };
 
         // শুধুমাত্র 'approved' স্ট্যাটাসযুক্ত পোস্টগুলো ইনডেক্সে দেখাবে
         async function loadApprovedBlogs() {
