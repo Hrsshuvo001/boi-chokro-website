@@ -139,7 +139,7 @@
         </section>
     </main>
 
-    <!-- ফুল পোস্ট ভিউ, ভিউ কাউন্ট, কমেন্ট ও রিপ্লাই মডাল (পপ-আপ) -->
+    <!-- ফুল পোস্ট ভিউ, ভিউ কাউন্ট, কমেন্ট, রিপ্লাই, এডিট ও ডিলিট মডাল -->
     <div id="postDetailsModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
         <div class="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl relative modal-animate">
             <button onclick="closePostModal()" class="absolute top-4 right-4 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-red-500 hover:text-white h-8 w-8 rounded-full flex items-center justify-center font-bold transition">✕</button>
@@ -395,9 +395,6 @@
             }
         }
 
-        // ==========================================
-        // ব্লগ ও পোস্ট ফিড লোড ও পোস্ট ডিটেইলস
-        // ==========================================
         async function loadBlogs() {
             const blogList = document.getElementById('blogList');
             if(!blogList) return;
@@ -453,7 +450,6 @@
                             <button onclick="openPostDetails('${blog.id}')" class="flex items-center gap-1 text-gray-500 hover:text-blue-500 transition text-sm">
                                 💬 কমেন্ট
                             </button>
-                            <!-- কার্ডেও ভিউ সংখ্যা দেখাবে -->
                             <span class="flex items-center gap-1 text-gray-400 text-xs">👁️ ${blog.views || 0}</span>
                         </div>
                         <button onclick="openPostDetails('${blog.id}')" class="text-xs font-bold text-blue-600 hover:underline">বিস্তারিত</button>
@@ -478,7 +474,21 @@
         }
 
         // ==========================================
-        // পপ-আপ (ডিটেইলস মডাল): ভিউ কাউন্ট + লাইক + কমেন্ট রিপ্লাই
+        // অটো-মডারেশন ফিল্টার (বকা, গালি, অ্যাডাল্ট ও সেক্স হ্যারেসমেন্ট ডিটেক্ট)
+        // ==========================================
+        function containsForbiddenContent(text) {
+            const forbiddenKeywords = [
+                // গালিগালাজ ও অবমাননাকর শব্দ
+                'বাল', 'মাদারচোদ', 'মাগী', 'বেশ্যা', 'শালা', 'শুয়োর', 'কুত্তা', 'বট', 'bastard', 'shit', 'fuck', 'bitch', 'asshole',
+                // অ্যাডাল্ট ও সেক্সুয়াল হ্যারেসমেন্ট সম্পর্কিত শব্দ
+                'বটম', 'যৌন', 'সেক্স', 'sex', 'porn', 'xxx', 'naked', 'nude', 'chod', 'chodai', 'boob', 'vagina', 'penis', 'rape', 'ধর্ষণ', 'হ্যারাস', 'লুচ্চা'
+            ];
+            const lowerText = text.toLowerCase();
+            return forbiddenKeywords.some(word => lowerText.includes(word));
+        }
+
+        // ==========================================
+        // পপ-আপ (ডিটেইলস মডাল): ভিউ + লাইক + কমেন্ট (রিপ্লাই, এডিট, ডিলিট)
         // ==========================================
         window.openPostDetails = async (blogId) => {
             const modal = document.getElementById('postDetailsModal');
@@ -486,14 +496,12 @@
             modal.classList.remove('hidden');
             contentDiv.innerHTML = '<p class="text-center py-10 text-gray-500">লোড হচ্ছে...</p>';
 
-            // ১. ভিউ কাউন্ট ১ বাড়িয়ে দেওয়া
             try {
                 const { data: currentBlog } = await supabaseClient.from('blogs').select('views').eq('id', blogId).single();
                 const newViews = ((currentBlog?.views) || 0) + 1;
                 await supabaseClient.from('blogs').update({ views: newViews }).eq('id', blogId);
             } catch(e) { console.log('View count update error:', e); }
 
-            // ২. পোস্টের সম্পূর্ণ তথ্য লোড
             const { data: blog } = await supabaseClient.from('blogs').select('*').eq('id', blogId).single();
             if(!blog) { contentDiv.innerHTML = '<p class="text-red-500 text-center">পোস্ট পাওয়া যায়নি।</p>'; return; }
 
@@ -501,7 +509,6 @@
             const authorName = author?.full_name || 'নামহীন লেখক';
             const authorImg = author?.profile_image || `https://ui-avatars.com/api/?name=${encodeURIComponent(authorName)}&background=random`;
 
-            // ৩. লাইক চেক
             const { data: likes } = await supabaseClient.from('blog_likes').select('user_id').eq('blog_id', blogId);
             const totalLikes = likes ? likes.length : 0;
             const hasLiked = currentUser ? likes?.some(l => l.user_id === currentUser.id) : false;
@@ -518,7 +525,6 @@
                 }
             }
 
-            // ৪. কমেন্ট ও রিপ্লাই লোড করা
             const { data: comments } = await supabaseClient.from('blog_comments').select('*').eq('blog_id', blogId).order('created_at', { ascending: true });
             
             let commentProfiles = {};
@@ -528,7 +534,6 @@
                 if(cProfiles) cProfiles.forEach(p => commentProfiles[p.id] = p);
             }
 
-            // মেইন কমেন্ট ও রিপ্লাইগুলোকে আলাদা সাজানো
             const mainComments = comments ? comments.filter(c => !c.parent_id) : [];
             const replies = comments ? comments.filter(c => c.parent_id) : [];
 
@@ -541,7 +546,6 @@
                             <p class="text-xs text-gray-400">${new Date(blog.created_at).toLocaleString('bn-BD')}</p>
                         </div>
                     </div>
-                    <!-- ভিউ কাউন্ট প্রদর্শন -->
                     <div class="flex items-center gap-1 text-xs font-bold bg-blue-50 dark:bg-gray-700 text-blue-600 dark:text-blue-300 px-3 py-1 rounded-full border border-blue-100 dark:border-gray-600">
                         👁️ <span>${blog.views || 1} ভিউ</span>
                     </div>
@@ -551,7 +555,6 @@
                 ${blog.image_url ? `<img src="${blog.image_url}" class="w-full max-h-96 object-cover rounded-xl mb-4 shadow-sm">` : ''}
                 <div class="text-gray-700 dark:text-gray-200 text-base leading-relaxed whitespace-pre-line mb-4">${escapeHTML(blog.content)}</div>
 
-                <!-- ফেসবুক স্টাইল লাইক ও ভিউ সামারি -->
                 <div class="flex items-center justify-between text-xs sm:text-sm text-gray-500 dark:text-gray-400 border-y dark:border-gray-700 py-2.5 my-3">
                     <div class="flex items-center gap-1.5">
                         <span class="bg-blue-600 text-white p-1 rounded-full text-[10px]">👍</span>
@@ -571,38 +574,52 @@
 
                 <h4 class="font-bold text-lg mb-3 text-gray-900 dark:text-white">💬 কমেন্টসমূহ (${comments ? comments.length : 0})</h4>
                 
-                <!-- কমেন্ট ও রিপ্লাই লিস্ট -->
                 <div class="space-y-4 max-h-72 overflow-y-auto mb-4 pr-2">
                     ${(mainComments.length === 0) ? '<p class="text-sm text-gray-400 text-center py-4">এখনো কোনো কমেন্ট নেই। প্রথম কমেন্ট করুন!</p>' : 
                         mainComments.map(c => {
                             const commenter = commentProfiles[c.user_id] || { full_name: 'ব্যবহারকারী', profile_image: '' };
                             const cImg = commenter.profile_image || `https://ui-avatars.com/api/?name=${encodeURIComponent(commenter.full_name)}&background=random`;
-                            
-                            // এই কমেন্টের আন্ডারে থাকা রিপ্লাইগুলো
                             const childReplies = replies.filter(r => r.parent_id === c.id);
+                            const isMyComment = currentUser && currentUser.id === c.user_id;
 
                             return `
                             <div class="space-y-2">
-                                <div class="flex items-start gap-2.5 bg-gray-50 dark:bg-gray-700 p-3 rounded-xl">
+                                <div class="flex items-start gap-2.5 bg-gray-50 dark:bg-gray-700 p-3 rounded-xl relative group">
                                     <img src="${cImg}" class="w-8 h-8 rounded-full object-cover mt-0.5">
                                     <div class="flex-1">
                                         <div class="flex justify-between items-center">
                                             <span class="font-bold text-xs text-gray-900 dark:text-white">${escapeHTML(commenter.full_name)}</span>
                                             <span class="text-[10px] text-gray-400">${new Date(c.created_at).toLocaleTimeString('bn-BD', {hour: '2-digit', minute:'2-digit'})}</span>
                                         </div>
-                                        <p class="text-sm text-gray-700 dark:text-gray-200 mt-1">${escapeHTML(c.comment)}</p>
+                                        <p id="commentText_${c.id}" class="text-sm text-gray-700 dark:text-gray-200 mt-1">${escapeHTML(c.comment)}</p>
                                         
-                                        <!-- রিপ্লাই বাটন -->
-                                        <button onclick="toggleReplyBox('${c.id}')" class="text-xs text-blue-600 font-bold mt-1 hover:underline">রিপ্লাই দিন</button>
+                                        <!-- এডিট করার ইনপুট ফিল্ড (লুকানো থাকবে) -->
+                                        <div id="editBox_${c.id}" class="hidden mt-2">
+                                            <input type="text" id="editInput_${c.id}" value="${escapeHTML(c.comment)}" class="w-full px-2 py-1 text-xs border rounded dark:bg-gray-800 dark:border-gray-600 mb-1">
+                                            <div class="flex gap-2">
+                                                <button onclick="saveEditedComment('${c.id}', '${blog.id}')" class="bg-green-600 text-white px-2 py-0.5 rounded text-[10px] font-bold">সেভ</button>
+                                                <button onclick="toggleEditBox('${c.id}')" class="bg-gray-400 text-white px-2 py-0.5 rounded text-[10px]">বাতিল</button>
+                                            </div>
+                                        </div>
+
+                                        <div class="flex items-center gap-3 mt-1">
+                                            <button onclick="toggleReplyBox('${c.id}')" class="text-xs text-blue-600 font-bold hover:underline">রিপ্লাই দিন</button>
+                                            ${isMyComment ? `
+                                                <button onclick="toggleEditBox('${c.id}')" class="text-xs text-amber-600 font-semibold hover:underline">এডিট</button>
+                                                <button onclick="deleteComment('${c.id}', '${blog.id}')" class="text-xs text-red-500 font-semibold hover:underline">ডিলিট</button>
+                                            ` : ''}
+                                        </div>
                                     </div>
                                 </div>
 
-                                <!-- কমেন্টের নিচে সাব-রিপ্লাইসমূহ -->
+                                <!-- সাব-রিপ্লাইসমূহ -->
                                 ${childReplies.length > 0 ? `
                                     <div class="pl-8 space-y-2 border-l-2 border-gray-200 dark:border-gray-600 ml-4">
                                         ${childReplies.map(r => {
                                             const replier = commentProfiles[r.user_id] || { full_name: 'ব্যবহারকারী', profile_image: '' };
                                             const rImg = replier.profile_image || `https://ui-avatars.com/api/?name=${encodeURIComponent(replier.full_name)}&background=random`;
+                                            const isMyReply = currentUser && currentUser.id === r.user_id;
+
                                             return `
                                             <div class="flex items-start gap-2 bg-gray-100 dark:bg-gray-800 p-2.5 rounded-xl text-xs">
                                                 <img src="${rImg}" class="w-6 h-6 rounded-full object-cover mt-0.5">
@@ -611,7 +628,22 @@
                                                         <span class="font-bold text-gray-900 dark:text-white">${escapeHTML(replier.full_name)}</span>
                                                         <span class="text-[9px] text-gray-400">${new Date(r.created_at).toLocaleTimeString('bn-BD', {hour: '2-digit', minute:'2-digit'})}</span>
                                                     </div>
-                                                    <p class="text-gray-700 dark:text-gray-200 mt-0.5">${escapeHTML(r.comment)}</p>
+                                                    <p id="commentText_${r.id}" class="text-gray-700 dark:text-gray-200 mt-0.5">${escapeHTML(r.comment)}</p>
+
+                                                    <div id="editBox_${r.id}" class="hidden mt-1">
+                                                        <input type="text" id="editInput_${r.id}" value="${escapeHTML(r.comment)}" class="w-full px-2 py-1 text-[10px] border rounded dark:bg-gray-700 mb-1">
+                                                        <div class="flex gap-2">
+                                                            <button onclick="saveEditedComment('${r.id}', '${blog.id}')" class="bg-green-600 text-white px-2 py-0.5 rounded text-[9px] font-bold">সেভ</button>
+                                                            <button onclick="toggleEditBox('${r.id}')" class="bg-gray-400 text-white px-2 py-0.5 rounded text-[9px]">বাতিল</button>
+                                                        </div>
+                                                    </div>
+
+                                                    ${isMyReply ? `
+                                                        <div class="flex gap-2 mt-1">
+                                                            <button onclick="toggleEditBox('${r.id}')" class="text-[10px] text-amber-600 font-semibold hover:underline">এডিট</button>
+                                                            <button onclick="deleteComment('${r.id}', '${blog.id}')" class="text-[10px] text-red-500 font-semibold hover:underline">ডিলিট</button>
+                                                        </div>
+                                                    ` : ''}
                                                 </div>
                                             </div>
                                             `;
@@ -619,7 +651,6 @@
                                     </div>
                                 ` : ''}
 
-                                <!-- রিপ্লাই লেখার ইনপুট ফিল্ড (ডিফল্টভাবে হাইড থাকবে) -->
                                 <div id="replyBox_${c.id}" class="hidden pl-8 ml-4">
                                     <form onsubmit="submitComment(event, '${blog.id}', '${c.id}')" class="flex gap-2">
                                         <input type="text" id="replyInput_${c.id}" required placeholder="${escapeHTML(commenter.full_name)}-কে রিপ্লাই দিন..." class="flex-1 px-3 py-1.5 border rounded-lg dark:bg-gray-800 dark:border-gray-600 text-xs outline-none focus:ring-1 focus:ring-blue-500">
@@ -632,7 +663,6 @@
                     }
                 </div>
 
-                <!-- মূল কমেন্ট ইনপুট (Parent ID ছাড়া) -->
                 ${currentUser ? `
                 <form onsubmit="submitComment(event, '${blog.id}', null)" class="flex gap-2">
                     <input type="text" id="commentInput_${blog.id}" required placeholder="একটি সুন্দর কমেন্ট লিখুন..." class="flex-1 px-4 py-2 border rounded-xl dark:bg-gray-700 dark:border-gray-600 text-sm outline-none focus:ring-2 focus:ring-blue-500">
@@ -649,6 +679,46 @@
             if(box) box.classList.toggle('hidden');
         }
 
+        window.toggleEditBox = (commentId) => {
+            const box = document.getElementById(`editBox_${commentId}`);
+            if(box) box.classList.toggle('hidden');
+        }
+
+        // কমেন্ট এডিট সেভ করার ফাংশন
+        window.saveEditedComment = async (commentId, blogId) => {
+            const input = document.getElementById(`editInput_${commentId}`);
+            const newText = input ? input.value.trim() : '';
+
+            if(!newText) { showToast('কমেন্ট খালি রাখা যাবে না!', true); return; }
+
+            // মডারেশন চেক
+            if (containsForbiddenContent(newText)) {
+                showToast('⚠️ আপনার কমেন্টে গালি, অ্যাডাল্ট বা অনুপযুক্ত শব্দ থাকায় এটি এডিট করা বাতিল করা হয়েছে!', true);
+                return;
+            }
+
+            const { error } = await supabaseClient.from('blog_comments').update({ comment: newText }).eq('id', commentId);
+            if(!error) {
+                showToast('✅ কমেন্ট সফলভাবে এডিট করা হয়েছে!');
+                openPostDetails(blogId);
+            } else {
+                showToast('এডিট করতে সমস্যা হয়েছে: ' + error.message, true);
+            }
+        }
+
+        // কমেন্ট ডিলিট করার ফাংশন
+        window.deleteComment = async (commentId, blogId) => {
+            if(!confirm('আপনি কি নিশ্চিতভাবে এই কমেন্টটি ডিলিট করতে চান?')) return;
+
+            const { error } = await supabaseClient.from('blog_comments').delete().eq('id', commentId);
+            if(!error) {
+                showToast('🗑️ কমেন্ট সফলভাবে ডিলিট করা হয়েছে!');
+                openPostDetails(blogId);
+            } else {
+                showToast('ডিলিট করতে সমস্যা হয়েছে: ' + error.message, true);
+            }
+        }
+
         window.toggleModalLike = async (blogId) => {
             await likeBlog(blogId);
             openPostDetails(blogId);
@@ -656,7 +726,7 @@
 
         window.closePostModal = () => document.getElementById('postDetailsModal').classList.add('hidden');
 
-        // কমেন্ট এবং রিপ্লাই সেভ করার ফাংশন
+        // কমেন্ট বা রিপ্লাই সাবমিট করার সময় অটো-মডারেশন চেক
         window.submitComment = async (e, blogId, parentId = null) => {
             e.preventDefault();
             if(!currentUser) { showToast('লগইন করুন', true); return; }
@@ -672,6 +742,12 @@
 
             if(!text) return;
 
+            // ⚠️ অটো ডিটেক্ট ও ব্লক ফিল্টার চেক
+            if (containsForbiddenContent(text)) {
+                showToast('🚫 সতর্কতা: আপনার কমেন্টে গালিগালাজ, অ্যাডাল্ট বা হ্যারেসমেন্টমূলক শব্দ শনাক্ত হয়েছে। এই কমেন্টটি ব্লক ও রিজেক্ট করা হলো!', true);
+                return;
+            }
+
             const insertData = {
                 blog_id: blogId,
                 user_id: currentUser.id,
@@ -682,6 +758,7 @@
             const { error } = await supabaseClient.from('blog_comments').insert([insertData]);
 
             if(!error) {
+                showToast('✅ কমেন্ট সফলভাবে পোস্ট হয়েছে!');
                 openPostDetails(blogId);
             } else {
                 showToast('কমেন্ট সাবমিট সমস্যা: ' + error.message, true);
