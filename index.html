@@ -37,7 +37,6 @@
                     <span id="web_header_name" class="text-xl sm:text-2xl font-extrabold text-blue-600 dark:text-blue-400 tracking-tight">Boi Chokro</span>
                 </a>
                 
-                <!-- মোবাইল হেডার রাইট আইকন ও প্রোফাইল বাটন -->
                 <div class="flex items-center gap-1.5 md:hidden">
                     <div id="authButtonsMobile" class="flex items-center gap-1 text-xs"></div>
                     <button onclick="toggleNotifications()" class="relative text-gray-500 p-1"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg><span id="notifBadgeMobile" class="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold rounded-full h-4 w-4 hidden">0</span></button>
@@ -48,14 +47,12 @@
                 </div>
             </div>
 
-            <!-- ডেস্কটপ সার্চ ইনপুট -->
             <div class="hidden md:block w-full md:w-1/3 relative group">
                 <input type="text" id="searchInput" placeholder="বই, লেখক বা প্রকাশনী খুঁজুন..." class="w-full pl-10 pr-4 py-2.5 bg-gray-100 dark:bg-gray-700 border-transparent rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-white transition shadow-inner text-sm" oninput="handleSearch('desktop')">
                 <svg xmlns="http://www.w3.org/2000/svg" class="absolute left-3.5 top-3 h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                 <div id="searchResultsDropdown" class="hidden search-dropdown-custom bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-100 dark:border-gray-700 max-h-96 overflow-y-auto"></div>
             </div>
 
-            <!-- ডেস্কটপ মেনু -->
             <div class="hidden md:flex items-center gap-4">
                 <div class="relative">
                     <button onclick="toggleNotifications()" class="relative p-2 text-gray-600 dark:text-gray-300 hover:text-blue-600 transition">
@@ -84,7 +81,7 @@
         </div>
     </nav>
 
-    <!-- ডাইনামিক ব্যানার ও হিরো সেকশন -->
+    <!-- হিরো সেকশন ও ব্যানার -->
     <header id="heroSection" class="relative bg-gray-900 text-white rounded-b-[2rem] shadow-lg min-h-[16rem] sm:min-h-[20rem] md:min-h-[24rem] flex items-center justify-center no-print z-40 overflow-visible">
         <div id="heroBannerImage" class="absolute inset-0 bg-gradient-to-br from-blue-900 via-blue-700 to-blue-500 bg-cover bg-center transition-all duration-500 rounded-b-[2rem]"></div>
         <div class="absolute inset-0 bg-black/40 rounded-b-[2rem]"></div>
@@ -142,7 +139,7 @@
         </section>
     </main>
 
-    <!-- মডাল ও ফুটার -->
+    <!-- ফুল পোস্ট ভিউ ও কমেন্ট মডাল -->
     <div id="postDetailsModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
         <div class="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl relative modal-animate">
             <button onclick="closePostModal()" class="absolute top-4 right-4 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-red-500 hover:text-white h-8 w-8 rounded-full flex items-center justify-center font-bold transition">✕</button>
@@ -150,6 +147,7 @@
         </div>
     </div>
 
+    <!-- ডাইনামিক ফুটার -->
     <footer class="bg-gray-900 dark:bg-black text-gray-400 pt-12 pb-6 mt-auto border-t-4 border-blue-600 no-print">
         <div class="max-w-7xl mx-auto px-4 text-center space-y-2">
             <p id="web_footer_text">&copy; 2026 Boi Chokro. All rights reserved.</p>
@@ -398,7 +396,7 @@
         }
 
         // ==========================================
-        // ব্লগ ও সাহিত্য ফিড লোড করার ফাংশন
+        // ব্লগ ও সাহিত্য ফিড লোড ও ডিটেইলস মডাল ফাংশন
         // ==========================================
         async function loadBlogs() {
             const blogList = document.getElementById('blogList');
@@ -439,9 +437,11 @@
                             </div>
                         </div>
 
-                        ${blog.image_url ? `<div class="max-h-60 overflow-hidden bg-gray-100 cursor-pointer" onclick="openPostDetails('${blog.id}')"><img src="${blog.image_url}" class="w-full h-full object-cover"></div>` : ''}
+                        <!-- ছবিতে ক্লিক করলে ডিটেইলস মডাল ওপেন হবে -->
+                        ${blog.image_url ? `<div class="max-h-60 overflow-hidden bg-gray-100 cursor-pointer" onclick="openPostDetails('${blog.id}')"><img src="${blog.image_url}" class="w-full h-full object-cover hover:scale-105 transition duration-300"></div>` : ''}
                         
                         <div class="p-4 space-y-2">
+                            <!-- টাইটেলে ক্লিক করলে ডিটেইলস মডাল ওপেন হবে -->
                             <h3 class="text-lg font-bold text-gray-900 dark:text-white cursor-pointer hover:text-blue-600 transition line-clamp-2" onclick="openPostDetails('${blog.id}')">${escapeHTML(blog.title)}</h3>
                             <p class="text-sm text-gray-600 dark:text-gray-300 line-clamp-3">${escapeHTML(blog.content)}</p>
                         </div>
@@ -463,6 +463,111 @@
             }));
 
             blogList.innerHTML = blogHTML.join('');
+        }
+
+        window.likeBlog = async (blogId) => {
+            if(!currentUser) { showToast('লাইক দিতে লগইন করুন!', true); return; }
+            const { data: existing } = await supabaseClient.from('blog_likes').select('id').eq('blog_id', blogId).eq('user_id', currentUser.id).maybeSingle();
+            
+            if(existing) {
+                await supabaseClient.from('blog_likes').delete().eq('id', existing.id);
+            } else {
+                await supabaseClient.from('blog_likes').insert([{ blog_id: blogId, user_id: currentUser.id }]);
+            }
+            loadBlogs();
+        }
+
+        window.openPostDetails = async (blogId) => {
+            const modal = document.getElementById('postDetailsModal');
+            const contentDiv = document.getElementById('modalBodyContent');
+            modal.classList.remove('hidden');
+            contentDiv.innerHTML = '<p class="text-center py-10 text-gray-500">লোড হচ্ছে...</p>';
+
+            const { data: blog } = await supabaseClient.from('blogs').select('*').eq('id', blogId).single();
+            if(!blog) { contentDiv.innerHTML = '<p class="text-red-500 text-center">পোস্ট পাওয়া যায়নি।</p>'; return; }
+
+            const { data: author } = await supabaseClient.from('profiles').select('id, full_name, profile_image').eq('id', blog.author_id).maybeSingle();
+            const authorName = author?.full_name || 'নামহীন লেখক';
+            const authorImg = author?.profile_image || `https://ui-avatars.com/api/?name=${encodeURIComponent(authorName)}&background=random`;
+
+            const { data: comments } = await supabaseClient.from('blog_comments').select('*').eq('blog_id', blogId).order('created_at', { ascending: true });
+            
+            let commentProfiles = {};
+            if(comments && comments.length > 0) {
+                const cUserIds = [...new Set(comments.map(c => c.user_id))];
+                const { data: cProfiles } = await supabaseClient.from('profiles').select('id, full_name, profile_image').in('id', cUserIds);
+                if(cProfiles) cProfiles.forEach(p => commentProfiles[p.id] = p);
+            }
+
+            contentDiv.innerHTML = `
+                <div class="flex items-center gap-3 mb-4 cursor-pointer hover:opacity-80 transition" onclick="window.location.href='/profile.html?id=${blog.author_id}'">
+                    <img src="${authorImg}" class="w-12 h-12 rounded-full object-cover border">
+                    <div>
+                        <h3 class="font-bold text-base text-gray-900 dark:text-white hover:text-blue-600">${escapeHTML(authorName)}</h3>
+                        <p class="text-xs text-gray-400">${new Date(blog.created_at).toLocaleString('bn-BD')}</p>
+                    </div>
+                </div>
+                <h2 class="text-2xl font-extrabold text-gray-900 dark:text-white mb-2">${escapeHTML(blog.title)}</h2>
+                ${blog.image_url ? `<img src="${blog.image_url}" class="w-full max-h-96 object-cover rounded-xl mb-4 shadow-sm">` : ''}
+                <div class="text-gray-700 dark:text-gray-200 text-base leading-relaxed whitespace-pre-line mb-6">${escapeHTML(blog.content)}</div>
+
+                <hr class="dark:border-gray-700 my-4">
+
+                <h4 class="font-bold text-lg mb-3 text-gray-900 dark:text-white">💬 কমেন্টসমূহ (${comments ? comments.length : 0})</h4>
+                
+                <div class="space-y-3 max-h-60 overflow-y-auto mb-4 pr-2">
+                    ${(!comments || comments.length === 0) ? '<p class="text-sm text-gray-400 text-center py-4">এখনো কোনো কমেন্ট নেই। প্রথম কমেন্ট করুন!</p>' : 
+                        comments.map(c => {
+                            const commenter = commentProfiles[c.user_id] || { full_name: 'ব্যবহারকারী', profile_image: 'https://via.placeholder.com/30' };
+                            return `
+                            <div class="flex items-start gap-2.5 bg-gray-50 dark:bg-gray-700 p-3 rounded-xl">
+                                <img src="${commenter.profile_image || 'https://via.placeholder.com/30'}" class="w-8 h-8 rounded-full object-cover mt-0.5">
+                                <div class="flex-1">
+                                    <div class="flex justify-between items-center">
+                                        <span class="font-bold text-xs text-gray-900 dark:text-white">${escapeHTML(commenter.full_name)}</span>
+                                        <span class="text-[10px] text-gray-400">${new Date(c.created_at).toLocaleTimeString('bn-BD', {hour: '2-digit', minute:'2-digit'})}</span>
+                                    </div>
+                                    <p class="text-sm text-gray-700 dark:text-gray-200 mt-1">${escapeHTML(c.comment)}</p>
+                                </div>
+                            </div>
+                            `;
+                        }).join('')
+                    }
+                </div>
+
+                ${currentUser ? `
+                <form onsubmit="submitComment(event, '${blog.id}')" class="flex gap-2">
+                    <input type="text" id="commentInput_${blog.id}" required placeholder="একটি সুন্দর কমেন্ট লিখুন..." class="flex-1 px-4 py-2 border rounded-xl dark:bg-gray-700 dark:border-gray-600 text-sm outline-none focus:ring-2 focus:ring-blue-500">
+                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-5 py-2 rounded-xl text-sm transition">পাঠান</button>
+                </form>
+                ` : `
+                <p class="text-center text-sm py-2 bg-gray-50 dark:bg-gray-700 rounded-xl text-gray-500">কমেন্ট করতে অনুগ্রহ করে <a href="/login.html" class="text-blue-600 font-bold underline">লগইন করুন</a>।</p>
+                `}
+            `;
+        }
+
+        window.closePostModal = () => document.getElementById('postDetailsModal').classList.add('hidden');
+
+        window.submitComment = async (e, blogId) => {
+            e.preventDefault();
+            if(!currentUser) { alert('লগইন করুন'); return; }
+
+            const input = document.getElementById(`commentInput_${blogId}`);
+            const text = input.value.trim();
+            if(!text) return;
+
+            const { error } = await supabaseClient.from('blog_comments').insert([{
+                blog_id: blogId,
+                user_id: currentUser.id,
+                comment: text
+            }]);
+
+            if(!error) {
+                input.value = '';
+                openPostDetails(blogId);
+            } else {
+                alert('কমেন্ট করতে সমস্যা হয়েছে: ' + error.message);
+            }
         }
 
         window.submitBlog = async () => {
@@ -508,7 +613,7 @@
             await loadAdminSettings(); 
             await checkAuth();
             await loadBooks();
-            await loadBlogs(); // ব্লগ লোড করার ফাংশন আবার যুক্ত করা হলো
+            await loadBlogs(); 
             updateCartCount();
         }
 
