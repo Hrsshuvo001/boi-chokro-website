@@ -16,7 +16,8 @@
         .card-shadow { box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05); transition: all 0.3s ease; }
         .dark .card-shadow { box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); }
         .card-shadow:hover { transform: translateY(-4px); box-shadow: 0 10px 35px rgba(0, 0, 0, 0.12); }
-        .search-dropdown-custom { z-index: 9999 !important; position: absolute; top: 100%; left: 0; width: 100%; margin-top: 0.5rem; }
+        /* সার্চ ড্রপডাউন যেন কিবোর্ড বা অন্য উপাদানের নিচে ঢাকা না পড়ে */
+        .search-dropdown-custom { z-index: 99999 !important; position: absolute; top: 100%; left: 0; width: 100%; margin-top: 0.5rem; }
         @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         .toast-animate { animation: slideInRight 0.3s ease-out forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
@@ -37,22 +38,26 @@
                     <span id="web_header_name" class="text-xl sm:text-2xl font-extrabold text-blue-600 dark:text-blue-400 tracking-tight">Boi Chokro</span>
                 </a>
                 
-                <div class="flex items-center gap-3 md:hidden">
+                <!-- মোবাইল হেডার রাইট আইকন ও প্রোফাইল বাটন -->
+                <div class="flex items-center gap-2 md:hidden">
+                    <div id="authButtonsMobile" class="flex items-center gap-1 text-xs"></div>
                     <button onclick="toggleNotifications()" class="relative text-gray-500 p-1.5"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg><span id="notifBadgeMobile" class="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold rounded-full h-4 w-4 hidden">0</span></button>
                     <a href="/inbox.html" class="text-gray-500 p-1.5"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" /></svg></a>
-                    <a href="/cart.html" class="relative flex items-center bg-blue-50 dark:bg-gray-700 text-blue-600 dark:text-blue-400 px-3 py-1.5 rounded-lg border border-blue-100 dark:border-gray-600">
+                    <a href="/cart.html" class="relative flex items-center bg-blue-50 dark:bg-gray-700 text-blue-600 dark:text-blue-400 px-2.5 py-1.5 rounded-lg border border-blue-100 dark:border-gray-600">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
                         <span id="cartCountMobile" class="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center border border-white">0</span>
                     </a>
                 </div>
             </div>
 
+            <!-- ডেস্কটপ সার্চ ইনপুট -->
             <div class="hidden md:block w-full md:w-1/3 relative group">
                 <input type="text" id="searchInput" placeholder="বই, লেখক বা প্রকাশনী খুঁজুন..." class="w-full pl-10 pr-4 py-2.5 bg-gray-100 dark:bg-gray-700 border-transparent rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-white transition shadow-inner text-sm" oninput="handleSearch('desktop')">
                 <svg xmlns="http://www.w3.org/2000/svg" class="absolute left-3.5 top-3 h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                 <div id="searchResultsDropdown" class="hidden search-dropdown-custom bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-100 dark:border-gray-700 max-h-96 overflow-y-auto"></div>
             </div>
 
+            <!-- ডেস্কটপ মেনু -->
             <div class="hidden md:flex items-center gap-4">
                 <div class="relative">
                     <button onclick="toggleNotifications()" class="relative p-2 text-gray-600 dark:text-gray-300 hover:text-blue-600 transition">
@@ -83,7 +88,6 @@
 
     <!-- হিরো সেকশন / ডাইনামিক ব্যানার -->
     <header id="heroSection" class="relative bg-gray-900 text-white rounded-b-[2rem] shadow-lg min-h-[16rem] sm:min-h-[20rem] md:min-h-[24rem] flex items-center justify-center no-print z-40 overflow-hidden">
-        <!-- অ্যাডমিন প্যানেল থেকে আপলোড করা ব্যানার ইমেজ ব্যাকগ্রাউন্ড হিসেবে সেট করার জন্য আইডি -->
         <div id="heroBannerImage" class="absolute inset-0 bg-gradient-to-br from-blue-900 via-blue-700 to-blue-500 bg-cover bg-center transition-all duration-500 rounded-b-[2rem]"></div>
         <div class="absolute inset-0 bg-black/40 rounded-b-[2rem]"></div>
         
@@ -91,10 +95,12 @@
             <h1 id="web_tagline" class="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-4 tracking-tight drop-shadow-lg">আপনার পছন্দের বই, এক জায়গায়</h1>
             <p id="web_sub_tagline" class="text-sm sm:text-base md:text-lg text-gray-200 max-w-2xl mx-auto mb-8 drop-shadow">সেরা লেখকদের বইয়ের বিশাল সংগ্রহ। আজই আপনার প্রিয় বইটি খুঁজে নিন।</p>
             
-            <div class="md:hidden max-w-md mx-auto relative group z-50">
+            <!-- মোবাইল সার্চ ইনপুট ও ড্রপডাউন কনটেইনার -->
+            <div class="md:hidden max-w-md mx-auto relative group z-[99999]">
                 <input type="text" id="searchInputMobile" placeholder="বই খুঁজুন..." class="w-full pl-10 pr-4 py-3 bg-white/20 backdrop-blur-md border border-white/30 text-white placeholder-gray-200 rounded-full focus:outline-none focus:bg-white focus:text-gray-800 transition shadow-lg text-sm" oninput="handleSearch('mobile')">
-                <svg xmlns="http://www.w3.org/2000/svg" class="absolute left-3.5 top-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-                <div id="searchResultsDropdownMobile" class="hidden search-dropdown-custom bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-100 dark:border-gray-700 max-h-80 overflow-y-auto text-left"></div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="absolute left-3.5 top-3.5 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                <!-- মোবাইল সার্চ রেজাল্ট ড্রপডাউন (z-index বাড়ানো হয়েছে যেন কিবোর্ডের উপরে থাকে) -->
+                <div id="searchResultsDropdownMobile" class="hidden search-dropdown-custom bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-100 dark:border-gray-700 max-h-60 overflow-y-auto text-left"></div>
             </div>
         </div>
     </header>
@@ -203,9 +209,6 @@
             if(deskEl) deskEl.innerText = cart.length;
         }
 
-        // ==========================================
-        // অ্যাডমিন প্যানেলের site_settings টেবিল থেকে ডেটা ও ব্যানার লোড করা
-        // ==========================================
         async function loadAdminSettings() {
             try {
                 const { data: settings, error } = await supabaseClient.from('site_settings').select('*').limit(1).maybeSingle();
@@ -230,7 +233,6 @@
                         if(taglineEl) taglineEl.innerText = taglineText;
                     }
 
-                    // অ্যাডমিন প্যানেল থেকে আপলোড করা ব্যানার ইমেজ হিরো সেকশনে সেট করা
                     const bannerUrl = settings.banner_url || '';
                     if (bannerUrl) {
                         const heroBanner = document.getElementById('heroBannerImage');
@@ -262,21 +264,34 @@
 
         async function checkAuth() {
             const { data: { session } } = await supabaseClient.auth.getSession();
-            const authBtn = document.getElementById('authButtonsDesktop');
+            const authBtnDesktop = document.getElementById('authButtonsDesktop');
+            const authBtnMobile = document.getElementById('authButtonsMobile');
             
             if (session) {
                 currentUser = session.user;
                 const { data: wish } = await supabaseClient.from('wishlists').select('book_id').eq('user_id', currentUser.id);
                 if(wish) userWishlist = wish.map(w => w.book_id);
 
-                authBtn.innerHTML = `
-                    <a href="/profile.html" class="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-white px-3 py-1.5 rounded-lg font-semibold hover:bg-gray-200 transition">প্রোফাইল</a>
-                    <button onclick="handleLogout()" class="bg-red-50 text-red-600 px-3 py-1.5 rounded-lg font-semibold border border-red-200 hover:bg-red-100 transition">লগআউট</button>
-                `;
+                if(authBtnDesktop) {
+                    authBtnDesktop.innerHTML = `
+                        <a href="/profile.html" class="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-white px-3 py-1.5 rounded-lg font-semibold hover:bg-gray-200 transition">প্রোফাইল</a>
+                        <button onclick="handleLogout()" class="bg-red-50 text-red-600 px-3 py-1.5 rounded-lg font-semibold border border-red-200 hover:bg-red-100 transition">লগআউট</button>
+                    `;
+                }
+                if(authBtnMobile) {
+                    authBtnMobile.innerHTML = `
+                        <a href="/profile.html" class="bg-blue-50 dark:bg-gray-700 text-blue-600 dark:text-blue-300 px-2.5 py-1.5 rounded-lg font-bold border border-blue-200 dark:border-gray-600">প্রোফাইল</a>
+                    `;
+                }
                 loadNotifications();
             } else {
                 currentUser = null;
-                authBtn.innerHTML = `<a href="/login.html" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition">লগইন</a>`;
+                if(authBtnDesktop) {
+                    authBtnDesktop.innerHTML = `<a href="/login.html" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition">লগইন</a>`;
+                }
+                if(authBtnMobile) {
+                    authBtnMobile.innerHTML = `<a href="/login.html" class="bg-blue-600 text-white px-2.5 py-1.5 rounded-lg font-bold text-white">লগইন</a>`;
+                }
             }
         }
 
@@ -289,7 +304,7 @@
             const list = document.getElementById('notifList');
             
             if(!notifs || notifs.length === 0) {
-                list.innerHTML = `<div class="p-4 text-center text-sm text-gray-500">কোনো নোটিফিকেশন নেই</div>`;
+                if(list) list.innerHTML = `<div class="p-4 text-center text-sm text-gray-500">কোনো নোটিফিকেশন নেই</div>`;
                 if(badge) badge.classList.add('hidden');
                 if(badgeMob) badgeMob.classList.add('hidden');
                 return;
@@ -304,12 +319,14 @@
                 if(badgeMob) badgeMob.classList.add('hidden');
             }
 
-            list.innerHTML = notifs.map(n => `
-                <div class="p-3 text-sm border-b dark:border-gray-700 ${!n.is_read ? 'bg-blue-50 dark:bg-gray-700 font-semibold' : 'text-gray-600'}">
-                    ${escapeHTML(n.message)}
-                    <p class="text-[10px] text-gray-400 mt-1">${new Date(n.created_at).toLocaleString('bn-BD')}</p>
-                </div>
-            `).join('');
+            if(list) {
+                list.innerHTML = notifs.map(n => `
+                    <div class="p-3 text-sm border-b dark:border-gray-700 ${!n.is_read ? 'bg-blue-50 dark:bg-gray-700 font-semibold' : 'text-gray-600'}">
+                        ${escapeHTML(n.message)}
+                        <p class="text-[10px] text-gray-400 mt-1">${new Date(n.created_at).toLocaleString('bn-BD')}</p>
+                    </div>
+                `).join('');
+            }
         }
 
         window.toggleNotifications = () => { document.getElementById('notifDropdown').classList.toggle('hidden'); };
@@ -458,6 +475,7 @@
         // ==========================================
         async function loadBlogs() {
             const blogList = document.getElementById('blogList');
+            if(!blogList) return;
             
             const { data: blogs, error } = await supabaseClient
                 .from('blogs')
@@ -668,7 +686,7 @@
         window.handleLogout = async () => { await supabaseClient.auth.signOut(); checkAuth(); showToast('লগআউট হয়েছে।', false); }
 
         async function init() {
-            await loadAdminSettings(); // ডাইনামিক সেটিংস ও ব্যানার লোড করা
+            await loadAdminSettings(); 
             await checkAuth();
             await loadBooks();
             await loadBlogs();
