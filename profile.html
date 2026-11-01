@@ -13,32 +13,6 @@
         .line-clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
         @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         .toast-animate { animation: slideInRight 0.3s ease-out forwards; }
-        
-        /* মডার্ন কাস্টম ডেট পিকার লুক */
-        input[type="date"] {
-            position: relative;
-            appearance: none;
-            -webkit-appearance: none;
-            background-color: #fff;
-            padding: 10px 14px;
-            border-radius: 8px;
-            border: 1px solid #d1d5db;
-            color: #1f2937;
-            font-family: 'Hind Siliguri', sans-serif;
-        }
-        .dark input[type="date"] {
-            background-color: #374151;
-            border-color: #4b5563;
-            color: #f9fafb;
-        }
-        input[type="date"]::-webkit-calendar-picker-indicator {
-            cursor: pointer;
-            filter: invert(0.5);
-            padding: 4px;
-        }
-        .dark input[type="date"]::-webkit-calendar-picker-indicator {
-            filter: invert(1);
-        }
     </style>
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 transition-colors min-h-screen flex flex-col">
@@ -103,7 +77,10 @@
                 </div>
 
                 <div id="tabContentMyBlogs" class="hidden">
-                    <h3 id="blogHeaderTitle" class="text-xl font-bold mb-4 text-gray-900 dark:text-white">ব্লগ ও পোস্টসমূহ</h3>
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 id="blogHeaderTitle" class="text-xl font-bold text-gray-900 dark:text-white">ব্লগ ও পোস্টসমূহ</h3>
+                        <button onclick="openCreatePostModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-bold text-sm shadow transition hidden" id="createPostBtn">✍️ নতুন পোস্ট লিখুন</button>
+                    </div>
                     <div id="blogsList" class="space-y-4"></div>
                 </div>
 
@@ -136,10 +113,20 @@
                         <div><label class="block text-sm font-semibold mb-1">বায়ো (Bio)</label><input type="text" id="profBio" placeholder="নিজের সম্পর্কে কিছু লিখুন..." class="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 outline-none"></div>
                         <div><label class="block text-sm font-semibold mb-1">পেশা</label><input type="text" id="profOccupation" placeholder="আপনার পেশা..." class="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 outline-none"></div>
                         
-                        <!-- মডার্ন স্টাইল ডেট পিকার ফিল্ড -->
+                        <!-- মডার্ন ড্রপডাউন ডেট পিকার -->
                         <div>
                             <label class="block text-sm font-semibold mb-1">জন্মদিন</label>
-                            <input type="date" id="profDob" class="w-full focus:ring-2 focus:ring-blue-500 outline-none cursor-pointer">
+                            <div class="grid grid-cols-3 gap-2">
+                                <select id="dobDay" class="px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 outline-none"><option value="">দিন</option></select>
+                                <select id="dobMonth" class="px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 outline-none">
+                                    <option value="">মাস</option>
+                                    <option value="01">জানুয়ারি</option><option value="02">ফেব্রুয়ারি</option><option value="03">মার্চ</option>
+                                    <option value="04">এপ্রিল</option><option value="05">মে</option><option value="06">জুন</option>
+                                    <option value="07">জুলাই</option><option value="08">আগস্ট</option><option value="09">সেপ্টেম্বর</option>
+                                    <option value="10">অক্টোবর</option><option value="11">নভেম্বর</option><option value="12">ডিসেম্বর</option>
+                                </select>
+                                <select id="dobYear" class="px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 outline-none"><option value="">বছর</option></select>
+                            </div>
                         </div>
 
                         <div><label class="block text-sm font-semibold mb-1">ঠিকানা</label><textarea id="profAddress" rows="2" class="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 outline-none"></textarea></div>
@@ -150,6 +137,31 @@
             </div>
         </div>
     </main>
+
+    <!-- ফেসবুক স্টাইল পোস্ট ক্রিয়েট মডাল -->
+    <div id="postModal" class="fixed inset-0 bg-black/60 flex items-center justify-center z-50 hidden p-4">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-lg p-6 shadow-2xl relative">
+            <div class="flex justify-between items-center border-b pb-3 dark:border-gray-700 mb-4">
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white">নতুন পোস্ট তৈরি করুন</h3>
+                <button onclick="closeCreatePostModal()" class="text-gray-500 hover:text-red-500 text-xl font-bold">✕</button>
+            </div>
+            <form id="createPostForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-semibold mb-1">পোস্টের শিরোনাম</label>
+                    <input type="text" id="postTitle" required placeholder="কী বিষয়ে লিখতে চান..." class="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold mb-1">বিবরণ / কনটেন্ট</label>
+                    <textarea id="postContent" rows="4" required placeholder="আপনার মনের কথা এখানে লিখুন..." class="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 outline-none"></textarea>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold mb-1">ছবি যুক্ত করুন (ঐচ্ছিক)</label>
+                    <input type="file" id="postImageFile" accept="image/*" class="w-full text-sm border rounded-lg p-2 dark:bg-gray-700 dark:border-gray-600">
+                </div>
+                <button type="submit" id="publishPostBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-lg transition">পোস্ট প্রকাশ করুন (এপ্রুভালের জন্য জমা দিন)</button>
+            </form>
+        </div>
+    </div>
 
     <script>
         const SUPABASE_URL = 'https://jhbpaezbpkfwjfmazdcn.supabase.co';
@@ -162,6 +174,20 @@
         let isOwnProfile = false;
         let viewingUserId = null;
         let currentGallery = [];
+
+        // ড্রপডাউন ডেট পিকার অপশন পপুলেট করা
+        function populateDobDropdowns() {
+            const daySelect = document.getElementById('dobDay');
+            const yearSelect = document.getElementById('dobYear');
+            for(let i=1; i<=31; i++) {
+                daySelect.innerHTML += `<option value="${i < 10 ? '0'+i : i}">${i}</option>`;
+            }
+            const currentYear = new Date().getFullYear();
+            for(let y=currentYear; y>=1940; y--) {
+                yearSelect.innerHTML += `<option value="${y}">${y}</option>`;
+            }
+        }
+        populateDobDropdowns();
 
         window.showToast = (message, isError = false) => {
             const container = document.getElementById('toast-container');
@@ -181,6 +207,49 @@
         function escapeHTML(str) {
             if (!str) return '';
             return str.replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
+        }
+
+        // সেন্সরশিপ / নুড ও সেক্সুয়াল ছবি ডিটেকশন ফাংশন
+        async function checkNudeOrExplicitImage(file) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    img.src = e.target.result;
+                };
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    canvas.width = 100; // ফাস্ট চেকের জন্য ছোট সাইজ
+                    canvas.height = 100;
+                    ctx.drawImage(img, 0, 0, 100, 100);
+                    
+                    const imgData = ctx.getImageData(0, 0, 100, 100);
+                    let skinPixelCount = 0;
+                    const totalPixels = imgData.data.length / 4;
+
+                    for (let i = 0; i < imgData.data.length; i += 4) {
+                        const r = imgData.data[i];
+                        const g = imgData.data[i + 1];
+                        const b = imgData.data[i + 2];
+
+                        // কালার হিউম্যান স্কিন টোন রেঞ্জ ডিটেকশন ফর্মুলা
+                        if ((r > 95 && g > 40 && b > 20 && Math.max(r, g, b) - Math.min(r, g, b) > 15 && Math.abs(r - g) > 15 && r > g && r > b) ||
+                            (r > 220 && g > 210 && b > 170 && Math.abs(r - g) <= 15 && r > b && g > b)) {
+                            skinPixelCount++;
+                        }
+                    }
+
+                    const skinPercentage = (skinPixelCount / totalPixels) * 100;
+                    // যদি ছবির ৬০% এর বেশি অংশ স্কিন টোন বা নুড হিউম্যান বডি কালার হয়, তবে ব্লক করবে
+                    if (skinPercentage > 60) {
+                        resolve(true); // নুড বা আপত্তিকর শনাক্ত হয়েছে
+                    } else {
+                        resolve(false); // নিরাপদ
+                    }
+                };
+                reader.readAsDataURL(file);
+            });
         }
 
         async function init() {
@@ -295,13 +364,22 @@
                 document.getElementById('coverUploadLabel').classList.remove('hidden');
                 document.getElementById('profileUploadLabel').classList.remove('hidden');
                 document.getElementById('galleryUploadLabel').classList.remove('hidden');
+                document.getElementById('createPostBtn').classList.remove('hidden');
 
                 document.getElementById('profName').value = profile.full_name || profile.name || '';
                 document.getElementById('profPhone').value = profile.phone || '';
                 document.getElementById('profBio').value = profile.bio || '';
                 document.getElementById('profOccupation').value = profile.occupation || '';
-                document.getElementById('profDob').value = profile.dob || '';
                 document.getElementById('profAddress').value = profile.address || '';
+                
+                if(profile.dob) {
+                    const dobParts = profile.dob.split('-');
+                    if(dobParts.length === 3) {
+                        document.getElementById('dobYear').value = dobParts[0];
+                        document.getElementById('dobMonth').value = dobParts[1];
+                        document.getElementById('dobDay').value = dobParts[2];
+                    }
+                }
             } else if (currentUser) {
                 if (friendStatus === 'none') {
                     actionButtons = `<button onclick="sendFriendRequest()" class="w-full mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-700 transition">➕ ফ্রেন্ড রিকোয়েস্ট</button>`;
@@ -329,13 +407,18 @@
             btn.innerText = 'সেভ হচ্ছে...'; 
             btn.disabled = true;
 
+            const year = document.getElementById('dobYear').value;
+            const month = document.getElementById('dobMonth').value;
+            const day = document.getElementById('dobDay').value;
+            const dobFormatted = (year && month && day) ? `${year}-${month}-${day}` : null;
+
             const updates = {
                 id: currentUser.id,
                 full_name: document.getElementById('profName').value.trim(),
                 phone: document.getElementById('profPhone').value.trim(),
                 bio: document.getElementById('profBio').value.trim(),
                 occupation: document.getElementById('profOccupation').value.trim(),
-                dob: document.getElementById('profDob').value,
+                dob: dobFormatted,
                 address: document.getElementById('profAddress').value.trim()
             };
 
@@ -351,9 +434,17 @@
             btn.disabled = false;
         });
 
+        // কভার ছবি আপলোড উইথ নুড ডিটেকশন
         window.uploadCoverImage = async (event) => {
             const file = event.target.files[0];
             if(!file || !currentUser) return;
+
+            const isExplicit = await checkNudeOrExplicitImage(file);
+            if(isExplicit) {
+                showToast('⚠️ আপত্তিকর বা নুড ছবি আপলোড নিষিদ্ধ!', true);
+                event.target.value = '';
+                return;
+            }
 
             const fileName = `cover_${currentUser.id}_${Date.now()}.${file.name.split('.').pop()}`;
             const { error: uploadError } = await supabaseClient.storage.from('book-covers').upload(fileName, file);
@@ -381,18 +472,26 @@
                     title: 'কভার ফটো আপডেট',
                     content: 'আপনার কভার ফটো আপলোড হয়েছে',
                     image_url: newCoverUrl,
-                    status: 'approved'
+                    status: 'pending' // অ্যাডমিন এপ্রুভাল না পাওয়া পর্যন্ত পেন্ডিং
                 }]);
 
-                showToast('✅ আপনার কভার ফটো আপলোড হয়েছে!');
+                showToast('✅ কভার ফটো আপলোড হয়েছে (এপ্রুভালের অপেক্ষায়)!');
                 loadProfileDetails();
                 loadMyBlogs();
             }
         }
 
+        // প্রোফাইল ছবি আপলোড উইথ নুড ডিটেকশন
         window.uploadProfileImage = async (event) => {
             const file = event.target.files[0];
             if(!file || !currentUser) return;
+
+            const isExplicit = await checkNudeOrExplicitImage(file);
+            if(isExplicit) {
+                showToast('⚠️ আপত্তিকর বা নুড ছবি আপলোড নিষিদ্ধ!', true);
+                event.target.value = '';
+                return;
+            }
 
             const fileName = `profile_${currentUser.id}_${Date.now()}.${file.name.split('.').pop()}`;
             const { error: uploadError } = await supabaseClient.storage.from('book-covers').upload(fileName, file);
@@ -422,14 +521,15 @@
                 title: 'প্রোফাইল ছবি আপডেট',
                 content: 'আপনার প্রোফাইল ছবি আপলোড হয়েছে',
                 image_url: newProfileUrl,
-                status: 'approved'
+                status: 'pending' // পেন্ডিং
             }]);
 
-            showToast('✅ আপনার প্রোফাইল ছবি আপলোড হয়েছে!');
+            showToast('✅ প্রোফাইল ছবি আপলোড হয়েছে (এপ্রুভালের অপেক্ষায়)!');
             loadProfileDetails();
             loadMyBlogs();
         }
 
+        // গ্যালারি ছবি আপলোড উইথ নুড ডিটেকশন
         window.uploadGalleryImages = async (event) => {
             const files = event.target.files;
             if(!files.length || !currentUser) return;
@@ -440,6 +540,12 @@
 
             for (let i = 0; i < files.length; i++) {
                 const file = files[i];
+                const isExplicit = await checkNudeOrExplicitImage(file);
+                if(isExplicit) {
+                    showToast(`⚠️ ছবি #${i+1} আপত্তিকর হওয়ায় ব্লক করা হয়েছে!`, true);
+                    continue;
+                }
+
                 const fileName = `gallery_${currentUser.id}_${Date.now()}_${i}.${file.name.split('.').pop()}`;
                 const { error: uploadError } = await supabaseClient.storage.from('book-covers').upload(fileName, file);
                 
@@ -460,10 +566,10 @@
                 } else {
                     currentGallery = newGallery;
                     renderGallery();
-                    showToast('✅ ছবি সফলভাবে আপলোড হয়েছে!');
+                    showToast('✅ নিরাপদ ছবি সফলভাবে আপলোড হয়েছে!');
                 }
             } else {
-                showToast('ছবি আপলোড ব্যর্থ হয়েছে।', true);
+                showToast('কোনো ছবি আপলোড হয়নি বা আপত্তিকর হিসেবে ব্লক হয়েছে।', true);
             }
         }
 
@@ -533,6 +639,59 @@
             }
         }
 
+        // নতুন পোস্ট ক্রিয়েট মডাল ওপেন/ক্লোজ
+        window.openCreatePostModal = () => document.getElementById('postModal').classList.remove('hidden');
+        window.closeCreatePostModal = () => document.getElementById('postModal').classList.add('hidden');
+
+        // ফেসবুক স্টাইল পোস্ট সাবমিট (স্ট্যাটাস pending থাকবে)
+        document.getElementById('createPostForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('publishPostBtn');
+            btn.innerText = 'পোস্ট জমা হচ্ছে...';
+            btn.disabled = true;
+
+            const title = document.getElementById('postTitle').value.trim();
+            const content = document.getElementById('postContent').value.trim();
+            const imageFile = document.getElementById('postImageFile').files[0];
+            let imageUrl = '';
+
+            if (imageFile) {
+                const isExplicit = await checkNudeOrExplicitImage(imageFile);
+                if(isExplicit) {
+                    showToast('⚠️ পোস্টে আপত্তিকর ছবি থাকায় আপলোড করা যায়নি!', true);
+                    btn.innerText = 'পোস্ট প্রকাশ করুন (এপ্রুভালের জন্য জমা দিন)';
+                    btn.disabled = false;
+                    return;
+                }
+
+                const fileName = `post_${currentUser.id}_${Date.now()}.${imageFile.name.split('.').pop()}`;
+                const { error: uploadError } = await supabaseClient.storage.from('book-covers').upload(fileName, imageFile);
+                if (!uploadError) {
+                    const { data: pubData } = supabaseClient.storage.from('book-covers').getPublicUrl(fileName);
+                    imageUrl = pubData.publicUrl;
+                }
+            }
+
+            const { error: insertError } = await supabaseClient.from('blogs').insert([{
+                author_id: currentUser.id,
+                title: title,
+                content: content,
+                image_url: imageUrl,
+                status: 'pending' // অ্যাডমিন এপ্রুভ না করা পর্যন্ত পেন্ডিং থাকবে
+            }]);
+
+            if (insertError) {
+                showToast('সমস্যা: ' + insertError.message, true);
+            } else {
+                showToast('✅ আপনার পোস্ট সফলভাবে জমা হয়েছে! অ্যাডমিন এপ্রুভ করলে সাইটে দেখাবে।');
+                closeCreatePostModal();
+                document.getElementById('createPostForm').reset();
+                loadMyBlogs();
+            }
+            btn.innerText = 'পোস্ট প্রকাশ করুন (এপ্রুভালের জন্য জমা দিন)';
+            btn.disabled = false;
+        });
+
         async function loadMyBlogs(userId = null) {
             const targetId = userId || currentUser?.id;
             if(!targetId) return;
@@ -548,14 +707,15 @@
             }
 
             list.innerHTML = blogs.map(blog => {
-                const statusColor = blog.status === 'approved' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700';
-                const statusText = blog.status === 'approved' ? 'প্রকাশিত' : 'অ্যাপ্রুভালের অপেক্ষায়';
+                const isApproved = blog.status === 'approved';
+                const statusColor = isApproved ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700';
+                const statusText = isApproved ? 'প্রকাশিত' : 'অ্যাপ্রুভালের অপেক্ষায় (Pending)';
                 return `
                 <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-4">
                     ${blog.image_url ? `<img src="${blog.image_url}" class="w-full h-48 object-cover rounded-lg mb-3">` : ''}
                     <div class="flex justify-between items-start mb-2">
                         <h4 class="text-lg font-bold text-gray-900 dark:text-white">${escapeHTML(blog.title)}</h4>
-                        ${isOwnProfile ? `<span class="text-xs font-bold px-2 py-1 rounded ${statusColor}">${statusText}</span>` : ''}
+                        <span class="text-xs font-bold px-2.5 py-1 rounded-full ${statusColor}">${statusText}</span>
                     </div>
                     <p class="text-sm text-gray-600 dark:text-gray-400">${escapeHTML(blog.content)}</p>
                 </div>
