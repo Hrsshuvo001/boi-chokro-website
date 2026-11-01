@@ -14,12 +14,29 @@
         @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         .toast-animate { animation: slideInRight 0.3s ease-out forwards; }
         
-        /* মডার্ন ডেট পিকার স্টাইল */
+        /* মডার্ন কাস্টম ডেট পিকার লুক */
+        input[type="date"] {
+            position: relative;
+            appearance: none;
+            -webkit-appearance: none;
+            background-color: #fff;
+            padding: 10px 14px;
+            border-radius: 8px;
+            border: 1px solid #d1d5db;
+            color: #1f2937;
+            font-family: 'Hind Siliguri', sans-serif;
+        }
+        .dark input[type="date"] {
+            background-color: #374151;
+            border-color: #4b5563;
+            color: #f9fafb;
+        }
         input[type="date"]::-webkit-calendar-picker-indicator {
-            background-color: #3b82f6;
-            padding: 5px;
             cursor: pointer;
-            border-radius: 4px;
+            filter: invert(0.5);
+            padding: 4px;
+        }
+        .dark input[type="date"]::-webkit-calendar-picker-indicator {
             filter: invert(1);
         }
     </style>
@@ -114,12 +131,18 @@
                 <div id="tabContentEdit" class="hidden">
                     <h3 class="text-xl font-bold mb-4 text-gray-900 dark:text-white">তথ্য আপডেট করুন</h3>
                     <form id="profileForm" class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 space-y-4">
-                        <div><label class="block text-sm font-semibold mb-1">পুরো নাম</label><input type="text" id="profName" class="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600"></div>
-                        <div><label class="block text-sm font-semibold mb-1">মোবাইল নম্বর</label><input type="text" id="profPhone" class="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600"></div>
-                        <div><label class="block text-sm font-semibold mb-1">বায়ো (Bio)</label><input type="text" id="profBio" placeholder="নিজের সম্পর্কে কিছু লিখুন..." class="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600"></div>
-                        <div><label class="block text-sm font-semibold mb-1">পেশা</label><input type="text" id="profOccupation" placeholder="আপনার পেশা..." class="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600"></div>
-                        <div><label class="block text-sm font-semibold mb-1">জন্মদিন</label><input type="date" id="profDob" class="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-white cursor-pointer"></div>
-                        <div><label class="block text-sm font-semibold mb-1">ঠিকানা</label><textarea id="profAddress" rows="2" class="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600"></textarea></div>
+                        <div><label class="block text-sm font-semibold mb-1">পুরো নাম</label><input type="text" id="profName" class="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 outline-none"></div>
+                        <div><label class="block text-sm font-semibold mb-1">মোবাইল নম্বর</label><input type="text" id="profPhone" class="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 outline-none"></div>
+                        <div><label class="block text-sm font-semibold mb-1">বায়ো (Bio)</label><input type="text" id="profBio" placeholder="নিজের সম্পর্কে কিছু লিখুন..." class="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 outline-none"></div>
+                        <div><label class="block text-sm font-semibold mb-1">পেশা</label><input type="text" id="profOccupation" placeholder="আপনার পেশা..." class="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 outline-none"></div>
+                        
+                        <!-- মডার্ন স্টাইল ডেট পিকার ফিল্ড -->
+                        <div>
+                            <label class="block text-sm font-semibold mb-1">জন্মদিন</label>
+                            <input type="date" id="profDob" class="w-full focus:ring-2 focus:ring-blue-500 outline-none cursor-pointer">
+                        </div>
+
+                        <div><label class="block text-sm font-semibold mb-1">ঠিকানা</label><textarea id="profAddress" rows="2" class="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 outline-none"></textarea></div>
                         <button type="submit" id="updateProfileBtn" class="bg-blue-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-700 transition">সেভ করুন</button>
                     </form>
                 </div>
@@ -175,7 +198,6 @@
             await loadProfileDetails();
             if(isOwnProfile) checkAndNotifyBirthday();
 
-            // রিফ্রেশ করার পরেও যেই ট্যাবে ছিল সেই ট্যাবেই রাখার ব্যবস্থা
             if (isOwnProfile) {
                 const savedTab = localStorage.getItem('active_profile_tab') || 'myBlogs';
                 switchTab(savedTab, false);
