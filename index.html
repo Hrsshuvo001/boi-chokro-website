@@ -10,6 +10,7 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap');
         body { font-family: 'Hind Siliguri', sans-serif; }
+        .line-clamp-1 { display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
         .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
         .line-clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
         @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
@@ -18,7 +19,7 @@
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 min-h-screen flex flex-col transition-colors">
 
-    <!-- হেডার / নেভবার (অ্যাডমিন সেটিংস লোগো ও টাইটেল সহ) -->
+    <!-- হেডার / নেভবার -->
     <nav class="bg-white dark:bg-gray-800 shadow-md sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
             <a href="/index.html" class="flex items-center gap-2 text-2xl font-extrabold text-blue-600 dark:text-blue-400 tracking-tight">
@@ -66,13 +67,13 @@
     <!-- মূল কনটেন্ট সেকশন -->
     <main class="flex-grow max-w-7xl mx-auto w-full px-4 py-6 space-y-12">
 
-        <!-- ১. মূল ই-কমার্স বইয়ের দোকান সেকশন -->
+        <!-- ১. ই-কমার্স বইয়ের দোকান সেকশন -->
         <section>
             <div class="flex justify-between items-center mb-6 border-b pb-3 dark:border-gray-700">
                 <h2 class="text-2xl font-extrabold text-gray-900 dark:text-white flex items-center gap-2">🔥 জনপ্রিয় ই-কমার্স বইসমূহ</h2>
             </div>
             <div id="productsGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5">
-                <!-- ডাইনামিক বইয়ের প্রোডাক্ট কার্ড লোড হবে -->
+                <!-- ডাইনামিক বই লোড হবে -->
             </div>
         </section>
 
@@ -85,9 +86,8 @@
                 </a>
             </div>
 
-            <!-- পোস্ট গ্রিড ফিড -->
             <div id="blogsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- ডাইনামিক পোস্ট কার্ড লোড হবে -->
+                <!-- ডাইনামিক পোস্ট লোড হবে -->
             </div>
         </section>
     </main>
@@ -96,13 +96,11 @@
     <div id="postDetailsModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
         <div class="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl relative modal-animate">
             <button onclick="closePostModal()" class="absolute top-4 right-4 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-red-500 hover:text-white h-8 w-8 rounded-full flex items-center justify-center font-bold transition">✕</button>
-            <div id="modalBodyContent" class="p-6 space-y-4">
-                <!-- ফুল পোস্ট ও কমেন্ট এখানে লোড হবে -->
-            </div>
+            <div id="modalBodyContent" class="p-6 space-y-4"></div>
         </div>
     </div>
 
-    <!-- ফুটার (অ্যাডমিন সেটিংস থেকে ডাইনামিক তথ্য সহ) -->
+    <!-- ফুটার -->
     <footer class="bg-white dark:bg-gray-800 border-t dark:border-gray-700 py-6 text-center text-sm text-gray-500 mt-12">
         <p id="footerText">&copy; ২০২৬ Boi Chokro. সর্বস্বত্ব সংরক্ষিত।</p>
     </footer>
@@ -129,7 +127,6 @@
             loadApprovedBlogs();
         }
 
-        // অ্যাডমিন ড্যাশবোর্ডের সেটিংস (লোগো, টাইটেল, ফুটার) লোড করার ফাংশন
         async function loadAdminSettings() {
             try {
                 const { data: settings } = await supabaseClient.from('settings').select('*').maybeSingle();
@@ -150,7 +147,7 @@
                     }
                 }
             } catch (e) {
-                console.log('Settings table might not exist yet, using defaults.');
+                console.log('Settings table not found, using defaults.');
             }
         }
 
@@ -186,7 +183,7 @@
             window.location.reload();
         }
 
-        // ই-কমার্স বই ও প্রোডাক্ট লোড করার সঠিক ফাংশন
+        // ই-কমার্স বই লোড করার সঠিক ফাংশন (দাম ও ইমেজ ফিল্ড হ্যান্ডেলিং সহ)
         async function loadEcommerceBooks() {
             const grid = document.getElementById('productsGrid');
             if(!grid) return;
@@ -196,32 +193,34 @@
             if (error || !books || books.length === 0) {
                 grid.innerHTML = `
                     <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col justify-between">
-                        <img src="https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=300" class="w-full h-48 object-cover rounded-lg mb-3">
-                        <h4 class="font-bold text-sm mb-1 text-gray-900 dark:text-white">প্রোগ্রামিংয়ের হাতেখড়ি</h4>
+                        <img src="https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=300" class="w-full h-48 object-cover rounded-lg mb-3 cursor-pointer" onclick="window.location.href='/book-details.html?id=demo1'">
+                        <h4 class="font-bold text-sm mb-1 text-gray-900 dark:text-white line-clamp-1 cursor-pointer" onclick="window.location.href='/book-details.html?id=demo1'">প্রোগ্রামিংয়ের হাতেখড়ি</h4>
                         <p class="text-xs text-blue-600 font-bold mb-3">৳ ৩৫০</p>
-                        <button onclick="alert('কার্টে যোগ করা হয়েছে!')" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-1.5 rounded-lg text-xs font-bold transition">কার্টে যোগ করুন</button>
-                    </div>
-                    <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col justify-between">
-                        <img src="https://images.unsplash.com/photo-1512820790803-83ca734da794?w=300" class="w-full h-48 object-cover rounded-lg mb-3">
-                        <h4 class="font-bold text-sm mb-1 text-gray-900 dark:text-white">ডিজিটাল মার্কেটিং গাইড</h4>
-                        <p class="text-xs text-blue-600 font-bold mb-3">৳ ৪৫০</p>
                         <button onclick="alert('কার্টে যোগ করা হয়েছে!')" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-1.5 rounded-lg text-xs font-bold transition">কার্টে যোগ করুন</button>
                     </div>
                 `;
                 return;
             }
 
-            grid.innerHTML = books.map(book => `
+            grid.innerHTML = books.map(book => {
+                const bookId = book.id || book.book_id;
+                const bookTitle = book.title || book.name || 'বইয়ের নাম নেই';
+                const bookPrice = book.price || book.sale_price || book.amount || '০';
+                const bookImage = book.image_url || book.image || book.cover_image || 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=300';
+
+                return `
                 <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col justify-between hover:shadow-md transition">
-                    <img src="${book.image_url || book.image || 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=300'}" class="w-full h-48 object-cover rounded-lg mb-3">
-                    <h4 class="font-bold text-sm mb-1 text-gray-900 dark:text-white line-clamp-1">${escapeHTML(book.title)}</h4>
-                    <p class="text-xs text-blue-600 dark:text-blue-400 font-bold mb-3">৳ ${book.price || 0}</p>
-                    <button onclick="addToCart('${book.id}')" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-1.5 rounded-lg text-xs font-bold transition">কার্টে যোগ করুন</button>
+                    <div>
+                        <img src="${bookImage}" class="w-full h-48 object-cover rounded-lg mb-3 cursor-pointer" onclick="window.location.href='/book-details.html?id=${bookId}'">
+                        <h4 class="font-bold text-sm mb-1 text-gray-900 dark:text-white line-clamp-1 cursor-pointer hover:text-blue-600 transition" onclick="window.location.href='/book-details.html?id=${bookId}'">${escapeHTML(bookTitle)}</h4>
+                        <p class="text-xs text-blue-600 dark:text-blue-400 font-bold mb-3">৳ ${bookPrice}</p>
+                    </div>
+                    <button onclick="addToCart('${bookId}')" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-1.5 rounded-lg text-xs font-bold transition">কার্টে যোগ করুন</button>
                 </div>
-            `).join('');
+                `;
+            }).join('');
         }
 
-        // কার্টে যোগ করার ফাংশন
         window.addToCart = async (bookId) => {
             if(!currentUser) {
                 alert('দয়া করে প্রথমে লগইন করুন!');
@@ -231,7 +230,6 @@
             alert('✅ সফলভাবে কার্টে যোগ করা হয়েছে!');
         };
 
-        // শুধুমাত্র 'approved' স্ট্যাটাসযুক্ত পোস্টগুলো ইনডেক্সে দেখাবে
         async function loadApprovedBlogs() {
             const grid = document.getElementById('blogsGrid');
             if(!grid) return;
