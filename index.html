@@ -360,12 +360,11 @@
         }
 
         // ==========================================
-        // ব্লগ, লাইক, কমেন্ট ও প্রোফাইল লিংক
+        // ব্লগ, লাইক, কমেন্ট ও লেখকের ছবিসহ নাম লোড করা
         // ==========================================
         async function loadBlogs() {
             const blogList = document.getElementById('blogList');
             
-            // শুধুমাত্র approved ব্লগ আনছি, কোনো জটিল জয়েন ছাড়াই
             const { data: blogs, error } = await supabaseClient
                 .from('blogs')
                 .select('*')
@@ -378,9 +377,17 @@
             }
 
             const blogHTML = await Promise.all(blogs.map(async (blog) => {
-                // লেখকের নাম বের করা (যদি জয়েন ছাড়া সম্ভব না হয়, তবে ডিফল্ট নাম দেখাবে)
-                const authorName = 'একজন পাঠক'; 
-                
+                let authorName = 'একজন পাঠক';
+                let authorImg = '';
+
+                if (blog.author_id) {
+                    const { data: profile } = await supabaseClient.from('profiles').select('full_name, profile_image').eq('id', blog.author_id).maybeSingle();
+                    if (profile) {
+                        authorName = profile.full_name || 'একজন পাঠক';
+                        authorImg = profile.profile_image || `https://ui-avatars.com/api/?name=${encodeURIComponent(authorName)}&background=random&size=100`;
+                    }
+                }
+
                 const { count: likeCount } = await supabaseClient.from('blog_likes').select('*', { count: 'exact', head: true }).eq('blog_id', blog.id);
 
                 return `
@@ -389,15 +396,14 @@
                     <div class="p-6 flex flex-col flex-grow">
                         <h3 class="text-xl font-bold mb-3 text-gray-900 dark:text-white line-clamp-2">${escapeHTML(blog.title)}</h3>
                         
-                        <!-- লেখকের প্রোফাইল লিংক -->
-                        <a href="/profile.html?id=${blog.author_id}" class="flex items-center gap-2 mb-4 hover:bg-gray-50 dark:hover:bg-gray-700 p-1 rounded transition">
-                            <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-sm">${authorName.charAt(0)}</div>
-                            <p class="text-sm text-gray-600 dark:text-gray-400">লেখক: <span class="text-blue-600 font-semibold hover:underline">${authorName}</span></p>
+                        <!-- লেখকের প্রোফাইল ছবি ও নাম -->
+                        <a href="/profile.html?id=${blog.author_id}" class="flex items-center gap-3 mb-4 hover:bg-gray-50 dark:hover:bg-gray-700 p-1.5 rounded-lg transition border border-gray-100 dark:border-gray-700 w-fit">
+                            <img src="${authorImg || 'https://via.placeholder.com/40'}" class="w-8 h-8 rounded-full object-cover">
+                            <span class="text-sm text-gray-700 dark:text-gray-300 font-semibold hover:underline">${escapeHTML(authorName)}</span>
                         </a>
 
                         <p class="text-gray-700 dark:text-gray-300 text-sm mb-4 line-clamp-3">${escapeHTML(blog.content)}</p>
                         
-                        <!-- লাইক ও কমেন্ট সেকশন -->
                         <div class="mt-auto pt-4 border-t border-gray-100 dark:border-gray-700 flex items-center gap-4">
                             <button onclick="likeBlog('${blog.id}')" class="flex items-center gap-1 text-gray-500 hover:text-red-500 transition">
                                 ❤️ <span id="like-count-${blog.id}">${likeCount || 0}</span>
@@ -407,7 +413,6 @@
                             </button>
                         </div>
                         
-                        <!-- কমেন্ট বক্স -->
                         <div id="comments-${blog.id}" class="hidden mt-4 border-t border-gray-100 dark:border-gray-700 pt-4">
                             <div id="comment-list-${blog.id}" class="space-y-2 mb-4 max-h-40 overflow-y-auto"></div>
                             <div class="flex gap-2">
