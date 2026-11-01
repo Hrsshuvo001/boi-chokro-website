@@ -61,7 +61,7 @@
     <!-- মূল কনটেন্ট -->
     <main class="flex-grow max-w-7xl mx-auto w-full px-4 py-6 space-y-12">
 
-        <!-- ১. মূল ই-কমার্স বইয়ের দোকান (সবার উপরে) -->
+        <!-- ১. মূল ই-কমার্স বইয়ের দোকান -->
         <section>
             <div class="flex justify-between items-center mb-6 border-b pb-3 dark:border-gray-700">
                 <h2 class="text-2xl font-extrabold text-gray-900 dark:text-white flex items-center gap-2">🔥 জনপ্রিয় ই-কমার্স বইসমূহ</h2>
@@ -71,7 +71,7 @@
             </div>
         </section>
 
-        <!-- ২. সোশ্যাল মিডিয়া ও সাহিত্য ফিড (আকর্ষণীয় করার জন্য নিচে) -->
+        <!-- ২. সোশ্যাল মিডিয়া ও সাহিত্য ফিড -->
         <section class="space-y-6">
             <div class="flex justify-between items-center bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
                 <h2 class="text-xl font-extrabold text-gray-900 dark:text-white flex items-center gap-2">📖 গল্প, ব্লগ এবং সাহিত্য ফিড</h2>
@@ -175,7 +175,7 @@
             window.location.reload();
         }
 
-        // ই-কমার্স বই লোড করার পারফেক্ট ফাংশন (ছবি ও দাম সহ)
+        // ই-কমার্স বই লোড করার সঠিক ফাংশন (ডিটেইলস পেজের মতো সঠিক ফিল্ড ম্যাপিং সহ)
         async function loadEcommerceBooks() {
             const grid = document.getElementById('productsGrid');
             if(!grid) return;
@@ -183,15 +183,7 @@
             const { data: books, error } = await supabaseClient.from('books').select('*').order('created_at', { ascending: false });
 
             if (error || !books || books.length === 0) {
-                // ডিফল্ট ডেমো বই যদি ডাটাবেজে না থাকে
-                grid.innerHTML = `
-                    <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col justify-between">
-                        <img src="https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=300" class="w-full h-48 object-cover rounded-lg mb-3 cursor-pointer" onclick="window.location.href='/book-details.html?id=demo1'">
-                        <h4 class="font-bold text-sm mb-1 text-gray-900 dark:text-white line-clamp-1 cursor-pointer" onclick="window.location.href='/book-details.html?id=demo1'">প্রোগ্রামিংয়ের হাতেখড়ি</h4>
-                        <p class="text-xs text-blue-600 font-bold mb-3">৳ ৩৫০</p>
-                        <button onclick="alert('কার্টে যোগ করা হয়েছে!')" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-1.5 rounded-lg text-xs font-bold transition">কার্টে যোগ করুন</button>
-                    </div>
-                `;
+                grid.innerHTML = `<p class="text-gray-500 col-span-full text-center py-8">কোনো বই পাওয়া যায়নি।</p>`;
                 return;
             }
 
@@ -200,18 +192,8 @@
                 const bookTitle = book.title || book.name || book.book_name || 'বইয়ের নাম নেই';
                 const bookPrice = book.price || book.sale_price || book.amount || book.cost || '০';
                 
-                // ছবির সঠিক ফিল্ড এবং ফলব্যাক ইমেজ হ্যান্ডলিং
-                let rawImg = book.image_url || book.image || book.cover || book.cover_image || book.photo || book.img || '';
-                let bookImage = 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=300';
-                
-                if (rawImg) {
-                    if (rawImg.startsWith('http')) {
-                        bookImage = rawImg;
-                    } else {
-                        const { data: pubData } = supabaseClient.storage.from('book-covers').getPublicUrl(rawImg);
-                        bookImage = pubData.publicUrl || rawImg;
-                    }
-                }
+                // ডিটেইলস পেজের সাথে সামঞ্জস্য রেখে সঠিক ইমেজ ফিল্ড হ্যান্ডেলিং
+                let bookImage = book.image_url || book.image || book.cover || book.cover_image || book.photo || book.img || 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=300';
 
                 return `
                 <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col justify-between hover:shadow-md transition">
