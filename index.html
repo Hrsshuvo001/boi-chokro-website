@@ -16,10 +16,7 @@
         .card-shadow { box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05); transition: all 0.3s ease; }
         .dark .card-shadow { box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); }
         .card-shadow:hover { transform: translateY(-4px); box-shadow: 0 10px 35px rgba(0, 0, 0, 0.12); }
-        
-        /* সার্চ ড্রপডাউন ফিক্স */
         .search-dropdown-custom { z-index: 99999 !important; position: absolute; top: 100%; left: 0; width: 100%; margin-top: 0.5rem; }
-        
         @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         .toast-animate { animation: slideInRight 0.3s ease-out forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
@@ -93,12 +90,9 @@
         <div class="absolute inset-0 bg-black/40 rounded-b-[2rem]"></div>
         
         <div class="relative z-50 text-center px-4 w-full max-w-4xl mx-auto py-8">
-            <!-- ডাইনামিক ব্যানার বড় টাইটেল -->
             <h1 id="web_tagline" class="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-4 tracking-tight drop-shadow-lg">আপনার পছন্দের বই, এক জায়গায়</h1>
-            <!-- ডাইনামিক ব্যানার ছোট সাব-টাইটেল (বিবরণী) -->
             <p id="web_sub_tagline" class="text-sm sm:text-base md:text-lg text-gray-200 max-w-2xl mx-auto mb-8 drop-shadow">সেরা লেখকদের বইয়ের বিশাল সংগ্রহ। আজই আপনার প্রিয় বইটি খুঁজে নিন।</p>
             
-            <!-- মোবাইল সার্চ ইনপুট ও ড্রপডাউন -->
             <div class="md:hidden max-w-md mx-auto relative group z-[99999]">
                 <input type="text" id="searchInputMobile" placeholder="বই খুঁজুন..." class="w-full pl-10 pr-4 py-3 bg-white/20 backdrop-blur-md border border-white/30 text-white placeholder-gray-200 rounded-full focus:outline-none focus:bg-white focus:text-gray-800 transition shadow-lg text-sm" oninput="handleSearch('mobile')">
                 <svg xmlns="http://www.w3.org/2000/svg" class="absolute left-3.5 top-3.5 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
@@ -202,7 +196,6 @@
             if(deskEl) deskEl.innerText = cart.length;
         }
 
-        // সাইট সেটিংস ও ব্যানার কন্টেন্ট লোড করা
         async function loadAdminSettings() {
             try {
                 const { data: settings, error } = await supabaseClient.from('site_settings').select('*').limit(1).maybeSingle();
@@ -218,21 +211,18 @@
                         if(logoEl) { logoEl.src = logoUrl; logoEl.classList.remove('hidden'); }
                     }
 
-                    // বড় ব্যানার টাইটেল
                     const taglineText = settings.banner_text || settings.tagline || '';
                     if (taglineText) {
                         const taglineEl = document.getElementById('web_tagline');
                         if(taglineEl) taglineEl.innerText = taglineText;
                     }
 
-                    // ছোট ব্যানার সাব-টাইটেল (বিবরণী)
                     const subTaglineText = settings.sub_tagline || '';
                     if (subTaglineText) {
                         const subTaglineEl = document.getElementById('web_sub_tagline');
                         if(subTaglineEl) subTaglineEl.innerText = subTaglineText;
                     }
 
-                    // ব্যানার ব্যাকগ্রাউন্ড ইমেজ
                     const bannerUrl = settings.banner_url || '';
                     if (bannerUrl) {
                         const heroBanner = document.getElementById('heroBannerImage');
@@ -407,10 +397,118 @@
             }
         }
 
+        // ==========================================
+        // ব্লগ ও সাহিত্য ফিড লোড করার ফাংশন
+        // ==========================================
+        async function loadBlogs() {
+            const blogList = document.getElementById('blogList');
+            if(!blogList) return;
+            
+            const { data: blogs, error } = await supabaseClient
+                .from('blogs')
+                .select('*')
+                .eq('status', 'approved')
+                .order('created_at', { ascending: false });
+            
+            if (error || !blogs || blogs.length === 0) {
+                blogList.innerHTML = `<div class="col-span-full text-center py-10 bg-white dark:bg-gray-800 rounded-xl shadow-sm"><p class="text-gray-500">এখনো কোনো গল্প বা ব্লগ প্রকাশিত হয়নি।</p></div>`;
+                return;
+            }
+
+            const authorIds = [...new Set(blogs.map(b => b.author_id))];
+            const { data: profiles } = await supabaseClient.from('profiles').select('id, full_name, profile_image').in('id', authorIds);
+            const profileMap = {};
+            if(profiles) {
+                profiles.forEach(p => profileMap[p.id] = p);
+            }
+
+            const blogHTML = await Promise.all(blogs.map(async (blog) => {
+                const author = profileMap[blog.author_id] || { full_name: 'নামহীন লেখক', profile_image: '' };
+                const authorImg = author.profile_image || `https://ui-avatars.com/api/?name=${encodeURIComponent(author.full_name)}&background=random`;
+                
+                const { count: likeCount } = await supabaseClient.from('blog_likes').select('*', { count: 'exact', head: true }).eq('blog_id', blog.id);
+
+                return `
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col h-full overflow-hidden hover:shadow-md transition">
+                    <div>
+                        <div class="p-4 flex items-center gap-3 border-b dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition" onclick="window.location.href='/profile.html?id=${blog.author_id}'">
+                            <img src="${authorImg}" class="w-10 h-10 rounded-full object-cover border">
+                            <div>
+                                <h4 class="font-bold text-sm text-gray-900 dark:text-white hover:text-blue-600 transition">${escapeHTML(author.full_name)}</h4>
+                                <p class="text-xs text-gray-400">${new Date(blog.created_at).toLocaleDateString('bn-BD')}</p>
+                            </div>
+                        </div>
+
+                        ${blog.image_url ? `<div class="max-h-60 overflow-hidden bg-gray-100 cursor-pointer" onclick="openPostDetails('${blog.id}')"><img src="${blog.image_url}" class="w-full h-full object-cover"></div>` : ''}
+                        
+                        <div class="p-4 space-y-2">
+                            <h3 class="text-lg font-bold text-gray-900 dark:text-white cursor-pointer hover:text-blue-600 transition line-clamp-2" onclick="openPostDetails('${blog.id}')">${escapeHTML(blog.title)}</h3>
+                            <p class="text-sm text-gray-600 dark:text-gray-300 line-clamp-3">${escapeHTML(blog.content)}</p>
+                        </div>
+                    </div>
+
+                    <div class="p-4 mt-auto border-t border-gray-100 dark:border-gray-700 flex items-center justify-between">
+                        <div class="flex items-center gap-4">
+                            <button onclick="likeBlog('${blog.id}')" class="flex items-center gap-1 text-gray-500 hover:text-red-500 transition text-sm">
+                                ❤️ <span id="like-count-${blog.id}">${likeCount || 0}</span>
+                            </button>
+                            <button onclick="openPostDetails('${blog.id}')" class="flex items-center gap-1 text-gray-500 hover:text-blue-500 transition text-sm">
+                                💬 কমেন্ট
+                            </button>
+                        </div>
+                        <button onclick="openPostDetails('${blog.id}')" class="text-xs font-bold text-blue-600 hover:underline">বিস্তারিত</button>
+                    </div>
+                </div>
+                `;
+            }));
+
+            blogList.innerHTML = blogHTML.join('');
+        }
+
+        window.submitBlog = async () => {
+            if(!currentUser) { showToast('পোস্ট লিখতে প্রথমে লগইন করুন!', true); return; }
+            
+            const title = document.getElementById('newBlogTitle').value.trim();
+            const content = document.getElementById('newBlogContent').value.trim();
+            const imageFile = document.getElementById('newBlogImage').files[0];
+            const btn = document.getElementById('submitBlogBtn');
+            
+            if(!title || !content) { showToast('শিরোনাম এবং বিষয়বস্তু লিখুন!', true); return; }
+            btn.innerText = 'সাবমিট হচ্ছে...'; btn.disabled = true;
+
+            try {
+                let image_url = null;
+                if (imageFile) {
+                    const fileName = `blog_${Date.now()}.${imageFile.name.split('.').pop()}`;
+                    const { error: uploadError } = await supabaseClient.storage.from('book-covers').upload(fileName, imageFile);
+                    if (uploadError) throw new Error("ছবি আপলোডে সমস্যা: " + uploadError.message);
+                    const { data } = supabaseClient.storage.from('book-covers').getPublicUrl(fileName);
+                    image_url = data.publicUrl;
+                }
+
+                const { error } = await supabaseClient.from('blogs').insert([{ 
+                    author_id: currentUser.id, title: title, content: content, image_url: image_url, status: 'pending' 
+                }]);
+                
+                if (error) throw new Error(error.message);
+
+                showToast('✅ আপনার পোস্টটি সফলভাবে জমা হয়েছে। অ্যাডমিন অ্যাপ্রুভ করার পর ফিডে দেখাবে।', false);
+                document.getElementById('newBlogTitle').value = '';
+                document.getElementById('newBlogContent').value = '';
+                document.getElementById('newBlogImage').value = '';
+                document.getElementById('writeBlogForm').classList.add('hidden');
+            } catch (err) {
+                showToast('সমস্যা: ' + err.message, true);
+            } finally {
+                btn.innerText = 'সাবমিট করুন'; btn.disabled = false;
+            }
+        }
+
         async function init() {
             await loadAdminSettings(); 
             await checkAuth();
             await loadBooks();
+            await loadBlogs(); // ব্লগ লোড করার ফাংশন আবার যুক্ত করা হলো
             updateCartCount();
         }
 
