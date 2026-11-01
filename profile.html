@@ -76,7 +76,7 @@
                 
                 <!-- ট্যাব মেনু -->
                 <div id="myProfileTabs" class="hidden mb-6 border-b border-gray-200 dark:border-gray-700 flex flex-wrap">
-                    <button onclick="switchTab('myBlogs')" id="tabBtnMyBlogs" class="px-4 py-2 font-bold text-blue-600 border-b-2 border-blue-600 focus:outline-none">আমার ব্লগ</button>
+                    <button onclick="switchTab('myBlogs')" id="tabBtnMyBlogs" class="px-4 py-2 font-bold text-blue-600 border-b-2 border-blue-600 focus:outline-none">আমার ব্লগ ও পোস্ট</button>
                     <button onclick="switchTab('friends')" id="tabBtnFriends" class="px-4 py-2 font-bold text-gray-500 hover:text-blue-600 focus:outline-none border-b-2 border-transparent">বন্ধু তালিকা</button>
                     <button onclick="switchTab('requests')" id="tabBtnRequests" class="px-4 py-2 font-bold text-gray-500 hover:text-blue-600 focus:outline-none border-b-2 border-transparent">ফ্রেন্ড রিকোয়েস্ট</button>
                     <button onclick="switchTab('photos')" id="tabBtnPhotos" class="px-4 py-2 font-bold text-gray-500 hover:text-blue-600 focus:outline-none border-b-2 border-transparent">📸 আমার ফটো</button>
@@ -84,7 +84,7 @@
                 </div>
 
                 <div id="tabContentMyBlogs" class="hidden">
-                    <h3 id="blogHeaderTitle" class="text-xl font-bold mb-4 text-gray-900 dark:text-white">ব্লগসমূহ</h3>
+                    <h3 id="blogHeaderTitle" class="text-xl font-bold mb-4 text-gray-900 dark:text-white">ব্লগ ও পোস্টসমূহ</h3>
                     <div id="blogsList" class="space-y-4"></div>
                 </div>
 
@@ -239,12 +239,12 @@
                 document.getElementById('profAddress').value = profile.address || '';
             } else {
                 document.getElementById('tabContentMyBlogs').classList.remove('hidden');
-                document.getElementById('blogHeaderTitle').innerText = "এই ব্যবহারকারীর ব্লগ";
+                document.getElementById('blogHeaderTitle').innerText = "এই ব্যবহারকারীর পোস্টসমূহ";
                 loadMyBlogs(viewingUserId);
             }
         }
 
-        // কভার ফটো আপলোড ও ফটো সেকশনে যোগ করা
+        // কভার ফটো আপলোড, গ্যালারি ও ফেসবুকের মতো পোস্টে যোগ করা
         window.uploadCoverImage = async (event) => {
             const file = event.target.files[0];
             if(!file || !currentUser) return;
@@ -254,10 +254,9 @@
             
             if(uploadError) { showToast('সমস্যা: ' + uploadError.message, true); return; }
 
-            const { data } = supabaseClient.storage.from('book-covers').getPublicUrl(fileName);
+            const { data } = await supabaseClient.storage.from('book-covers').getPublicUrl(fileName);
             const newCoverUrl = data.publicUrl;
 
-            // গ্যালারিতেও ছবি অটো এড করা
             let newGallery = [newCoverUrl, ...currentGallery];
 
             const { error: dbError } = await supabaseClient.from('profiles').update({ 
@@ -268,14 +267,24 @@
             if(dbError) {
                 showToast('ডেটাবেসে সেভ হচ্ছে না: ' + dbError.message, true);
             } else {
+                // ফেসবুকের মতো ব্লগে পোস্ট হিসেবে যুক্ত করা
+                await supabaseClient.from('blogs').insert([{
+                    author_id: currentUser.id,
+                    title: 'কভার ফটো আপডেট',
+                    content: 'আপনার কভার ফটো আপলোড হয়েছে',
+                    image_url: newCoverUrl,
+                    status: 'approved'
+                }]);
+
                 currentGallery = newGallery;
                 document.getElementById('coverImageDisplay').src = newCoverUrl;
                 document.getElementById('coverImageDisplay').classList.remove('hidden');
                 showToast('✅ আপনার কভার ফটো আপলোড হয়েছে!');
+                loadMyBlogs();
             }
         }
 
-        // প্রোফাইল পিকচার আপলোড ও ফটো সেকশনে যোগ করা
+        // প্রোফাইল পিকচার আপলোড, গ্যালারি ও ফেসবুকের মতো পোস্টে যোগ করা
         window.uploadProfileImage = async (event) => {
             const file = event.target.files[0];
             if(!file || !currentUser) return;
@@ -285,10 +294,9 @@
             
             if(uploadError) { showToast('আপলোডে সমস্যা: ' + uploadError.message, true); return; }
 
-            const { data } = supabaseClient.storage.from('book-covers').getPublicUrl(fileName);
+            const { data } = await supabaseClient.storage.from('book-covers').getPublicUrl(fileName);
             const newProfileUrl = data.publicUrl;
 
-            // গ্যালারিতেও ছবি অটো এড করা
             let newGallery = [newProfileUrl, ...currentGallery];
 
             const { error: dbError } = await supabaseClient.from('profiles').update({ 
@@ -301,9 +309,19 @@
                 return; 
             }
             
+            // ফেসবুকের মতো ব্লগে পোস্ট হিসেবে যুক্ত করা
+            await supabaseClient.from('blogs').insert([{
+                author_id: currentUser.id,
+                title: 'প্রোফাইল ছবি আপডেট',
+                content: 'আপনার প্রোফাইল ছবি আপলোড হয়েছে',
+                image_url: newProfileUrl,
+                status: 'approved'
+            }]);
+
             currentGallery = newGallery;
             document.getElementById('profileImageDisplay').src = newProfileUrl;
             showToast('✅ আপনার প্রোফাইল ছবি আপলোড হয়েছে!');
+            loadMyBlogs();
         }
 
         window.uploadGalleryImages = async (event) => {
@@ -319,7 +337,7 @@
                 const { error: uploadError } = await supabaseClient.storage.from('book-covers').upload(fileName, file);
                 
                 if(!uploadError) {
-                    const { data } = supabaseClient.storage.from('book-covers').getPublicUrl(fileName);
+                    const { data } = await supabaseClient.storage.from('book-covers').getPublicUrl(fileName);
                     newGallery.unshift(data.publicUrl);
                     uploadCount++;
                 }
@@ -396,7 +414,7 @@
             const { data: blogs } = await supabaseClient.from('blogs').select('*').eq('author_id', targetId).order('created_at', { ascending: false });
 
             if (!blogs || blogs.length === 0) {
-                list.innerHTML = `<p class="text-gray-500">কোনো ব্লগ পাওয়া যায়নি।</p>`;
+                list.innerHTML = `<p class="text-gray-500">কোনো পোস্ট বা ব্লগ পাওয়া যায়নি।</p>`;
                 return;
             }
 
@@ -405,12 +423,12 @@
                 const statusText = blog.status === 'approved' ? 'প্রকাশিত' : 'অ্যাপ্রুভালের অপেক্ষায়';
                 return `
                 <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-4">
-                    ${blog.image_url ? `<img src="${blog.image_url}" class="w-full h-40 object-cover rounded-lg mb-3">` : ''}
+                    ${blog.image_url ? `<img src="${blog.image_url}" class="w-full h-48 object-cover rounded-lg mb-3">` : ''}
                     <div class="flex justify-between items-start mb-2">
                         <h4 class="text-lg font-bold text-gray-900 dark:text-white">${escapeHTML(blog.title)}</h4>
                         ${isOwnProfile ? `<span class="text-xs font-bold px-2 py-1 rounded ${statusColor}">${statusText}</span>` : ''}
                     </div>
-                    <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-3">${escapeHTML(blog.content)}</p>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">${escapeHTML(blog.content)}</p>
                 </div>
                 `;
             }).join('');
