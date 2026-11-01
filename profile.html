@@ -45,7 +45,7 @@
                         <input type="file" id="coverImageInput" accept="image/*" class="hidden" onchange="uploadCoverImage(event)">
                     </div>
                     
-                    <!-- প্রোফাইল ছবি ও নাম (এখানে CSS ঠিক করা হয়েছে) -->
+                    <!-- প্রোফাইল ছবি ও নাম -->
                     <div class="px-6 pb-6 relative">
                         <div class="-mt-12 flex justify-center mb-4">
                             <div class="relative group w-24 h-24">
@@ -69,10 +69,12 @@
             <!-- ডান দিক: কন্টেন্ট এরিয়া -->
             <div class="md:col-span-2">
                 
-                <div id="myProfileTabs" class="hidden mb-6 border-b border-gray-200 dark:border-gray-700">
+                <!-- ট্যাব মেনু -->
+                <div id="myProfileTabs" class="hidden mb-6 border-b border-gray-200 dark:border-gray-700 flex flex-wrap">
                     <button onclick="switchTab('myBlogs')" id="tabBtnMyBlogs" class="px-4 py-2 font-bold text-blue-600 border-b-2 border-blue-600 focus:outline-none">আমার ব্লগ</button>
                     <button onclick="switchTab('friends')" id="tabBtnFriends" class="px-4 py-2 font-bold text-gray-500 hover:text-blue-600 focus:outline-none border-b-2 border-transparent">বন্ধু তালিকা</button>
                     <button onclick="switchTab('requests')" id="tabBtnRequests" class="px-4 py-2 font-bold text-gray-500 hover:text-blue-600 focus:outline-none border-b-2 border-transparent">ফ্রেন্ড রিকোয়েস্ট</button>
+                    <button onclick="switchTab('photos')" id="tabBtnPhotos" class="px-4 py-2 font-bold text-gray-500 hover:text-blue-600 focus:outline-none border-b-2 border-transparent">📸 আমার ফটো</button>
                     <button onclick="switchTab('edit')" id="tabBtnEdit" class="px-4 py-2 font-bold text-gray-500 hover:text-blue-600 focus:outline-none border-b-2 border-transparent">তথ্য এডিট</button>
                 </div>
 
@@ -89,6 +91,20 @@
                 <div id="tabContentRequests" class="hidden">
                     <h3 class="text-xl font-bold mb-4 text-gray-900 dark:text-white">ফ্রেন্ড রিকোয়েস্ট</h3>
                     <div id="requestsList" class="space-y-3"></div>
+                </div>
+
+                <!-- নতুন ফটো ট্যাব -->
+                <div id="tabContentPhotos" class="hidden">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-xl font-bold text-gray-900 dark:text-white">আমার আপলোড করা ছবিসমূহ</h3>
+                        <label id="galleryUploadLabel" for="galleryImagesInput" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-bold cursor-pointer transition shadow-md hidden">
+                            + নতুন ছবি আপলোড করুন
+                        </label>
+                        <input type="file" id="galleryImagesInput" accept="image/*" multiple class="hidden" onchange="uploadGalleryImages(event)">
+                    </div>
+                    <div id="photoGallery" class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                        <!-- ছবিগুলো এখানে দেখাবে -->
+                    </div>
                 </div>
 
                 <div id="tabContentEdit" class="hidden">
@@ -115,6 +131,7 @@
         const profileId = urlParams.get('id'); 
         let isOwnProfile = false;
         let viewingUserId = null;
+        let currentGallery = [];
 
         function escapeHTML(str) {
             if (!str) return '';
@@ -145,14 +162,18 @@
                 return;
             }
 
-            // ছবি না থাকলে ডিফল্ট Avatar দেখাবে
-            const profileImg = profile.profile_image || `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.full_name || 'User')}&background=random&size=200`;
+            // ছবি লোডিং লজিক
+            const profileImg = profile.profile_image ? profile.profile_image : `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.full_name || 'User')}&background=random&size=200`;
             document.getElementById('profileImageDisplay').src = profileImg;
             
+            // কভার ছবি
             if(profile.cover_image) {
                 document.getElementById('coverImageDisplay').src = profile.cover_image;
                 document.getElementById('coverImageDisplay').classList.remove('hidden');
             }
+
+            // গ্যালারি ডাটা লোড
+            currentGallery = profile.gallery_images || [];
 
             let actionButtons = '';
             let friendStatus = 'none';
@@ -174,7 +195,8 @@
                 document.getElementById('myProfileTabs').classList.remove('hidden');
                 document.getElementById('coverUploadLabel').classList.remove('hidden');
                 document.getElementById('profileUploadLabel').classList.remove('hidden');
-                switchTab('myBlogs');
+                document.getElementById('galleryUploadLabel').classList.remove('hidden');
+                switchTab('myBlogs'); // ডিফল্ট ট্যাব
                 loadMyBlogs();
             } else if (currentUser) {
                 if (friendStatus === 'none') {
@@ -206,7 +228,8 @@
             }
         }
 
-        // কভার ছবি আপলোড
+        // ------------------ আপলোড ফাংশনস ------------------
+
         window.uploadCoverImage = async (event) => {
             const file = event.target.files[0];
             if(!file || !currentUser) return;
@@ -221,31 +244,113 @@
             loadProfileDetails();
         }
 
-        // প্রোফাইল ছবি আপলোড
         window.uploadProfileImage = async (event) => {
             const file = event.target.files[0];
             if(!file || !currentUser) return;
 
+            // ছবি আপলোড শুরু
             const fileName = `profile_${currentUser.id}_${Date.now()}.${file.name.split('.').pop()}`;
             const { error: uploadError } = await supabaseClient.storage.from('book-covers').upload(fileName, file);
             
-            if(uploadError) { alert('সমস্যা: ' + uploadError.message); return; }
+            if(uploadError) { alert('আপলোডে সমস্যা: ' + uploadError.message); return; }
 
+            // ডেটাবেসে আপডেট
             const { data } = supabaseClient.storage.from('book-covers').getPublicUrl(fileName);
-            await supabaseClient.from('profiles').update({ profile_image: data.publicUrl }).eq('id', currentUser.id);
-            loadProfileDetails(); // ছবি আপলোড হওয়ার পর ডেটা রিলোড হবে
+            const { error: dbError } = await supabaseClient.from('profiles').update({ profile_image: data.publicUrl }).eq('id', currentUser.id);
+            
+            if(dbError) { alert('ডেটাবেসে সেভ হচ্ছে না: ' + dbError.message); return; }
+            
+            // লাইভ ছবি দেখানো
+            document.getElementById('profileImageDisplay').src = data.publicUrl;
         }
 
+        // গ্যালারিতে একাধিক ছবি আপলোড
+        window.uploadGalleryImages = async (event) => {
+            const files = event.target.files;
+            if(!files.length || !currentUser) return;
+
+            let newGallery = [...currentGallery];
+            let uploadCount = 0;
+
+            // সব ছবি লোড হচ্ছে এমন মেসেজ দেখানো যেতে পারে
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const fileName = `gallery_${currentUser.id}_${Date.now()}_${i}.${file.name.split('.').pop()}`;
+                const { error: uploadError } = await supabaseClient.storage.from('book-covers').upload(fileName, file);
+                
+                if(!uploadError) {
+                    const { data } = supabaseClient.storage.from('book-covers').getPublicUrl(fileName);
+                    newGallery.push(data.publicUrl);
+                    uploadCount++;
+                }
+            }
+
+            if (uploadCount > 0) {
+                // ডেটাবেসে গ্যালারি আপডেট
+                const { error: dbError } = await supabaseClient.from('profiles').update({ gallery_images: newGallery }).eq('id', currentUser.id);
+                if(dbError) {
+                    alert('গ্যালারি সেভে সমস্যা: ' + dbError.message);
+                } else {
+                    currentGallery = newGallery;
+                    renderGallery(); // সাথে সাথে ছবি দেখাবে
+                }
+            } else {
+                alert('ছবি আপলোড ব্যর্থ হয়েছে। Storage পলিসি চেক করুন।');
+            }
+        }
+
+        function renderGallery() {
+            const container = document.getElementById('photoGallery');
+            if (currentGallery.length === 0) {
+                container.innerHTML = `<p class="text-gray-500 col-span-full text-center py-6">কোনো ছবি নেই।</p>`;
+                return;
+            }
+            container.innerHTML = currentGallery.map((url, index) => `
+                <div class="relative group aspect-square bg-gray-200 rounded-lg overflow-hidden shadow-sm">
+                    <img src="${url}" class="w-full h-full object-cover">
+                    ${isOwnProfile ? `
+                    <button onclick="deleteGalleryImage(${index})" class="absolute top-2 right-2 bg-red-500 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition shadow-lg hover:bg-red-600">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                    </button>
+                    ` : ''}
+                </div>
+            `).join('');
+        }
+
+        window.deleteGalleryImage = async (index) => {
+            if(!confirm('ছবিটি ডিলিট করতে চান?')) return;
+            let newGallery = [...currentGallery];
+            newGallery.splice(index, 1); // ঐ ইনডেক্সের ছবি বাদ
+            
+            const { error } = await supabaseClient.from('profiles').update({ gallery_images: newGallery }).eq('id', currentUser.id);
+            if(!error) {
+                currentGallery = newGallery;
+                renderGallery();
+            }
+        }
+
+        // ------------------ ট্যাব সুইচিং ------------------
+
         window.switchTab = (tab) => {
-            const tabs = ['myBlogs', 'friends', 'requests', 'edit'];
+            const tabs = ['myBlogs', 'friends', 'requests', 'photos', 'edit'];
             tabs.forEach(t => {
-                document.getElementById(`tabContent${t.charAt(0).toUpperCase() + t.slice(1)}`).classList.add('hidden');
-                document.getElementById(`tabBtn${t.charAt(0).toUpperCase() + t.slice(1)}`).className = "px-4 py-2 font-bold text-gray-500 hover:text-blue-600 focus:outline-none border-b-2 border-transparent";
+                const content = document.getElementById(`tabContent${t.charAt(0).toUpperCase() + t.slice(1)}`);
+                if(content) content.classList.add('hidden');
+                
+                const btn = document.getElementById(`tabBtn${t.charAt(0).toUpperCase() + t.slice(1)}`);
+                if(btn) btn.className = "px-4 py-2 font-bold text-gray-500 hover:text-blue-600 focus:outline-none border-b-2 border-transparent";
             });
 
             document.getElementById(`tabContent${tab.charAt(0).toUpperCase() + tab.slice(1)}`).classList.remove('hidden');
             document.getElementById(`tabBtn${tab.charAt(0).toUpperCase() + tab.slice(1)}`).className = "px-4 py-2 font-bold text-blue-600 border-b-2 border-blue-600 focus:outline-none";
+
+            // ফটো ট্যাবে গেলে গ্যালারি রেন্ডার হবে
+            if(tab === 'photos') {
+                renderGallery();
+            }
         }
+
+        // ------------------ অন্যান্য ফাংশন (ব্লগ, ফ্রেন্ড) ------------------
 
         async function loadMyBlogs(userId = null) {
             const targetId = userId || currentUser.id;
