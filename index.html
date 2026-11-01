@@ -17,7 +17,7 @@
         .dark .card-shadow { box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); }
         .card-shadow:hover { transform: translateY(-4px); box-shadow: 0 10px 35px rgba(0, 0, 0, 0.12); }
         
-        /* সার্চ ড্রপডাউন ফিক্স যাতে কোনো সেকশনের নিচে বা কিবোর্ডের নিচে ঢাকা না পড়ে */
+        /* সার্চ ড্রপডাউন ফিক্স */
         .search-dropdown-custom { z-index: 99999 !important; position: absolute; top: 100%; left: 0; width: 100%; margin-top: 0.5rem; }
         
         @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
@@ -87,20 +87,21 @@
         </div>
     </nav>
 
-    <!-- হিরো সেকশন (overflow-visible করা হয়েছে যেন সার্চ রেজাল্ট ড্রপডাউন বাইরে বের হতে পারে) -->
+    <!-- ডাইনামিক ব্যানার ও হিরো সেকশন -->
     <header id="heroSection" class="relative bg-gray-900 text-white rounded-b-[2rem] shadow-lg min-h-[16rem] sm:min-h-[20rem] md:min-h-[24rem] flex items-center justify-center no-print z-40 overflow-visible">
         <div id="heroBannerImage" class="absolute inset-0 bg-gradient-to-br from-blue-900 via-blue-700 to-blue-500 bg-cover bg-center transition-all duration-500 rounded-b-[2rem]"></div>
         <div class="absolute inset-0 bg-black/40 rounded-b-[2rem]"></div>
         
         <div class="relative z-50 text-center px-4 w-full max-w-4xl mx-auto py-8">
+            <!-- ডাইনামিক ব্যানার বড় টাইটেল -->
             <h1 id="web_tagline" class="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-4 tracking-tight drop-shadow-lg">আপনার পছন্দের বই, এক জায়গায়</h1>
+            <!-- ডাইনামিক ব্যানার ছোট সাব-টাইটেল (বিবরণী) -->
             <p id="web_sub_tagline" class="text-sm sm:text-base md:text-lg text-gray-200 max-w-2xl mx-auto mb-8 drop-shadow">সেরা লেখকদের বইয়ের বিশাল সংগ্রহ। আজই আপনার প্রিয় বইটি খুঁজে নিন।</p>
             
-            <!-- মোবাইল সার্চ ইনপুট ও ড্রপডাউন কনটেইনার -->
+            <!-- মোবাইল সার্চ ইনপুট ও ড্রপডাউন -->
             <div class="md:hidden max-w-md mx-auto relative group z-[99999]">
                 <input type="text" id="searchInputMobile" placeholder="বই খুঁজুন..." class="w-full pl-10 pr-4 py-3 bg-white/20 backdrop-blur-md border border-white/30 text-white placeholder-gray-200 rounded-full focus:outline-none focus:bg-white focus:text-gray-800 transition shadow-lg text-sm" oninput="handleSearch('mobile')">
                 <svg xmlns="http://www.w3.org/2000/svg" class="absolute left-3.5 top-3.5 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-                <!-- সব সার্চ রেজাল্ট দেখানোর জন্য ড্রপডাউন লিস্ট কনটেইনার -->
                 <div id="searchResultsDropdownMobile" class="hidden search-dropdown-custom bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-100 dark:border-gray-700 max-h-72 overflow-y-auto text-left"></div>
             </div>
         </div>
@@ -147,7 +148,7 @@
         </section>
     </main>
 
-    <!-- ফুল পোস্ট ভিউ ও কমেন্ট মডাল -->
+    <!-- মডাল ও ফুটার -->
     <div id="postDetailsModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
         <div class="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl relative modal-animate">
             <button onclick="closePostModal()" class="absolute top-4 right-4 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-red-500 hover:text-white h-8 w-8 rounded-full flex items-center justify-center font-bold transition">✕</button>
@@ -155,7 +156,6 @@
         </div>
     </div>
 
-    <!-- ডাইনামিক ফুটার -->
     <footer class="bg-gray-900 dark:bg-black text-gray-400 pt-12 pb-6 mt-auto border-t-4 border-blue-600 no-print">
         <div class="max-w-7xl mx-auto px-4 text-center space-y-2">
             <p id="web_footer_text">&copy; 2026 Boi Chokro. All rights reserved.</p>
@@ -171,7 +171,6 @@
         let currentUser = null;
         let allBooksData = [];
         let filteredBooksData = [];
-        let userWishlist = [];
 
         window.showToast = (message, isError = false) => {
             const container = document.getElementById('toast-container');
@@ -179,12 +178,7 @@
             toast.className = `toast-animate px-5 py-4 rounded-lg shadow-2xl text-white font-bold flex items-center gap-3 ${isError ? 'bg-red-600 border-l-4 border-red-800' : 'bg-green-600 border-l-4 border-green-800'}`;
             toast.innerHTML = `<span class="text-2xl">${isError ? '⚠️' : '✅'}</span><span class="text-sm md:text-base pr-2">${message}</span>`;
             container.appendChild(toast);
-            setTimeout(() => { 
-                toast.style.opacity = '0'; 
-                toast.style.transform = 'translateX(100%)'; 
-                toast.style.transition = 'all 0.3s ease'; 
-                setTimeout(() => toast.remove(), 300); 
-            }, 4000);
+            setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateX(100%)'; toast.style.transition = 'all 0.3s ease'; setTimeout(() => toast.remove(), 300); }, 4000);
         };
 
         function escapeHTML(str) {
@@ -192,9 +186,7 @@
             return str.replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
         }
 
-        function sanitizeSearchQuery(query) {
-            return query.replace(/[<>]/g, '').trim(); 
-        }
+        function sanitizeSearchQuery(query) { return query.replace(/[<>]/g, '').trim(); }
 
         if (localStorage.getItem('theme') === 'dark') document.documentElement.classList.add('dark');
         window.toggleDarkMode = () => {
@@ -210,6 +202,7 @@
             if(deskEl) deskEl.innerText = cart.length;
         }
 
+        // সাইট সেটিংস ও ব্যানার কন্টেন্ট লোড করা
         async function loadAdminSettings() {
             try {
                 const { data: settings, error } = await supabaseClient.from('site_settings').select('*').limit(1).maybeSingle();
@@ -222,24 +215,28 @@
                     const logoUrl = settings.logo_url || settings.logo || '';
                     if (logoUrl) {
                         const logoEl = document.getElementById('web_header_logo');
-                        if(logoEl) {
-                            logoEl.src = logoUrl;
-                            logoEl.classList.remove('hidden');
-                        }
+                        if(logoEl) { logoEl.src = logoUrl; logoEl.classList.remove('hidden'); }
                     }
 
+                    // বড় ব্যানার টাইটেল
                     const taglineText = settings.banner_text || settings.tagline || '';
                     if (taglineText) {
                         const taglineEl = document.getElementById('web_tagline');
                         if(taglineEl) taglineEl.innerText = taglineText;
                     }
 
+                    // ছোট ব্যানার সাব-টাইটেল (বিবরণী)
+                    const subTaglineText = settings.sub_tagline || '';
+                    if (subTaglineText) {
+                        const subTaglineEl = document.getElementById('web_sub_tagline');
+                        if(subTaglineEl) subTaglineEl.innerText = subTaglineText;
+                    }
+
+                    // ব্যানার ব্যাকগ্রাউন্ড ইমেজ
                     const bannerUrl = settings.banner_url || '';
                     if (bannerUrl) {
                         const heroBanner = document.getElementById('heroBannerImage');
-                        if (heroBanner) {
-                            heroBanner.style.backgroundImage = `url('${bannerUrl}')`;
-                        }
+                        if (heroBanner) heroBanner.style.backgroundImage = `url('${bannerUrl}')`;
                     }
 
                     const phone = settings.phone || '';
@@ -270,9 +267,6 @@
             
             if (session) {
                 currentUser = session.user;
-                const { data: wish } = await supabaseClient.from('wishlists').select('book_id').eq('user_id', currentUser.id);
-                if(wish) userWishlist = wish.map(w => w.book_id);
-
                 if(authBtnDesktop) {
                     authBtnDesktop.innerHTML = `
                         <a href="/profile.html" class="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-white px-3 py-1.5 rounded-lg font-semibold hover:bg-gray-200 transition">প্রোফাইল</a>
@@ -280,57 +274,14 @@
                     `;
                 }
                 if(authBtnMobile) {
-                    authBtnMobile.innerHTML = `
-                        <a href="/profile.html" class="bg-blue-600 text-white px-2.5 py-1 rounded-md font-bold text-xs shadow">প্রোফাইল</a>
-                    `;
+                    authBtnMobile.innerHTML = `<a href="/profile.html" class="bg-blue-600 text-white px-2.5 py-1 rounded-md font-bold text-xs shadow">প্রোফাইল</a>`;
                 }
-                loadNotifications();
             } else {
                 currentUser = null;
-                if(authBtnDesktop) {
-                    authBtnDesktop.innerHTML = `<a href="/login.html" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition">লগইন</a>`;
-                }
-                if(authBtnMobile) {
-                    authBtnMobile.innerHTML = `<a href="/login.html" class="bg-blue-600 text-white px-2.5 py-1 rounded-md font-bold text-xs">লগইন</a>`;
-                }
+                if(authBtnDesktop) authBtnDesktop.innerHTML = `<a href="/login.html" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition">লগইন</a>`;
+                if(authBtnMobile) authBtnMobile.innerHTML = `<a href="/login.html" class="bg-blue-600 text-white px-2.5 py-1 rounded-md font-bold text-xs">লগইন</a>`;
             }
         }
-
-        async function loadNotifications() {
-            if(!currentUser) return;
-            const { data: notifs } = await supabaseClient.from('notifications').select('*').eq('user_id', currentUser.id).order('created_at', { ascending: false });
-            
-            const badge = document.getElementById('notifBadge');
-            const badgeMob = document.getElementById('notifBadgeMobile');
-            const list = document.getElementById('notifList');
-            
-            if(!notifs || notifs.length === 0) {
-                if(list) list.innerHTML = `<div class="p-4 text-center text-sm text-gray-500">কোনো নোটিফিকেশন নেই</div>`;
-                if(badge) badge.classList.add('hidden');
-                if(badgeMob) badgeMob.classList.add('hidden');
-                return;
-            }
-
-            const unread = notifs.filter(n => !n.is_read).length;
-            if(unread > 0) { 
-                if(badge) { badge.innerText = unread; badge.classList.remove('hidden'); }
-                if(badgeMob) { badgeMob.innerText = unread; badgeMob.classList.remove('hidden'); }
-            } else {
-                if(badge) badge.classList.add('hidden');
-                if(badgeMob) badgeMob.classList.add('hidden');
-            }
-
-            if(list) {
-                list.innerHTML = notifs.map(n => `
-                    <div class="p-3 text-sm border-b dark:border-gray-700 ${!n.is_read ? 'bg-blue-50 dark:bg-gray-700 font-semibold' : 'text-gray-600'}">
-                        ${escapeHTML(n.message)}
-                        <p class="text-[10px] text-gray-400 mt-1">${new Date(n.created_at).toLocaleString('bn-BD')}</p>
-                    </div>
-                `).join('');
-            }
-        }
-
-        window.toggleNotifications = () => { document.getElementById('notifDropdown').classList.toggle('hidden'); };
 
         async function loadBooks() {
             const grid = document.getElementById('bookGrid');
@@ -358,26 +309,15 @@
 
         function createBookCard(book) {
             const bookId = book.id || book.book_id;
-            const bookTitle = book.title || book.name || book.book_name || 'বইয়ের নাম নেই';
-            const bookAuthor = book.author || book.writer || 'অজ্ঞাত লেখক';
-            
-            const currentPrice = book.discount_price || book.price || book.sale_price || book.amount || 0;
-            const originalPrice = book.original_price || book.regular_price || 0;
+            const bookTitle = book.title || book.name || 'বইয়ের নাম নেই';
+            const bookAuthor = book.author || 'অজ্ঞাত লেখক';
+            const currentPrice = book.discount_price || book.price || 0;
+            const originalPrice = book.original_price || 0;
             const hasDiscount = originalPrice && currentPrice && originalPrice > currentPrice;
-            let discountPercent = 0;
-            if (hasDiscount) discountPercent = Math.round(((originalPrice - currentPrice) / originalPrice) * 100);
+            let discountPercent = hasDiscount ? Math.round(((originalPrice - currentPrice) / originalPrice) * 100) : 0;
             
-            let rawImg = book.cover_url || book.image_url || book.image || book.cover || book.cover_image || book.photo || book.img || '';
-            let bookImage = 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=300';
-            
-            if (rawImg) {
-                if (rawImg.startsWith('http')) {
-                    bookImage = rawImg;
-                } else {
-                    const { data: pubData } = supabaseClient.storage.from('book-covers').getPublicUrl(rawImg);
-                    bookImage = pubData.publicUrl || rawImg;
-                }
-            }
+            let rawImg = book.cover_url || book.image_url || '';
+            let bookImage = rawImg.startsWith('http') ? rawImg : 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=300';
 
             return `
             <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col overflow-hidden relative group">
@@ -403,7 +343,7 @@
         function renderBooks(books) {
             const grid = document.getElementById('bookGrid');
             if(books.length === 0) {
-                grid.innerHTML = `<p class="text-gray-500 col-span-full text-center py-8">এই ক্যাটাগরিতে কোনো বই নেই।</p>`;
+                grid.innerHTML = `<p class="text-gray-500 col-span-full text-center py-8">কোনো বই নেই।</p>`;
                 return;
             }
             grid.innerHTML = books.map(book => createBookCard(book)).join('');
@@ -420,17 +360,10 @@
                 clickedBtn.classList.add('bg-blue-600', 'text-white', 'border-blue-600'); 
             }
 
-            if(category === 'all') {
-                filteredBooksData = [...allBooksData];
-            } else {
-                filteredBooksData = allBooksData.filter(b => b.category === category);
-            }
+            filteredBooksData = (category === 'all') ? [...allBooksData] : allBooksData.filter(b => b.category === category);
             renderBooks(filteredBooksData);
         }
 
-        // ==========================================
-        // সার্চ ফাংশন (মোবাইলে সব রেজাল্ট দেখানোর জন্য স্ক্রোল সহ)
-        // ==========================================
         window.handleSearch = (source) => {
             const input = source === 'desktop' ? document.getElementById('searchInput') : document.getElementById('searchInputMobile');
             const query = sanitizeSearchQuery(input.value.toLowerCase());
@@ -452,12 +385,11 @@
 
             if(filteredBooksData.length > 0) {
                 dropdown.classList.remove('hidden');
-                // সব সার্চ রেজাল্ট স্ক্রোল করে দেখার জন্য স্লাইস বা লিমিট তুলে দেওয়া হয়েছে এবং max-h-72 দেওয়া হয়েছে
                 dropdown.innerHTML = filteredBooksData.map(book => {
                     const bId = book.id || book.book_id;
                     const bTitle = book.title || book.name || 'বই';
                     const bAuthor = book.author || '';
-                    let rawImg = book.cover_url || book.image_url || book.image || '';
+                    let rawImg = book.cover_url || book.image_url || '';
                     let bImg = rawImg.startsWith('http') ? rawImg : 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=100';
 
                     return `
@@ -475,226 +407,10 @@
             }
         }
 
-        // ==========================================
-        // ব্লগ ও সাহিত্য ফিড
-        // ==========================================
-        async function loadBlogs() {
-            const blogList = document.getElementById('blogList');
-            if(!blogList) return;
-            
-            const { data: blogs, error } = await supabaseClient
-                .from('blogs')
-                .select('*')
-                .eq('status', 'approved')
-                .order('created_at', { ascending: false });
-            
-            if (error || !blogs || blogs.length === 0) {
-                blogList.innerHTML = `<div class="col-span-full text-center py-10 bg-white dark:bg-gray-800 rounded-xl shadow-sm"><p class="text-gray-500">এখনো কোনো গল্প বা ব্লগ প্রকাশিত হয়নি।</p></div>`;
-                return;
-            }
-
-            const authorIds = [...new Set(blogs.map(b => b.author_id))];
-            const { data: profiles } = await supabaseClient.from('profiles').select('id, full_name, profile_image').in('id', authorIds);
-            const profileMap = {};
-            if(profiles) {
-                profiles.forEach(p => profileMap[p.id] = p);
-            }
-
-            const blogHTML = await Promise.all(blogs.map(async (blog) => {
-                const author = profileMap[blog.author_id] || { full_name: 'নামহীন লেখক', profile_image: '' };
-                const authorImg = author.profile_image || `https://ui-avatars.com/api/?name=${encodeURIComponent(author.full_name)}&background=random`;
-                
-                const { count: likeCount } = await supabaseClient.from('blog_likes').select('*', { count: 'exact', head: true }).eq('blog_id', blog.id);
-
-                return `
-                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col h-full overflow-hidden hover:shadow-md transition">
-                    <div>
-                        <div class="p-4 flex items-center gap-3 border-b dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition" onclick="window.location.href='/profile.html?id=${blog.author_id}'">
-                            <img src="${authorImg}" class="w-10 h-10 rounded-full object-cover border">
-                            <div>
-                                <h4 class="font-bold text-sm text-gray-900 dark:text-white hover:text-blue-600 transition">${escapeHTML(author.full_name)}</h4>
-                                <p class="text-xs text-gray-400">${new Date(blog.created_at).toLocaleDateString('bn-BD')}</p>
-                            </div>
-                        </div>
-
-                        ${blog.image_url ? `<div class="max-h-60 overflow-hidden bg-gray-100 cursor-pointer" onclick="openPostDetails('${blog.id}')"><img src="${blog.image_url}" class="w-full h-full object-cover"></div>` : ''}
-                        
-                        <div class="p-4 space-y-2">
-                            <h3 class="text-lg font-bold text-gray-900 dark:text-white cursor-pointer hover:text-blue-600 transition line-clamp-2" onclick="openPostDetails('${blog.id}')">${escapeHTML(blog.title)}</h3>
-                            <p class="text-sm text-gray-600 dark:text-gray-300 line-clamp-3">${escapeHTML(blog.content)}</p>
-                        </div>
-                    </div>
-
-                    <div class="p-4 mt-auto border-t border-gray-100 dark:border-gray-700 flex items-center justify-between">
-                        <div class="flex items-center gap-4">
-                            <button onclick="likeBlog('${blog.id}')" class="flex items-center gap-1 text-gray-500 hover:text-red-500 transition text-sm">
-                                ❤️ <span id="like-count-${blog.id}">${likeCount || 0}</span>
-                            </button>
-                            <button onclick="openPostDetails('${blog.id}')" class="flex items-center gap-1 text-gray-500 hover:text-blue-500 transition text-sm">
-                                💬 কমেন্ট
-                            </button>
-                        </div>
-                        <button onclick="openPostDetails('${blog.id}')" class="text-xs font-bold text-blue-600 hover:underline">বিস্তারিত</button>
-                    </div>
-                </div>
-                `;
-            }));
-
-            blogList.innerHTML = blogHTML.join('');
-        }
-
-        window.likeBlog = async (blogId) => {
-            if(!currentUser) { showToast('লাইক দিতে লগইন করুন!', true); return; }
-            const { data: existing } = await supabaseClient.from('blog_likes').select('id').eq('blog_id', blogId).eq('user_id', currentUser.id).maybeSingle();
-            
-            if(existing) {
-                await supabaseClient.from('blog_likes').delete().eq('id', existing.id);
-            } else {
-                await supabaseClient.from('blog_likes').insert([{ blog_id: blogId, user_id: currentUser.id }]);
-            }
-            loadBlogs();
-        }
-
-        window.openPostDetails = async (blogId) => {
-            const modal = document.getElementById('postDetailsModal');
-            const contentDiv = document.getElementById('modalBodyContent');
-            modal.classList.remove('hidden');
-            contentDiv.innerHTML = '<p class="text-center py-10 text-gray-500">লোড হচ্ছে...</p>';
-
-            const { data: blog } = await supabaseClient.from('blogs').select('*').eq('id', blogId).single();
-            if(!blog) { contentDiv.innerHTML = '<p class="text-red-500 text-center">পোস্ট পাওয়া যায়নি।</p>'; return; }
-
-            const { data: author } = await supabaseClient.from('profiles').select('id, full_name, profile_image').eq('id', blog.author_id).maybeSingle();
-            const authorName = author?.full_name || 'নামহীন লেখক';
-            const authorImg = author?.profile_image || `https://ui-avatars.com/api/?name=${encodeURIComponent(authorName)}&background=random`;
-
-            const { data: comments } = await supabaseClient.from('blog_comments').select('*').eq('blog_id', blogId).order('created_at', { ascending: true });
-            
-            let commentProfiles = {};
-            if(comments && comments.length > 0) {
-                const cUserIds = [...new Set(comments.map(c => c.user_id))];
-                const { data: cProfiles } = await supabaseClient.from('profiles').select('id, full_name, profile_image').in('id', cUserIds);
-                if(cProfiles) cProfiles.forEach(p => commentProfiles[p.id] = p);
-            }
-
-            contentDiv.innerHTML = `
-                <div class="flex items-center gap-3 mb-4 cursor-pointer hover:opacity-80 transition" onclick="window.location.href='/profile.html?id=${blog.author_id}'">
-                    <img src="${authorImg}" class="w-12 h-12 rounded-full object-cover border">
-                    <div>
-                        <h3 class="font-bold text-base text-gray-900 dark:text-white hover:text-blue-600">${escapeHTML(authorName)}</h3>
-                        <p class="text-xs text-gray-400">${new Date(blog.created_at).toLocaleString('bn-BD')}</p>
-                    </div>
-                </div>
-                <h2 class="text-2xl font-extrabold text-gray-900 dark:text-white mb-2">${escapeHTML(blog.title)}</h2>
-                ${blog.image_url ? `<img src="${blog.image_url}" class="w-full max-h-96 object-cover rounded-xl mb-4 shadow-sm">` : ''}
-                <div class="text-gray-700 dark:text-gray-200 text-base leading-relaxed whitespace-pre-line mb-6">${escapeHTML(blog.content)}</div>
-
-                <hr class="dark:border-gray-700 my-4">
-
-                <h4 class="font-bold text-lg mb-3 text-gray-900 dark:text-white">💬 কমেন্টসমূহ (${comments ? comments.length : 0})</h4>
-                
-                <div class="space-y-3 max-h-60 overflow-y-auto mb-4 pr-2">
-                    ${(!comments || comments.length === 0) ? '<p class="text-sm text-gray-400 text-center py-4">এখনো কোনো কমেন্ট নেই। প্রথম কমেন্ট করুন!</p>' : 
-                        comments.map(c => {
-                            const commenter = commentProfiles[c.user_id] || { full_name: 'ব্যবহারকারী', profile_image: 'https://via.placeholder.com/30' };
-                            return `
-                            <div class="flex items-start gap-2.5 bg-gray-50 dark:bg-gray-700 p-3 rounded-xl">
-                                <img src="${commenter.profile_image || 'https://via.placeholder.com/30'}" class="w-8 h-8 rounded-full object-cover mt-0.5">
-                                <div class="flex-1">
-                                    <div class="flex justify-between items-center">
-                                        <span class="font-bold text-xs text-gray-900 dark:text-white">${escapeHTML(commenter.full_name)}</span>
-                                        <span class="text-[10px] text-gray-400">${new Date(c.created_at).toLocaleTimeString('bn-BD', {hour: '2-digit', minute:'2-digit'})}</span>
-                                    </div>
-                                    <p class="text-sm text-gray-700 dark:text-gray-200 mt-1">${escapeHTML(c.comment)}</p>
-                                </div>
-                            </div>
-                            `;
-                        }).join('')
-                    }
-                </div>
-
-                ${currentUser ? `
-                <form onsubmit="submitComment(event, '${blog.id}')" class="flex gap-2">
-                    <input type="text" id="commentInput_${blog.id}" required placeholder="একটি সুন্দর কমেন্ট লিখুন..." class="flex-1 px-4 py-2 border rounded-xl dark:bg-gray-700 dark:border-gray-600 text-sm outline-none focus:ring-2 focus:ring-blue-500">
-                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-5 py-2 rounded-xl text-sm transition">পাঠান</button>
-                </form>
-                ` : `
-                <p class="text-center text-sm py-2 bg-gray-50 dark:bg-gray-700 rounded-xl text-gray-500">কমেন্ট করতে অনুগ্রহ করে <a href="/login.html" class="text-blue-600 font-bold underline">লগইন করুন</a>।</p>
-                `}
-            `;
-        }
-
-        window.closePostModal = () => document.getElementById('postDetailsModal').classList.add('hidden');
-
-        window.submitComment = async (e, blogId) => {
-            e.preventDefault();
-            if(!currentUser) { alert('লগইন করুন'); return; }
-
-            const input = document.getElementById(`commentInput_${blogId}`);
-            const text = input.value.trim();
-            if(!text) return;
-
-            const { error } = await supabaseClient.from('blog_comments').insert([{
-                blog_id: blogId,
-                user_id: currentUser.id,
-                comment: text
-            }]);
-
-            if(!error) {
-                input.value = '';
-                openPostDetails(blogId);
-            } else {
-                alert('কমেন্ট করতে সমস্যা হয়েছে: ' + error.message);
-            }
-        }
-
-        window.submitBlog = async () => {
-            if(!currentUser) { showToast('পোস্ট লিখতে প্রথমে লগইন করুন!', true); return; }
-            
-            const title = document.getElementById('newBlogTitle').value.trim();
-            const content = document.getElementById('newBlogContent').value.trim();
-            const imageFile = document.getElementById('newBlogImage').files[0];
-            const btn = document.getElementById('submitBlogBtn');
-            
-            if(!title || !content) { showToast('শিরোনাম এবং বিষয়বস্তু লিখুন!', true); return; }
-            btn.innerText = 'সাবমিট হচ্ছে...'; btn.disabled = true;
-
-            try {
-                let image_url = null;
-                if (imageFile) {
-                    const fileName = `blog_${Date.now()}.${imageFile.name.spec ? '' : imageFile.name.split('.').pop()}`;
-                    const { error: uploadError } = await supabaseClient.storage.from('book-covers').upload(fileName, imageFile);
-                    if (uploadError) throw new Error("ছবি আপলোডে সমস্যা: " + uploadError.message);
-                    const { data } = supabaseClient.storage.from('book-covers').getPublicUrl(fileName);
-                    image_url = data.publicUrl;
-                }
-
-                const { error } = await supabaseClient.from('blogs').insert([{ 
-                    author_id: currentUser.id, title: title, content: content, image_url: image_url, status: 'pending' 
-                }]);
-                
-                if (error) throw new Error(error.message);
-
-                showToast('✅ আপনার পোস্টটি সফলভাবে জমা হয়েছে। অ্যাডমিন অ্যাপ্রুভ করার পর ফিডে দেখাবে।', false);
-                document.getElementById('newBlogTitle').value = '';
-                document.getElementById('newBlogContent').value = '';
-                document.getElementById('newBlogImage').value = '';
-                document.getElementById('writeBlogForm').classList.add('hidden');
-
-            } catch (err) {
-                showToast('সমস্যা: ' + err.message, true);
-            } finally {
-                btn.innerText = 'সাবমিট করুন'; btn.disabled, btn.disabled = false;
-            }
-        }
-
-        window.handleLogout = async () => { await supabaseClient.auth.signOut(); checkAuth(); showToast('লগআউট হয়েছে।', false); }
-
         async function init() {
             await loadAdminSettings(); 
             await checkAuth();
             await loadBooks();
-            await loadBlogs();
             updateCartCount();
         }
 
