@@ -13,6 +13,15 @@
         .line-clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
         @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         .toast-animate { animation: slideInRight 0.3s ease-out forwards; }
+        
+        /* মডার্ন ডেট পিকার স্টাইল */
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            background-color: #3b82f6;
+            padding: 5px;
+            cursor: pointer;
+            border-radius: 4px;
+            filter: invert(1);
+        }
     </style>
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 transition-colors min-h-screen flex flex-col">
@@ -69,7 +78,7 @@
 
             <div class="md:col-span-2">
                 <div id="myProfileTabs" class="hidden mb-6 border-b border-gray-200 dark:border-gray-700 flex flex-wrap">
-                    <button onclick="switchTab('myBlogs')" id="tabBtnMyBlogs" class="px-4 py-2 font-bold text-blue-600 border-b-2 border-blue-600 focus:outline-none">আমার ব্লগ ও পোস্ট</button>
+                    <button onclick="switchTab('myBlogs')" id="tabBtnMyBlogs" class="px-4 py-2 font-bold text-gray-500 hover:text-blue-600 focus:outline-none border-b-2 border-transparent">আমার ব্লগ ও পোস্ট</button>
                     <button onclick="switchTab('friends')" id="tabBtnFriends" class="px-4 py-2 font-bold text-gray-500 hover:text-blue-600 focus:outline-none border-b-2 border-transparent">বন্ধু তালিকা</button>
                     <button onclick="switchTab('requests')" id="tabBtnRequests" class="px-4 py-2 font-bold text-gray-500 hover:text-blue-600 focus:outline-none border-b-2 border-transparent">ফ্রেন্ড রিকোয়েস্ট</button>
                     <button onclick="switchTab('photos')" id="tabBtnPhotos" class="px-4 py-2 font-bold text-gray-500 hover:text-blue-600 focus:outline-none border-b-2 border-transparent">📸 আমার ফটো</button>
@@ -109,7 +118,7 @@
                         <div><label class="block text-sm font-semibold mb-1">মোবাইল নম্বর</label><input type="text" id="profPhone" class="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600"></div>
                         <div><label class="block text-sm font-semibold mb-1">বায়ো (Bio)</label><input type="text" id="profBio" placeholder="নিজের সম্পর্কে কিছু লিখুন..." class="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600"></div>
                         <div><label class="block text-sm font-semibold mb-1">পেশা</label><input type="text" id="profOccupation" placeholder="আপনার পেশা..." class="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600"></div>
-                        <div><label class="block text-sm font-semibold mb-1">জন্মদিন</label><input type="date" id="profDob" class="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600"></div>
+                        <div><label class="block text-sm font-semibold mb-1">জন্মদিন</label><input type="date" id="profDob" class="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-white cursor-pointer"></div>
                         <div><label class="block text-sm font-semibold mb-1">ঠিকানা</label><textarea id="profAddress" rows="2" class="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600"></textarea></div>
                         <button type="submit" id="updateProfileBtn" class="bg-blue-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-700 transition">সেভ করুন</button>
                     </form>
@@ -163,23 +172,28 @@
             viewingUserId = profileId || currentUser?.id;
             isOwnProfile = (currentUser && viewingUserId === currentUser.id);
 
-            loadProfileDetails();
+            await loadProfileDetails();
             if(isOwnProfile) checkAndNotifyBirthday();
+
+            // রিফ্রেশ করার পরেও যেই ট্যাবে ছিল সেই ট্যাবেই রাখার ব্যবস্থা
+            if (isOwnProfile) {
+                const savedTab = localStorage.getItem('active_profile_tab') || 'myBlogs';
+                switchTab(savedTab, false);
+            } else {
+                switchTab('myBlogs', false);
+            }
         }
 
-        // জন্মদিনের দিন বন্ধুদের নোটিফিকেশন পাঠানোর লজিক
         async function checkAndNotifyBirthday() {
             if(!currentUser) return;
-            const today = new Date().toISOString().slice(5, 10); // MM-DD ফরম্যাট
+            const today = new Date().toISOString().slice(5, 10);
             const lastCheckKey = `bday_checked_${currentUser.id}_${new Date().toISOString().slice(0, 10)}`;
             if(localStorage.getItem(lastCheckKey)) return;
 
             const { data: profile } = await supabaseClient.from('profiles').select('dob, full_name').eq('id', currentUser.id).maybeSingle();
             if(!profile || !profile.dob) return;
 
-            const userDob = profile.dob.slice(5, 10);
-            if(userDob === today) {
-                // ইউজারের সব বন্ধু খুঁজে বের করা
+            if(profile.dob.slice(5, 10) === today) {
                 const { data: friends } = await supabaseClient.from('friends')
                     .select('*')
                     .or(`sender_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`)
@@ -188,7 +202,6 @@
                 if(friends && friends.length > 0) {
                     for(let f of friends) {
                         const friendId = f.sender_id === currentUser.id ? f.receiver_id : f.sender_id;
-                        // নোটিফিকেশন টেবিলে এন্ট্রি দেওয়া
                         await supabaseClient.from('notifications').insert([{
                             user_id: friendId,
                             message: `🎉 আজ আপনার বন্ধু ${profile.full_name || 'কারো'} এর জন্মদিন! তাকে জন্মদিনের শুভেচ্ছা জানান।`,
@@ -260,8 +273,6 @@
                 document.getElementById('coverUploadLabel').classList.remove('hidden');
                 document.getElementById('profileUploadLabel').classList.remove('hidden');
                 document.getElementById('galleryUploadLabel').classList.remove('hidden');
-                switchTab('myBlogs');
-                loadMyBlogs();
 
                 document.getElementById('profName').value = profile.full_name || profile.name || '';
                 document.getElementById('profPhone').value = profile.phone || '';
@@ -469,7 +480,7 @@
             }
         }
 
-        window.switchTab = (tab) => {
+        window.switchTab = (tab, saveState = true) => {
             const tabs = ['myBlogs', 'friends', 'requests', 'photos', 'edit'];
             tabs.forEach(t => {
                 const content = document.getElementById(`tabContent${t.charAt(0).toUpperCase() + t.slice(1)}`);
@@ -485,8 +496,18 @@
             if(targetContent) targetContent.classList.remove('hidden');
             if(targetBtn) targetBtn.className = "px-4 py-2 font-bold text-blue-600 border-b-2 border-blue-600 focus:outline-none";
 
+            if (saveState && isOwnProfile) {
+                localStorage.setItem('active_profile_tab', tab);
+            }
+
             if(tab === 'photos') {
                 renderGallery();
+            } else if(tab === 'myBlogs') {
+                loadMyBlogs(viewingUserId);
+            } else if(tab === 'friends' && isOwnProfile) {
+                loadFriends();
+            } else if(tab === 'requests' && isOwnProfile) {
+                loadFriendRequests();
             }
         }
 
@@ -518,6 +539,76 @@
                 </div>
                 `;
             }).join('');
+        }
+
+        async function loadFriends() {
+            const list = document.getElementById('friendsList');
+            if(!list) return;
+            const { data: friends } = await supabaseClient.from('friends')
+                .select('*')
+                .or(`sender_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`)
+                .eq('status', 'accepted');
+
+            if (!friends || friends.length === 0) {
+                list.innerHTML = `<p class="text-gray-500 col-span-full">আপনার কোনো বন্ধু নেই।</p>`;
+                return;
+            }
+
+            const friendIds = friends.map(f => f.sender_id === currentUser.id ? f.receiver_id : f.sender_id);
+            const { data: profiles } = await supabaseClient.from('profiles').select('id, full_name, profile_image').in('id', friendIds);
+
+            list.innerHTML = profiles.map(p => `
+                <div class="flex items-center gap-3 p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-100 dark:border-gray-700">
+                    <img src="${p.profile_image || 'https://via.placeholder.com/40'}" class="w-10 h-10 rounded-full object-cover">
+                    <a href="/profile.html?id=${p.id}" class="font-bold text-sm text-gray-800 dark:text-white hover:text-blue-600">${escapeHTML(p.full_name)}</a>
+                </div>
+            `).join('');
+        }
+
+        async function loadFriendRequests() {
+            const list = document.getElementById('requestsList');
+            if(!list) return;
+            const { data: requests } = await supabaseClient.from('friends')
+                .select('*')
+                .eq('receiver_id', currentUser.id)
+                .eq('status', 'pending');
+
+            if (!requests || requests.length === 0) {
+                list.innerHTML = `<p class="text-gray-500">আপনার কোনো নতুন ফ্রেন্ড রিকোয়েস্ট নেই।</p>`;
+                return;
+            }
+
+            const senderIds = requests.map(r => r.sender_id);
+            const { data: profiles } = await supabaseClient.from('profiles').select('id, full_name, profile_image').in('id', senderIds);
+
+            list.innerHTML = profiles.map(p => `
+                <div class="flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-100 dark:border-gray-700">
+                    <div class="flex items-center gap-3">
+                        <img src="${p.profile_image || 'https://via.placeholder.com/40'}" class="w-10 h-10 rounded-full object-cover">
+                        <span class="font-bold text-sm text-gray-800 dark:text-white">${escapeHTML(p.full_name)}</span>
+                    </div>
+                    <button onclick="acceptFriendRequest('${p.id}')" class="bg-green-500 hover:bg-green-600 text-white px-4 py-1.5 rounded-lg text-xs font-bold transition">একসেপ্ট</button>
+                </div>
+            `).join('');
+        }
+
+        window.sendFriendRequest = async () => {
+            if (!currentUser) return;
+            const { error } = await supabaseClient.from('friends').insert([{ sender_id: currentUser.id, receiver_id: viewingUserId, status: 'pending' }]);
+            if (error) showToast('সমস্যা: ' + error.message, true);
+            else { showToast('রিকোয়েস্ট পাঠানো হয়েছে!'); loadProfileDetails(); }
+        }
+
+        window.acceptFriendRequest = async (senderId = null) => {
+            if (!currentUser) return;
+            const targetId = senderId || viewingUserId;
+            const { error } = await supabaseClient.from('friends')
+                .update({ status: 'accepted' })
+                .eq('sender_id', targetId)
+                .eq('receiver_id', currentUser.id);
+            
+            if (error) showToast('সমস্যা: ' + error.message, true);
+            else { showToast('বন্ধু হয়েছেন!'); loadProfileDetails(); }
         }
 
         init();
