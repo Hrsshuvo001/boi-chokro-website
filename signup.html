@@ -20,6 +20,7 @@
         </div>
 
         <div id="errorMsg" class="hidden mb-4 p-3 bg-red-100 text-red-700 rounded-lg text-sm font-semibold"></div>
+        <div id="successMsg" class="hidden mb-4 p-3 bg-green-100 text-green-700 rounded-lg text-sm font-semibold text-center"></div>
 
         <form id="signupForm" class="space-y-4">
             <div>
@@ -70,7 +71,6 @@
         const SUPABASE_ANON_KEY = 'sb_publishable_oBzutzPKvIvujmSG7icXug_SwwveL5g';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // পাসওয়ার্ড শো/হাইড ফাংশন
         function togglePassword() {
             const passwordInput = document.getElementById('password');
             const eyeIcon = document.getElementById('eyeIcon');
@@ -87,7 +87,9 @@
             e.preventDefault();
             const submitBtn = document.getElementById('submitBtn');
             const errorDiv = document.getElementById('errorMsg');
+            const successDiv = document.getElementById('successMsg');
             errorDiv.classList.add('hidden');
+            successDiv.classList.add('hidden');
             submitBtn.innerText = 'অ্যাকাউন্ট তৈরি হচ্ছে...';
             submitBtn.disabled = true;
 
@@ -98,7 +100,7 @@
             const password = document.getElementById('password').value;
             const imageFile = document.getElementById('profileImage').files[0];
 
-            // ১. Supabase Auth এ সাইনআপ
+            // ১. সুপাবেস অথ সাইনআপ (ইমেইল কনফার্মেশন সহ)
             const { data: authData, error: authError } = await supabaseClient.auth.signUp({
                 email: email,
                 password: password,
@@ -118,7 +120,6 @@
             const userId = authData.user?.id;
             let profileImageUrl = '';
 
-            // ২. প্রোফাইল ছবি আপলোড (যদি দেওয়া থাকে)
             if (imageFile && userId) {
                 const fileName = `profile_${userId}_${Date.now()}.${imageFile.name.split('.').pop()}`;
                 const { error: uploadError } = await supabaseClient.storage.from('book-covers').upload(fileName, imageFile);
@@ -128,9 +129,8 @@
                 }
             }
 
-            // ৩. profiles টেবিলে ডেটা সেভ করা
             if (userId) {
-                const { error: profileError } = await supabaseClient.from('profiles').upsert([{
+                await supabaseClient.from('profiles').upsert([{
                     id: userId,
                     full_name: fullName,
                     email: email,
@@ -138,14 +138,11 @@
                     address: address,
                     profile_image: profileImageUrl
                 }]);
-
-                if (profileError) {
-                    console.error('Profile insert warning:', profileError.message);
-                }
             }
 
-            alert('✅ সফলভাবে সাইনআপ সম্পন্ন হয়েছে!');
-            window.location.href = '/index.html';
+            successDiv.innerText = '✅ সফলভাবে সাইনআপ হয়েছে! অনুগ্রহ করে আপনার ইমেইল ইনবক্স চেক করে অ্যাকাউন্ট ভেরিফাই করুন।';
+            successDiv.classList.remove('hidden');
+            submitBtn.innerText = 'সাইন আপ সম্পন্ন';
         });
     </script>
 </body>
