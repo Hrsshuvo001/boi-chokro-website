@@ -69,8 +69,14 @@
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" /></svg>
                 </a>
 
-                <a href="/wishlist.html" class="text-red-500 hover:text-red-600 p-2" title="উইশলিস্ট"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg></a>
+                <!-- উইশলিস্ট (লাভ আইকন) -->
+                <a href="/wishlist.html" class="relative text-red-500 hover:text-red-600 p-2" title="উইশলিস্ট">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
+                    <span id="wishlistCountBadge" class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center hidden">0</span>
+                </a>
+
                 <button onclick="toggleDarkMode()" class="text-gray-500 dark:text-gray-400 hover:text-blue-600 transition p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg></button>
+                
                 <a href="/cart.html" class="relative flex items-center gap-1.5 bg-blue-50 dark:bg-gray-700 text-blue-600 dark:text-blue-400 hover:bg-blue-100 px-4 py-2 rounded-lg font-semibold transition border border-blue-100 dark:border-gray-600">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
                     <span class="text-sm">কার্ট</span>
@@ -194,6 +200,36 @@
             if(deskEl) deskEl.innerText = cart.length;
         }
 
+        function updateWishlistCount() {
+            const wishlist = JSON.parse(localStorage.getItem('boiChokroWishlist')) || [];
+            const badge = document.getElementById('wishlistCountBadge');
+            if(badge) {
+                if(wishlist.length > 0) {
+                    badge.innerText = wishlist.length;
+                    badge.classList.remove('hidden');
+                } else {
+                    badge.classList.add('hidden');
+                }
+            }
+        }
+
+        window.toggleWishlist = (bookId, event) => {
+            if(event) event.preventDefault();
+            let wishlist = JSON.parse(localStorage.getItem('boiChokroWishlist')) || [];
+            const index = wishlist.indexOf(bookId);
+            
+            if(index > -1) {
+                wishlist.splice(index, 1);
+                showToast('💔 উইশলিস্ট থেকে বইটি সরিয়ে ফেলা হয়েছে!');
+            } else {
+                wishlist.push(bookId);
+                showToast('💖 আপনার উইশলিস্টে বইটি যোগ করা হয়েছে!');
+            }
+            localStorage.setItem('boiChokroWishlist', JSON.stringify(wishlist));
+            updateWishlistCount();
+            renderBooks(filteredBooksData);
+        }
+
         async function loadAdminSettings() {
             try {
                 const { data: settings, error } = await supabaseClient.from('site_settings').select('*').limit(1).maybeSingle();
@@ -307,8 +343,18 @@
             let rawImg = book.cover_url || book.image_url || '';
             let bookImage = rawImg.startsWith('http') ? rawImg : 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=300';
 
+            const wishlist = JSON.parse(localStorage.getItem('boiChokroWishlist')) || [];
+            const isWishlisted = wishlist.includes(bookId);
+
             return `
             <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col overflow-hidden relative group">
+                <!-- উইশলিস্ট লাভ বাটন -->
+                <button onclick="toggleWishlist('${bookId}', event)" class="absolute top-2 right-2 z-20 bg-white/80 dark:bg-gray-800/80 backdrop-blur-md p-2 rounded-full shadow hover:scale-110 transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ${isWishlisted ? 'text-red-500 fill-red-500' : 'text-gray-400 dark:text-gray-300'}" fill="${isWishlisted ? 'currentColor' : 'none'}" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                    </svg>
+                </button>
+
                 <a href="/book-details.html?id=${bookId}" class="block w-full aspect-[3/4] bg-gray-100 dark:bg-gray-700 overflow-hidden relative">
                     ${hasDiscount ? `<div class="absolute top-2 left-2 bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded-md shadow-md z-10">${discountPercent}% ছাড়</div>` : ''}
                     <img src="${bookImage}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" onerror="this.src='https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=300'">
@@ -444,7 +490,6 @@
 
                     <div class="p-4 mt-auto border-t border-gray-100 dark:border-gray-700 flex items-center justify-between">
                         <div class="flex items-center gap-4">
-                            <!-- লাভ আইকনের বদলে গোলাপ ফুল (🌹) যুক্ত করা হলো -->
                             <button onclick="likeBlog('${blog.id}')" class="flex items-center gap-1 text-gray-500 hover:text-red-500 transition text-sm">
                                 🌹 <span id="like-count-${blog.id}">${likeCount || 0}</span>
                             </button>
@@ -474,7 +519,6 @@
             loadBlogs();
         }
 
-        // অটো-মডারেশন ফিল্টার
         function containsForbiddenContent(text) {
             const forbiddenKeywords = [
                 'বাল', 'মাদারচোদ', 'মাগী', 'বেশ্যা', 'শালা', 'শুয়োর', 'কুত্তা', 'বট', 'bastard', 'shit', 'fuck', 'bitch', 'asshole',
@@ -484,7 +528,6 @@
             return forbiddenKeywords.some(word => lowerText.includes(word));
         }
 
-        // পপ-আপ (ডিটেইলস মডাল): ভিউ + গোলাপ + কমেন্ট
         window.openPostDetails = async (blogId) => {
             const modal = document.getElementById('postDetailsModal');
             const contentDiv = document.getElementById('modalBodyContent');
@@ -550,7 +593,6 @@
                 ${blog.image_url ? `<img src="${blog.image_url}" class="w-full max-h-96 object-cover rounded-xl mb-4 shadow-sm">` : ''}
                 <div class="text-gray-700 dark:text-gray-200 text-base leading-relaxed whitespace-pre-line mb-4">${escapeHTML(blog.content)}</div>
 
-                <!-- ফেসবুক স্টাইল গোলাপ ও ভিউ সামারি -->
                 <div class="flex items-center justify-between text-xs sm:text-sm text-gray-500 dark:text-gray-400 border-y dark:border-gray-700 py-2.5 my-3">
                     <div class="flex items-center gap-1.5">
                         <span class="p-1 rounded-full text-sm">🌹</span>
@@ -800,6 +842,7 @@
             await loadBooks();
             await loadBlogs(); 
             updateCartCount();
+            updateWishlistCount();
         }
 
         init();
