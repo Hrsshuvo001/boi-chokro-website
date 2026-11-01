@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Boi Chokro - বই চক্র এবং সাহিত্য</title>
+    <title>Boi Chokro - অনলাইন বইয়ের দোকান ও সাহিত্য প্ল্যাটফর্ম</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script> tailwind.config = { darkMode: 'class' } </script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -16,7 +16,7 @@
         .modal-animate { animation: fadeIn 0.25s ease-out forwards; }
     </style>
 </head>
-<body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-100 min-h-screen flex flex-col transition-colors">
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 min-h-screen flex flex-col transition-colors">
 
     <!-- হেডার / নেভবার -->
     <nav class="bg-white dark:bg-gray-800 shadow-md sticky top-0 z-50">
@@ -26,7 +26,7 @@
             <!-- সার্চ বার (ডেস্কটপ) -->
             <div class="hidden md:flex items-center flex-1 max-w-md mx-8">
                 <input type="text" id="searchInput" placeholder="বই বা লেখক খুঁজুন..." class="w-full px-4 py-2 bg-gray-100 dark:bg-gray-700 rounded-l-lg border-0 focus:ring-2 focus:ring-blue-500 outline-none text-sm">
-                <button class="bg-blue-600 text-px px-5 py-2 rounded-r-lg text-white font-bold text-sm hover:bg-blue-700 transition">🔍</button>
+                <button class="bg-blue-600 px-5 py-2 rounded-r-lg text-white font-bold text-sm hover:bg-blue-700 transition">🔍</button>
             </div>
 
             <!-- ডেস্কটপ মেনু ও মোবাইল টগল -->
@@ -51,7 +51,7 @@
         <!-- মোবাইল ড্রপডাউন মেনু -->
         <div id="mobileMenu" class="hidden md:hidden bg-white dark:bg-gray-800 border-t dark:border-gray-700 px-4 py-3 space-y-3">
             <div class="flex items-center">
-                <input type="text" id="mobileSearchInput" placeholder="বই বা লেখক খুঁজুন..." class="w-full px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-l-lg text-sm outline-none">
+                <input type="text" id="mobileSearchInput" placeholder="বই খুঁজুন..." class="w-full px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-l-lg text-sm outline-none">
                 <button class="bg-blue-600 text-white px-4 py-2 rounded-r-lg text-sm font-bold">🔍</button>
             </div>
             <div class="flex flex-col gap-2 pt-2 border-t dark:border-gray-700" id="mobileAuthLinks">
@@ -61,30 +61,25 @@
     </nav>
 
     <!-- মূল কনটেন্ট সেকশন -->
-    <main class="flex-grow max-w-7xl mx-auto w-full px-4 py-6 space-y-10">
+    <main class="flex-grow max-w-7xl mx-auto w-full px-4 py-6 space-y-12">
 
-        <!-- বইয়ের দোকান / প্রোডাক্ট সেকশন -->
+        <!-- ১. মূল ই-কমার্স বইয়ের দোকান সেকশন (সবার উপরে) -->
         <section>
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-extrabold text-gray-900 dark:text-white flex items-center gap-2">🔥 জনপ্রিয় বইসমূহ</h2>
+            <div class="flex justify-between items-center mb-6 border-b pb-3 dark:border-gray-700">
+                <h2 class="text-2xl font-extrabold text-gray-900 dark:text-white flex items-center gap-2">🔥 জনপ্রিয় ই-কমার্স বইসমূহ</h2>
             </div>
-            <div id="productsGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                <!-- ডাইনামিক প্রোডাক্ট কার্ড লোড হবে -->
+            <div id="productsGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5">
+                <!-- ডাইনামিক বইয়ের প্রোডাক্ট কার্ড লোড হবে -->
             </div>
         </section>
 
-        <!-- ব্লগ এবং সাহিত্য ফিড সেকশন (ফেসবুক স্টাইল) -->
+        <!-- ২. সোশ্যাল মিডিয়া ও সাহিত্য ফিড সেকশন (নিচে আকর্ষণীয় করার জন্য) -->
         <section class="space-y-6">
             <div class="flex justify-between items-center bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
-                <h2 class="text-xl font-extrabold text-gray-900 dark:text-white flex items-center gap-2">📖 গল্প, ব্লগ এবং সাহিত্য</h2>
+                <h2 class="text-xl font-extrabold text-gray-900 dark:text-white flex items-center gap-2">📖 গল্প, ব্লগ এবং সাহিত্য ফিড</h2>
                 <a href="/profile.html" id="createPostTrigger" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl font-bold text-sm shadow transition flex items-center gap-1.5">
                     ✍️ পোস্ট লিখুন
                 </a>
-            </div>
-
-            <!-- ফিল্টার বা ট্যাব -->
-            <div class="flex gap-2 border-b dark:border-gray-700 pb-2">
-                <button class="px-4 py-1.5 rounded-lg bg-blue-600 text-white font-bold text-sm shadow">সকল ফিড</button>
             </div>
 
             <!-- পোস্ট গ্রিড ফিড -->
@@ -94,12 +89,12 @@
         </section>
     </main>
 
-    <!-- ফুল পোস্ট ভিউ / ডিটেইলস মডাল (ফেসবুক স্টাইল পপআপ) -->
+    <!-- ফুল পোস্ট ভিউ ও কমেন্ট মডাল -->
     <div id="postDetailsModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
         <div class="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl relative modal-animate">
             <button onclick="closePostModal()" class="absolute top-4 right-4 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-red-500 hover:text-white h-8 w-8 rounded-full flex items-center justify-center font-bold transition">✕</button>
             <div id="modalBodyContent" class="p-6 space-y-4">
-                <!-- ফুল পোস্ট ও কমেন্ট সেকশন এখানে ডাইনামিক আসবে -->
+                <!-- ফুল পোস্ট ও কমেন্ট এখানে লোড হবে -->
             </div>
         </div>
     </div>
@@ -126,6 +121,7 @@
             if (session) currentUser = session.user;
 
             renderAuthNav();
+            loadEcommerceBooks();
             loadApprovedBlogs();
         }
 
@@ -161,9 +157,47 @@
             window.location.reload();
         }
 
+        // ই-কমার্স বইয়ের প্রোডাক্ট লোড করার ফাংশন
+        async function loadEcommerceBooks() {
+            const grid = document.getElementById('productsGrid');
+            if(!grid) return;
+            
+            // Supabase থেকে প্রোডাক্ট বা বই ফেচ করা (যদি টেবিল থাকে)
+            const { data: books, error } = await supabaseClient.from('books').select('*').limit(10);
+
+            if (error || !books || books.length === 0) {
+                // ডেমো বইয়ের ডাটা যদি টেবিল না থাকে
+                grid.innerHTML = `
+                    <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col justify-between">
+                        <img src="https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=300" class="w-full h-48 object-cover rounded-lg mb-3">
+                        <h4 class="font-bold text-sm mb-1 text-gray-900 dark:text-white">প্রোগ্রামিংয়ের হাতেখড়ি</h4>
+                        <p class="text-xs text-blue-600 font-bold mb-3">৳ ৩৫০</p>
+                        <button onclick="alert('কার্টে যোগ করা হয়েছে!')" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-1.5 rounded-lg text-xs font-bold transition">কার্টে যোগ করুন</button>
+                    </div>
+                    <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col justify-between">
+                        <img src="https://images.unsplash.com/photo-1512820790803-83ca734da794?w=300" class="w-full h-48 object-cover rounded-lg mb-3">
+                        <h4 class="font-bold text-sm mb-1 text-gray-900 dark:text-white">ডিজিটাল মার্কেটিং গাইড</h4>
+                        <p class="text-xs text-blue-600 font-bold mb-3">৳ ৪৫০</p>
+                        <button onclick="alert('কার্টে যোগ করা হয়েছে!')" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-1.5 rounded-lg text-xs font-bold transition">কার্টে যোগ করুন</button>
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = books.map(book => `
+                <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col justify-between">
+                    <img src="${book.image_url || 'https://via.placeholder.com/300'}" class="w-full h-48 object-cover rounded-lg mb-3">
+                    <h4 class="font-bold text-sm mb-1 text-gray-900 dark:text-white">${escapeHTML(book.title)}</h4>
+                    <p class="text-xs text-blue-600 font-bold mb-3">৳ ${book.price || 0}</p>
+                    <button onclick="addToCart('${book.id}')" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-1.5 rounded-lg text-xs font-bold transition">কার্টে যোগ করুন</button>
+                </div>
+            `).join('');
+        }
+
         // শুধুমাত্র 'approved' স্ট্যাটাসযুক্ত পোস্টগুলো ইনডেক্সে দেখাবে
         async function loadApprovedBlogs() {
             const grid = document.getElementById('blogsGrid');
+            if(!grid) return;
             grid.innerHTML = '<p class="text-gray-500 col-span-full text-center py-8">পোস্ট লোড হচ্ছে...</p>';
 
             const { data: blogs, error } = await supabaseClient
@@ -177,7 +211,6 @@
                 return;
             }
 
-            // লেখকের প্রোফাইল ইনফো ফেচ করার জন্য আইডিগুলো সংগ্রহ
             const authorIds = [...new Set(blogs.map(b => b.author_id))];
             const { data: profiles } = await supabaseClient.from('profiles').select('id, full_name, profile_image').in('id', authorIds);
             const profileMap = {};
@@ -192,7 +225,6 @@
                 return `
                 <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden flex flex-col justify-between hover:shadow-md transition">
                     <div>
-                        <!-- লেখকের তথ্য হেড -->
                         <div class="p-4 flex items-center gap-3 border-b dark:border-gray-700">
                             <img src="${authorImg}" class="w-10 h-10 rounded-full object-cover border">
                             <div>
@@ -218,14 +250,12 @@
             }).join('');
         }
 
-        // ফেসবুক স্টাইল ফুল পোস্ট ও কমেন্ট দেখার মডাল ফাংশন
         window.openPostDetails = async (blogId) => {
             const modal = document.getElementById('postDetailsModal');
             const contentDiv = document.getElementById('modalBodyContent');
             modal.classList.remove('hidden');
             contentDiv.innerHTML = '<p class="text-center py-10 text-gray-500">লোড হচ্ছে...</p>';
 
-            // পোস্টের বিস্তারিত ফেচ করা
             const { data: blog } = await supabaseClient.from('blogs').select('*').eq('id', blogId).single();
             if(!blog) { contentDiv.innerHTML = '<p class="text-red-500 text-center">পোস্ট পাওয়া যায়নি।</p>'; return; }
 
@@ -233,7 +263,6 @@
             const authorName = author?.full_name || 'নামহীন লেখক';
             const authorImg = author?.profile_image || `https://ui-avatars.com/api/?name=${encodeURIComponent(authorName)}&background=random`;
 
-            // কমেন্টস ফেচ করা
             const { data: comments } = await supabaseClient.from('comments').select('*').eq('blog_id', blogId).order('created_at', { ascending: true });
             
             let commentProfiles = {};
@@ -257,7 +286,6 @@
 
                 <hr class="dark:border-gray-700 my-4">
 
-                <!-- কমেন্ট সেকশন -->
                 <h4 class="font-bold text-lg mb-3 text-gray-900 dark:text-white">💬 কমেন্টসমূহ (${comments ? comments.length : 0})</h4>
                 
                 <div class="space-y-3 max-h-60 overflow-y-auto mb-4 pr-2">
@@ -280,7 +308,6 @@
                     }
                 </div>
 
-                <!-- কমেন্ট লেখার ফর্ম -->
                 ${currentUser ? `
                 <form onsubmit="submitComment(event, '${blog.id}')" class="flex gap-2">
                     <input type="text" id="commentInput_${blog.id}" required placeholder="একটি সুন্দর কমেন্ট লিখুন..." class="flex-1 px-4 py-2 border rounded-xl dark:bg-gray-700 dark:border-gray-600 text-sm outline-none focus:ring-2 focus:ring-blue-500">
@@ -294,7 +321,6 @@
 
         window.closePostModal = () => document.getElementById('postDetailsModal').classList.add('hidden');
 
-        // কমেন্ট সাবমিট ফাংশন
         window.submitComment = async (e, blogId) => {
             e.preventDefault();
             if(!currentUser) { alert('লগইন করুন'); return; }
@@ -311,7 +337,7 @@
 
             if(!error) {
                 input.value = '';
-                openPostDetails(blogId); // রিফ্রেশ মডাল কমেন্ট লিস্ট
+                openPostDetails(blogId);
             } else {
                 alert('কমেন্ট করতে সমস্যা হয়েছে: ' + error.message);
             }
