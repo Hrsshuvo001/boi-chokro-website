@@ -40,7 +40,6 @@
                     <div class="h-32 bg-blue-600 relative group">
                         <img id="coverImageDisplay" src="" class="w-full h-full object-cover hidden">
                         <label id="coverUploadLabel" for="coverImageInput" class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 cursor-pointer text-white text-sm font-bold transition hidden">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
                             কভার পরিবর্তন
                         </label>
                         <input type="file" id="coverImageInput" accept="image/*" class="hidden" onchange="uploadCoverImage(event)">
@@ -51,15 +50,14 @@
                             <div class="relative group w-24 h-24">
                                 <img id="profileImageDisplay" src="" class="w-24 h-24 rounded-full object-cover border-4 border-white dark:border-gray-800 shadow-md bg-gray-200">
                                 <label id="profileUploadLabel" for="profileImageInput" class="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 cursor-pointer text-white transition hidden">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                                    📷
                                 </label>
                                 <input type="file" id="profileImageInput" accept="image/*" class="hidden" onchange="uploadProfileImage(event)">
                             </div>
                         </div>
                         <div class="text-center">
                             <h2 id="displayName" class="text-2xl font-bold text-gray-900 dark:text-white mb-1">লোড হচ্ছে...</h2>
-                            <p id="displayEmail" class="text-sm text-gray-500 mb-1">...</p>
-                            <p id="displayBio" class="text-xs text-gray-600 dark:text-gray-400 mb-2 italic"></p>
+                            <p id="displayEmail" class="text-sm text-gray-500 mb-2">...</p>
                             <p id="displayAddress" class="text-sm text-gray-500"></p>
                         </div>
                         <div id="actionButtonsContainer" class="mt-4 flex justify-center"></div>
@@ -102,14 +100,11 @@
                     <div id="photoGallery" class="grid grid-cols-2 sm:grid-cols-3 gap-3"></div>
                 </div>
 
-                <!-- ইনফো এডিট ট্যাব (নতুন ফিল্ডসহ) -->
                 <div id="tabContentEdit" class="hidden">
                     <h3 class="text-xl font-bold mb-4 text-gray-900 dark:text-white">তথ্য আপডেট করুন</h3>
                     <form id="profileForm" class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 space-y-4">
                         <div><label class="block text-sm font-semibold mb-1">পুরো নাম</label><input type="text" id="profName" class="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600"></div>
                         <div><label class="block text-sm font-semibold mb-1">মোবাইল নম্বর</label><input type="text" id="profPhone" class="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600"></div>
-                        <div><label class="block text-sm font-semibold mb-1">সংক্ষিপ্ত বায়ো (Bio)</label><input type="text" id="profBio" placeholder="নিজের সম্পর্কে এক লাইনে কিছু বলুন..." class="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600"></div>
-                        <div><label class="block text-sm font-semibold mb-1">পেশা</label><input type="text" id="profOccupation" placeholder="যেমন: শিক্ষার্থী, ব্লগার, চাকরিজীবী" class="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600"></div>
                         <div><label class="block text-sm font-semibold mb-1">ঠিকানা</label><textarea id="profAddress" rows="2" class="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600"></textarea></div>
                         <button type="submit" id="updateProfileBtn" class="bg-blue-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-700 transition">সেভ করুন</button>
                     </form>
@@ -208,11 +203,8 @@
                 switchTab('myBlogs');
                 loadMyBlogs();
 
-                // ফর্মে আগের ডেটা বসিয়ে দেওয়া
                 document.getElementById('profName').value = profile.full_name || '';
                 document.getElementById('profPhone').value = profile.phone || '';
-                document.getElementById('profBio').value = profile.bio || '';
-                document.getElementById('profOccupation').value = profile.occupation || '';
                 document.getElementById('profAddress').value = profile.address || '';
             } else if (currentUser) {
                 if (friendStatus === 'none') {
@@ -229,7 +221,6 @@
             document.getElementById('actionButtonsContainer').innerHTML = actionButtons;
             document.getElementById('displayName').innerText = profile.full_name || 'নামহীন ব্যবহারকারী';
             document.getElementById('displayEmail').innerText = profile.email || '';
-            document.getElementById('displayBio').innerText = profile.bio ? `"${profile.bio}"` : (profile.occupation ? `পেশা: ${profile.occupation}` : '');
             document.getElementById('displayAddress').innerText = profile.address ? `📍 ${profile.address}` : '';
 
             if (!isOwnProfile) {
@@ -359,7 +350,7 @@
                     <img src="${url}" class="w-full h-full object-cover">
                     ${isOwnProfile ? `
                     <button onclick="deleteGalleryImage(${index})" class="absolute top-2 right-2 bg-red-500 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition shadow-lg hover:bg-red-600">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                        🗑️
                     </button>
                     ` : ''}
                 </div>
@@ -501,8 +492,6 @@
             const updates = {
                 full_name: document.getElementById('profName').value,
                 phone: document.getElementById('profPhone').value,
-                bio: document.getElementById('profBio').value,
-                occupation: document.getElementById('profOccupation').value,
                 address: document.getElementById('profAddress').value
             };
             const { error } = await supabaseClient.from('profiles').update(updates).eq('id', currentUser.id);
