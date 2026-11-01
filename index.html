@@ -444,8 +444,9 @@
 
                     <div class="p-4 mt-auto border-t border-gray-100 dark:border-gray-700 flex items-center justify-between">
                         <div class="flex items-center gap-4">
+                            <!-- লাভ আইকনের বদলে গোলাপ ফুল (🌹) যুক্ত করা হলো -->
                             <button onclick="likeBlog('${blog.id}')" class="flex items-center gap-1 text-gray-500 hover:text-red-500 transition text-sm">
-                                ❤️ <span id="like-count-${blog.id}">${likeCount || 0}</span>
+                                🌹 <span id="like-count-${blog.id}">${likeCount || 0}</span>
                             </button>
                             <button onclick="openPostDetails('${blog.id}')" class="flex items-center gap-1 text-gray-500 hover:text-blue-500 transition text-sm">
                                 💬 কমেন্ট
@@ -462,7 +463,7 @@
         }
 
         window.likeBlog = async (blogId) => {
-            if(!currentUser) { showToast('লাইক দিতে লগইন করুন!', true); return; }
+            if(!currentUser) { showToast('গোলাপ দিতে লগইন করুন!', true); return; }
             const { data: existing } = await supabaseClient.from('blog_likes').select('id').eq('blog_id', blogId).eq('user_id', currentUser.id).maybeSingle();
             
             if(existing) {
@@ -473,23 +474,17 @@
             loadBlogs();
         }
 
-        // ==========================================
-        // অটো-মডারেশন ফিল্টার (বকা, গালি, অ্যাডাল্ট ও সেক্স হ্যারেসমেন্ট ডিটেক্ট)
-        // ==========================================
+        // অটো-মডারেশন ফিল্টার
         function containsForbiddenContent(text) {
             const forbiddenKeywords = [
-                // গালিগালাজ ও অবমাননাকর শব্দ
                 'বাল', 'মাদারচোদ', 'মাগী', 'বেশ্যা', 'শালা', 'শুয়োর', 'কুত্তা', 'বট', 'bastard', 'shit', 'fuck', 'bitch', 'asshole',
-                // অ্যাডাল্ট ও সেক্সুয়াল হ্যারেসমেন্ট সম্পর্কিত শব্দ
                 'বটম', 'যৌন', 'সেক্স', 'sex', 'porn', 'xxx', 'naked', 'nude', 'chod', 'chodai', 'boob', 'vagina', 'penis', 'rape', 'ধর্ষণ', 'হ্যারাস', 'লুচ্চা'
             ];
             const lowerText = text.toLowerCase();
             return forbiddenKeywords.some(word => lowerText.includes(word));
         }
 
-        // ==========================================
-        // পপ-আপ (ডিটেইলস মডাল): ভিউ + লাইক + কমেন্ট (রিপ্লাই, এডিট, ডিলিট)
-        // ==========================================
+        // পপ-আপ (ডিটেইলস মডাল): ভিউ + গোলাপ + কমেন্ট
         window.openPostDetails = async (blogId) => {
             const modal = document.getElementById('postDetailsModal');
             const contentDiv = document.getElementById('modalBodyContent');
@@ -519,9 +514,9 @@
                 const { data: likerProfiles } = await supabaseClient.from('profiles').select('full_name').in('id', likerIds);
                 if (likerProfiles && likerProfiles.length > 0) {
                     const names = likerProfiles.map(p => p.full_name);
-                    if (totalLikes === 1) likerNamesText = `${names[0]} এটি লাইক করেছেন`;
-                    else if (totalLikes === 2) likerNamesText = `${names[0]} এবং ${names[1]} এটি লাইক করেছেন`;
-                    else likerNamesText = `${names[0]}, ${names[1]} এবং আরও ${totalLikes - 2} জন এটি লাইক করেছেন`;
+                    if (totalLikes === 1) likerNamesText = `${names[0]} এটিতে গোলাপ দিয়েছেন`;
+                    else if (totalLikes === 2) likerNamesText = `${names[0]} এবং ${names[1]} এটিতে গোলাপ দিয়েছেন`;
+                    else likerNamesText = `${names[0]}, ${names[1]} এবং আরও ${totalLikes - 2} জন এটিতে গোলাপ দিয়েছেন`;
                 }
             }
 
@@ -555,17 +550,18 @@
                 ${blog.image_url ? `<img src="${blog.image_url}" class="w-full max-h-96 object-cover rounded-xl mb-4 shadow-sm">` : ''}
                 <div class="text-gray-700 dark:text-gray-200 text-base leading-relaxed whitespace-pre-line mb-4">${escapeHTML(blog.content)}</div>
 
+                <!-- ফেসবুক স্টাইল গোলাপ ও ভিউ সামারি -->
                 <div class="flex items-center justify-between text-xs sm:text-sm text-gray-500 dark:text-gray-400 border-y dark:border-gray-700 py-2.5 my-3">
                     <div class="flex items-center gap-1.5">
-                        <span class="bg-blue-600 text-white p-1 rounded-full text-[10px]">👍</span>
-                        <span>${totalLikes} জন</span>
+                        <span class="p-1 rounded-full text-sm">🌹</span>
+                        <span>${totalLikes} জন গোলাপ দিয়েছেন</span>
                     </div>
-                    <div>${totalLikes > 0 ? `<span class="italic text-xs">${escapeHTML(likerNamesText)}</span>` : 'প্রথমে লাইক দিন'}</div>
+                    <div>${totalLikes > 0 ? `<span class="italic text-xs">${escapeHTML(likerNamesText)}</span>` : 'প্রথমে গোলাপ দিন'}</div>
                 </div>
 
                 <div class="flex items-center justify-around border-b dark:border-gray-700 pb-2 mb-4">
-                    <button onclick="toggleModalLike('${blog.id}')" class="flex items-center justify-center gap-2 flex-1 py-1.5 rounded-lg font-bold text-sm transition ${hasLiked ? 'text-blue-600 bg-blue-50 dark:bg-gray-700' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'}">
-                        <span>${hasLiked ? '👍 লাইকড' : '👍 লাইক'}</span>
+                    <button onclick="toggleModalLike('${blog.id}')" class="flex items-center justify-center gap-2 flex-1 py-1.5 rounded-lg font-bold text-sm transition ${hasLiked ? 'text-pink-600 bg-pink-50 dark:bg-gray-700' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'}">
+                        <span>${hasLiked ? '🌹 গোলাপ দেওয়া হয়েছে' : '🌹 গোলাপ দিন'}</span>
                     </button>
                     <button onclick="document.getElementById('commentInput_${blog.id}').focus()" class="flex items-center justify-center gap-2 flex-1 py-1.5 rounded-lg font-bold text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition">
                         <span>💬 কমেন্ট করুন</span>
@@ -593,7 +589,6 @@
                                         </div>
                                         <p id="commentText_${c.id}" class="text-sm text-gray-700 dark:text-gray-200 mt-1">${escapeHTML(c.comment)}</p>
                                         
-                                        <!-- এডিট করার ইনপুট ফিল্ড (লুকানো থাকবে) -->
                                         <div id="editBox_${c.id}" class="hidden mt-2">
                                             <input type="text" id="editInput_${c.id}" value="${escapeHTML(c.comment)}" class="w-full px-2 py-1 text-xs border rounded dark:bg-gray-800 dark:border-gray-600 mb-1">
                                             <div class="flex gap-2">
@@ -612,7 +607,6 @@
                                     </div>
                                 </div>
 
-                                <!-- সাব-রিপ্লাইসমূহ -->
                                 ${childReplies.length > 0 ? `
                                     <div class="pl-8 space-y-2 border-l-2 border-gray-200 dark:border-gray-600 ml-4">
                                         ${childReplies.map(r => {
@@ -684,14 +678,12 @@
             if(box) box.classList.toggle('hidden');
         }
 
-        // কমেন্ট এডিট সেভ করার ফাংশন
         window.saveEditedComment = async (commentId, blogId) => {
             const input = document.getElementById(`editInput_${commentId}`);
             const newText = input ? input.value.trim() : '';
 
             if(!newText) { showToast('কমেন্ট খালি রাখা যাবে না!', true); return; }
 
-            // মডারেশন চেক
             if (containsForbiddenContent(newText)) {
                 showToast('⚠️ আপনার কমেন্টে গালি, অ্যাডাল্ট বা অনুপযুক্ত শব্দ থাকায় এটি এডিট করা বাতিল করা হয়েছে!', true);
                 return;
@@ -706,7 +698,6 @@
             }
         }
 
-        // কমেন্ট ডিলিট করার ফাংশন
         window.deleteComment = async (commentId, blogId) => {
             if(!confirm('আপনি কি নিশ্চিতভাবে এই কমেন্টটি ডিলিট করতে চান?')) return;
 
@@ -726,7 +717,6 @@
 
         window.closePostModal = () => document.getElementById('postDetailsModal').classList.add('hidden');
 
-        // কমেন্ট বা রিপ্লাই সাবমিট করার সময় অটো-মডারেশন চেক
         window.submitComment = async (e, blogId, parentId = null) => {
             e.preventDefault();
             if(!currentUser) { showToast('লগইন করুন', true); return; }
@@ -742,7 +732,6 @@
 
             if(!text) return;
 
-            // ⚠️ অটো ডিটেক্ট ও ব্লক ফিল্টার চেক
             if (containsForbiddenContent(text)) {
                 showToast('🚫 সতর্কতা: আপনার কমেন্টে গালিগালাজ, অ্যাডাল্ট বা হ্যারেসমেন্টমূলক শব্দ শনাক্ত হয়েছে। এই কমেন্টটি ব্লক ও রিজেক্ট করা হলো!', true);
                 return;
