@@ -11,9 +11,14 @@
         @import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap');
         body { font-family: 'Hind Siliguri', sans-serif; }
         .line-clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+        @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        .toast-animate { animation: slideInRight 0.3s ease-out forwards; }
     </style>
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 transition-colors min-h-screen flex flex-col">
+
+    <!-- টোস্ট নোটিফিকেশন কন্টেইনার -->
+    <div id="toast-container" class="fixed top-20 right-4 md:right-10 z-[100] flex flex-col gap-3 pointer-events-none"></div>
 
     <!-- নেভিগেশন বার -->
     <nav class="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-40 no-print">
@@ -93,7 +98,7 @@
                     <div id="requestsList" class="space-y-3"></div>
                 </div>
 
-                <!-- নতুন ফটো ট্যাব -->
+                <!-- ফটো ট্যাব -->
                 <div id="tabContentPhotos" class="hidden">
                     <div class="flex justify-between items-center mb-4">
                         <h3 class="text-xl font-bold text-gray-900 dark:text-white">আমার আপলোড করা ছবিসমূহ</h3>
@@ -133,6 +138,20 @@
         let viewingUserId = null;
         let currentGallery = [];
 
+        window.showToast = (message, isError = false) => {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast-animate px-5 py-4 rounded-lg shadow-2xl text-white font-bold flex items-center gap-3 ${isError ? 'bg-red-600 border-l-4 border-red-800' : 'bg-green-600 border-l-4 border-green-800'}`;
+            toast.innerHTML = `<span class="text-2xl">${isError ? '⚠️' : '✅'}</span><span class="text-sm md:text-base pr-2">${message}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => { 
+                toast.style.opacity = '0'; 
+                toast.style.transform = 'translateX(100%)'; 
+                toast.style.transition = 'all 0.3s ease'; 
+                setTimeout(() => toast.remove(), 300); 
+            }, 4000);
+        };
+
         function escapeHTML(str) {
             if (!str) return '';
             return str.replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
@@ -162,17 +181,14 @@
                 return;
             }
 
-            // ছবি লোডিং লজিক
             const profileImg = profile.profile_image ? profile.profile_image : `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.full_name || 'User')}&background=random&size=200`;
             document.getElementById('profileImageDisplay').src = profileImg;
             
-            // কভার ছবি
             if(profile.cover_image) {
                 document.getElementById('coverImageDisplay').src = profile.cover_image;
                 document.getElementById('coverImageDisplay').classList.remove('hidden');
             }
 
-            // গ্যালারি ডাটা লোড
             currentGallery = profile.gallery_images || [];
 
             let actionButtons = '';
@@ -196,7 +212,7 @@
                 document.getElementById('coverUploadLabel').classList.remove('hidden');
                 document.getElementById('profileUploadLabel').classList.remove('hidden');
                 document.getElementById('galleryUploadLabel').classList.remove('hidden');
-                switchTab('myBlogs'); // ডিফল্ট ট্যাব
+                switchTab('myBlogs');
                 loadMyBlogs();
             } else if (currentUser) {
                 if (friendStatus === 'none') {
@@ -228,8 +244,7 @@
             }
         }
 
-        // ------------------ আপলোড ফাংশনস ------------------
-
+        // কভার ফটো আপলোড ও ফটো সেকশনে যোগ করা
         window.uploadCoverImage = async (event) => {
             const file = event.target.files[0];
             if(!file || !currentUser) return;
@@ -237,34 +252,60 @@
             const fileName = `cover_${currentUser.id}_${Date.now()}.${file.name.split('.').pop()}`;
             const { error: uploadError } = await supabaseClient.storage.from('book-covers').upload(fileName, file);
             
-            if(uploadError) { alert('সমস্যা: ' + uploadError.message); return; }
+            if(uploadError) { showToast('সমস্যা: ' + uploadError.message, true); return; }
 
             const { data } = supabaseClient.storage.from('book-covers').getPublicUrl(fileName);
-            await supabaseClient.from('profiles').update({ cover_image: data.publicUrl }).eq('id', currentUser.id);
-            loadProfileDetails();
+            const newCoverUrl = data.publicUrl;
+
+            // গ্যালারিতেও ছবি অটো এড করা
+            let newGallery = [newCoverUrl, ...currentGallery];
+
+            const { error: dbError } = await supabaseClient.from('profiles').update({ 
+                cover_image: newCoverUrl,
+                gallery_images: newGallery 
+            }).eq('id', currentUser.id);
+
+            if(dbError) {
+                showToast('ডেটাবেসে সেভ হচ্ছে না: ' + dbError.message, true);
+            } else {
+                currentGallery = newGallery;
+                document.getElementById('coverImageDisplay').src = newCoverUrl;
+                document.getElementById('coverImageDisplay').classList.remove('hidden');
+                showToast('✅ আপনার কভার ফটো আপলোড হয়েছে!');
+            }
         }
 
+        // প্রোফাইল পিকচার আপলোড ও ফটো সেকশনে যোগ করা
         window.uploadProfileImage = async (event) => {
             const file = event.target.files[0];
             if(!file || !currentUser) return;
 
-            // ছবি আপলোড শুরু
             const fileName = `profile_${currentUser.id}_${Date.now()}.${file.name.split('.').pop()}`;
             const { error: uploadError } = await supabaseClient.storage.from('book-covers').upload(fileName, file);
             
-            if(uploadError) { alert('আপলোডে সমস্যা: ' + uploadError.message); return; }
+            if(uploadError) { showToast('আপলোডে সমস্যা: ' + uploadError.message, true); return; }
 
-            // ডেটাবেসে আপডেট
             const { data } = supabaseClient.storage.from('book-covers').getPublicUrl(fileName);
-            const { error: dbError } = await supabaseClient.from('profiles').update({ profile_image: data.publicUrl }).eq('id', currentUser.id);
+            const newProfileUrl = data.publicUrl;
+
+            // গ্যালারিতেও ছবি অটো এড করা
+            let newGallery = [newProfileUrl, ...currentGallery];
+
+            const { error: dbError } = await supabaseClient.from('profiles').update({ 
+                profile_image: newProfileUrl,
+                gallery_images: newGallery 
+            }).eq('id', currentUser.id);
             
-            if(dbError) { alert('ডেটাবেসে সেভ হচ্ছে না: ' + dbError.message); return; }
+            if(dbError) { 
+                showToast('ডেটাবেসে সেভ হচ্ছে না: ' + dbError.message, true); 
+                return; 
+            }
             
-            // লাইভ ছবি দেখানো
-            document.getElementById('profileImageDisplay').src = data.publicUrl;
+            currentGallery = newGallery;
+            document.getElementById('profileImageDisplay').src = newProfileUrl;
+            showToast('✅ আপনার প্রোফাইল ছবি আপলোড হয়েছে!');
         }
 
-        // গ্যালারিতে একাধিক ছবি আপলোড
         window.uploadGalleryImages = async (event) => {
             const files = event.target.files;
             if(!files.length || !currentUser) return;
@@ -272,7 +313,6 @@
             let newGallery = [...currentGallery];
             let uploadCount = 0;
 
-            // সব ছবি লোড হচ্ছে এমন মেসেজ দেখানো যেতে পারে
             for (let i = 0; i < files.length; i++) {
                 const file = files[i];
                 const fileName = `gallery_${currentUser.id}_${Date.now()}_${i}.${file.name.split('.').pop()}`;
@@ -280,22 +320,22 @@
                 
                 if(!uploadError) {
                     const { data } = supabaseClient.storage.from('book-covers').getPublicUrl(fileName);
-                    newGallery.push(data.publicUrl);
+                    newGallery.unshift(data.publicUrl);
                     uploadCount++;
                 }
             }
 
             if (uploadCount > 0) {
-                // ডেটাবেসে গ্যালারি আপডেট
                 const { error: dbError } = await supabaseClient.from('profiles').update({ gallery_images: newGallery }).eq('id', currentUser.id);
                 if(dbError) {
-                    alert('গ্যালারি সেভে সমস্যা: ' + dbError.message);
+                    showToast('গ্যালারি সেভে সমস্যা: ' + dbError.message, true);
                 } else {
                     currentGallery = newGallery;
-                    renderGallery(); // সাথে সাথে ছবি দেখাবে
+                    renderGallery();
+                    showToast('✅ ছবি সফলভাবে আপলোড হয়েছে!');
                 }
             } else {
-                alert('ছবি আপলোড ব্যর্থ হয়েছে। Storage পলিসি চেক করুন।');
+                showToast('ছবি আপলোড ব্যর্থ হয়েছে।', true);
             }
         }
 
@@ -320,16 +360,15 @@
         window.deleteGalleryImage = async (index) => {
             if(!confirm('ছবিটি ডিলিট করতে চান?')) return;
             let newGallery = [...currentGallery];
-            newGallery.splice(index, 1); // ঐ ইনডেক্সের ছবি বাদ
+            newGallery.splice(index, 1);
             
             const { error } = await supabaseClient.from('profiles').update({ gallery_images: newGallery }).eq('id', currentUser.id);
             if(!error) {
                 currentGallery = newGallery;
                 renderGallery();
+                showToast('ছবি ডিলিট করা হয়েছে');
             }
         }
-
-        // ------------------ ট্যাব সুইচিং ------------------
 
         window.switchTab = (tab) => {
             const tabs = ['myBlogs', 'friends', 'requests', 'photos', 'edit'];
@@ -344,13 +383,10 @@
             document.getElementById(`tabContent${tab.charAt(0).toUpperCase() + tab.slice(1)}`).classList.remove('hidden');
             document.getElementById(`tabBtn${tab.charAt(0).toUpperCase() + tab.slice(1)}`).className = "px-4 py-2 font-bold text-blue-600 border-b-2 border-blue-600 focus:outline-none";
 
-            // ফটো ট্যাবে গেলে গ্যালারি রেন্ডার হবে
             if(tab === 'photos') {
                 renderGallery();
             }
         }
-
-        // ------------------ অন্যান্য ফাংশন (ব্লগ, ফ্রেন্ড) ------------------
 
         async function loadMyBlogs(userId = null) {
             const targetId = userId || currentUser.id;
@@ -388,7 +424,7 @@
                 .eq('status', 'accepted');
 
             if (!friends || friends.length === 0) {
-                list.innerHTML = `<p class="text-gray-500 col-span-full">আপনার কোনো বন্ধু নেই। ব্লগারদের প্রোফাইলে গিয়ে ফ্রেন্ড রিকোয়েস্ট পাঠান।</p>`;
+                list.innerHTML = `<p class="text-gray-500 col-span-full">আপনার কোনো বন্ধু নেই।</p>`;
                 return;
             }
 
@@ -432,8 +468,8 @@
         window.sendFriendRequest = async () => {
             if (!currentUser) return;
             const { error } = await supabaseClient.from('friends').insert([{ sender_id: currentUser.id, receiver_id: viewingUserId, status: 'pending' }]);
-            if (error) alert('সমস্যা: ' + error.message);
-            else { alert('রিকোয়েস্ট পাঠানো হয়েছে!'); loadProfileDetails(); }
+            if (error) showToast('সমস্যা: ' + error.message, true);
+            else { showToast('রিকোয়েস্ট পাঠানো হয়েছে!'); loadProfileDetails(); }
         }
 
         window.acceptFriendRequest = async (senderId = null) => {
@@ -444,8 +480,8 @@
                 .eq('sender_id', targetId)
                 .eq('receiver_id', currentUser.id);
             
-            if (error) alert('সমস্যা: ' + error.message);
-            else { alert('বন্ধু হয়েছেন!'); loadProfileDetails(); }
+            if (error) showToast('সমস্যা: ' + error.message, true);
+            else { showToast('বন্ধু হয়েছেন!'); loadProfileDetails(); }
         }
 
         document.getElementById('profileForm').addEventListener('submit', async (e) => {
@@ -459,8 +495,8 @@
                 address: document.getElementById('profAddress').value
             };
             const { error } = await supabaseClient.from('profiles').update(updates).eq('id', currentUser.id);
-            if(error) alert('সমস্যা: ' + error.message);
-            else { alert('তথ্য সেভ হয়েছে!'); loadProfileDetails(); }
+            if(error) showToast('সমস্যা: ' + error.message, true);
+            else { showToast('✅ তথ্য সেভ হয়েছে!'); loadProfileDetails(); }
             btn.innerText = 'সেভ করুন'; btn.disabled = false;
         });
 
