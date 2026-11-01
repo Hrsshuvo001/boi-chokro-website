@@ -37,10 +37,11 @@
             
             <div class="md:col-span-1">
                 <div id="profileCard" class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden sticky top-24">
+                    <!-- কভার ছবি সেকশন -->
                     <div class="h-32 bg-blue-600 relative group">
                         <img id="coverImageDisplay" src="" class="w-full h-full object-cover hidden">
                         <label id="coverUploadLabel" for="coverImageInput" class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 cursor-pointer text-white text-sm font-bold transition hidden">
-                            কভার পরিবর্তন
+                            📸 কভার পরিবর্তন
                         </label>
                         <input type="file" id="coverImageInput" accept="image/*" class="hidden" onchange="uploadCoverImage(event)">
                     </div>
@@ -156,9 +157,7 @@
             viewingUserId = profileId || currentUser?.id;
             isOwnProfile = (currentUser && viewingUserId === currentUser.id);
 
-            setTimeout(() => {
-                loadProfileDetails();
-            }, 500);
+            loadProfileDetails();
         }
 
         async function loadProfileDetails() {
@@ -169,12 +168,17 @@
                 return;
             }
 
+            // প্রোফাইল ছবি সেট করা
             const profileImg = profile.profile_image ? profile.profile_image : `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.full_name || 'User')}&background=random&size=200`;
             document.getElementById('profileImageDisplay').src = profileImg;
             
+            // কভার ছবি সেট করা
+            const coverImgEl = document.getElementById('coverImageDisplay');
             if(profile.cover_image) {
-                document.getElementById('coverImageDisplay').src = profile.cover_image;
-                document.getElementById('coverImageDisplay').classList.remove('hidden');
+                coverImgEl.src = profile.cover_image;
+                coverImgEl.classList.remove('hidden');
+            } else {
+                coverImgEl.classList.add('hidden');
             }
 
             currentGallery = profile.gallery_images || [];
@@ -261,9 +265,11 @@
                 }]);
 
                 currentGallery = newGallery;
-                document.getElementById('coverImageDisplay').src = newCoverUrl;
-                document.getElementById('coverImageDisplay').classList.remove('hidden');
+                const coverImgEl = document.getElementById('coverImageDisplay');
+                coverImgEl.src = newCoverUrl;
+                coverImgEl.classList.remove('hidden');
                 showToast('✅ আপনার কভার ফটো আপলোড হয়েছে!');
+                loadProfileDetails();
                 loadMyBlogs();
             }
         }
@@ -303,6 +309,7 @@
             currentGallery = newGallery;
             document.getElementById('profileImageDisplay').src = newProfileUrl;
             showToast('✅ আপনার প্রোফাইল ছবি আপলোড হয়েছে!');
+            loadProfileDetails();
             loadMyBlogs();
         }
 
