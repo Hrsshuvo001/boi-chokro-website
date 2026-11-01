@@ -88,7 +88,7 @@
         
         <div class="relative z-50 text-center px-4 w-full max-w-4xl mx-auto py-8">
             <h1 id="web_tagline" class="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-4 tracking-tight drop-shadow-lg">আপনার পছন্দের বই, এক জায়গায়</h1>
-            <p class="text-sm sm:text-base md:text-lg text-gray-200 max-w-2xl mx-auto mb-8 drop-shadow">সেরা লেখকদের বইয়ের বিশাল সংগ্রহ। আজই আপনার প্রিয় বইটি খুঁজে নিন।</p>
+            <p id="web_sub_tagline" class="text-sm sm:text-base md:text-lg text-gray-200 max-w-2xl mx-auto mb-8 drop-shadow">সেরা লেখকদের বইয়ের বিশাল সংগ্রহ। আজই আপনার প্রিয় বইটি খুঁজে নিন।</p>
             
             <div class="md:hidden max-w-md mx-auto relative group z-50">
                 <input type="text" id="searchInputMobile" placeholder="বই খুঁজুন..." class="w-full pl-10 pr-4 py-3 bg-white/20 backdrop-blur-md border border-white/30 text-white placeholder-gray-200 rounded-full focus:outline-none focus:bg-white focus:text-gray-800 transition shadow-lg text-sm" oninput="handleSearch('mobile')">
@@ -147,9 +147,11 @@
         </div>
     </div>
 
+    <!-- ডাইনামিক ফুটার -->
     <footer class="bg-gray-900 dark:bg-black text-gray-400 pt-12 pb-6 mt-auto border-t-4 border-blue-600 no-print">
-        <div class="max-w-7xl mx-auto px-4 text-center">
+        <div class="max-w-7xl mx-auto px-4 text-center space-y-2">
             <p id="web_footer_text">&copy; 2026 Boi Chokro. All rights reserved.</p>
+            <p id="web_footer_contact" class="text-sm"></p>
         </div>
     </footer>
 
@@ -200,31 +202,54 @@
             if(deskEl) deskEl.innerText = cart.length;
         }
 
+        // অ্যাডমিন প্যানেল সেটিংস থেকে ডাইনামিক ডেটা (লোগো, নাম, ট্যাগলাইন, ফোন, ঠিকানা) লোড করার ফাংশন
         async function loadAdminSettings() {
             try {
                 const { data: settings } = await supabaseClient.from('settings').select('*').maybeSingle();
                 if (settings) {
-                    if (settings.site_title || settings.title) {
-                        const title = settings.site_title || settings.title;
-                        document.getElementById('pageTitle').innerText = title;
-                        const headerName = document.getElementById('web_header_name');
-                        if(headerName) headerName.innerText = title;
-                    }
-                    if (settings.logo_url || settings.logo) {
-                        const logoUrl = settings.logo_url || settings.logo;
+                    // ১. সাইট টাইটেল ও নাম ডাইনামিক করা
+                    const siteName = settings.site_title || settings.title || settings.name || settings.company_name || 'Boi Chokro';
+                    document.getElementById('pageTitle').innerText = siteName + ' - অনলাইন বইঘর';
+                    const headerName = document.getElementById('web_header_name');
+                    if(headerName) headerName.innerText = siteName;
+
+                    // ২. লোগো ডাইনামিক করা
+                    const logoUrl = settings.logo_url || settings.logo || settings.site_logo || '';
+                    if (logoUrl) {
                         const logoEl = document.getElementById('web_header_logo');
                         if(logoEl) {
                             logoEl.src = logoUrl;
                             logoEl.classList.remove('hidden');
                         }
                     }
-                    if (settings.footer_text || settings.footer) {
+
+                    // ৩. ট্যাগলাইন ডাইনামিক করা
+                    const tagline = settings.tagline || settings.sub_title || settings.description || '';
+                    if (tagline) {
+                        const taglineEl = document.getElementById('web_tagline');
+                        if(taglineEl) taglineEl.innerText = tagline;
+                    }
+
+                    // ৪. ফোন ও ঠিকানা ফুটারে ডাইনামিক করা
+                    const phone = settings.phone || settings.mobile || settings.support_phone || '';
+                    const address = settings.address || settings.location || settings.office_address || '';
+                    const footerContact = document.getElementById('web_footer_contact');
+                    if (footerContact) {
+                        let contactHTML = '';
+                        if (phone) contactHTML += `📞 ফোন: ${phone} `;
+                        if (address) contactHTML += ` | 📍 ঠিকানা: ${address}`;
+                        footerContact.innerHTML = contactHTML;
+                    }
+
+                    // ৫. ফুটার টেক্সট
+                    const footerText = settings.footer_text || settings.footer || '';
+                    if (footerText) {
                         const footerEl = document.getElementById('web_footer_text');
-                        if(footerEl) footerEl.innerHTML = settings.footer_text || settings.footer;
+                        if(footerEl) footerEl.innerHTML = footerText;
                     }
                 }
             } catch (e) {
-                console.log('Settings table not found.');
+                console.log('Settings table not found or error loading settings.');
             }
         }
 
@@ -422,7 +447,7 @@
         }
 
         // ==========================================
-        // ব্লগ ও সাহিত্য ফিড (সঠিক প্রোফাইল লিংক সহ)
+        // ব্লগ ও সাহিত্য ফিড
         // ==========================================
         async function loadBlogs() {
             const blogList = document.getElementById('blogList');
@@ -454,7 +479,6 @@
                 return `
                 <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col h-full overflow-hidden hover:shadow-md transition">
                     <div>
-                        <!-- লেখকের প্রোফাইল পেজে যাওয়ার সঠিক লিংক -->
                         <div class="p-4 flex items-center gap-3 border-b dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition" onclick="window.location.href='/profile.html?id=${blog.author_id}'">
                             <img src="${authorImg}" class="w-10 h-10 rounded-full object-cover border">
                             <div>
@@ -595,7 +619,7 @@
         }
 
         window.submitBlog = async () => {
-            if(!currentUser) { showToast('ব্লগ লিখতে প্রথমে লগইন করুন!', true); return; }
+            if(!currentUser) { showToast('পোস্ট লিখতে প্রথমে লগইন করুন!', true); return; }
             
             const title = document.getElementById('newBlogTitle').value.trim();
             const content = document.getElementById('newBlogContent').value.trim();
