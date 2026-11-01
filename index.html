@@ -139,7 +139,7 @@
         </section>
     </main>
 
-    <!-- ফুল পোস্ট ভিউ ও কমেন্ট মডাল (পপ-আপ) -->
+    <!-- ফুল পোস্ট ভিউ, ভিউ কাউন্ট, কমেন্ট ও রিপ্লাই মডাল (পপ-আপ) -->
     <div id="postDetailsModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
         <div class="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl relative modal-animate">
             <button onclick="closePostModal()" class="absolute top-4 right-4 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-red-500 hover:text-white h-8 w-8 rounded-full flex items-center justify-center font-bold transition">✕</button>
@@ -396,7 +396,7 @@
         }
 
         // ==========================================
-        // ব্লগ ও পোস্ট ফিড লোড ও ডিটেইলস মডাল ফাংশন
+        // ব্লগ ও পোস্ট ফিড লোড ও পোস্ট ডিটেইলস
         // ==========================================
         async function loadBlogs() {
             const blogList = document.getElementById('blogList');
@@ -453,6 +453,8 @@
                             <button onclick="openPostDetails('${blog.id}')" class="flex items-center gap-1 text-gray-500 hover:text-blue-500 transition text-sm">
                                 💬 কমেন্ট
                             </button>
+                            <!-- কার্ডেও ভিউ সংখ্যা দেখাবে -->
+                            <span class="flex items-center gap-1 text-gray-400 text-xs">👁️ ${blog.views || 0}</span>
                         </div>
                         <button onclick="openPostDetails('${blog.id}')" class="text-xs font-bold text-blue-600 hover:underline">বিস্তারিত</button>
                     </div>
@@ -475,13 +477,23 @@
             loadBlogs();
         }
 
-        // পপ-আপ (ডিটেইলস মডাল) ফাংশন যেখানে ফেসবুকের মতো লাইক বাটন ও কারা লাইক দিল তা দেখাবে
+        // ==========================================
+        // পপ-আপ (ডিটেইলস মডাল): ভিউ কাউন্ট + লাইক + কমেন্ট রিপ্লাই
+        // ==========================================
         window.openPostDetails = async (blogId) => {
             const modal = document.getElementById('postDetailsModal');
             const contentDiv = document.getElementById('modalBodyContent');
             modal.classList.remove('hidden');
             contentDiv.innerHTML = '<p class="text-center py-10 text-gray-500">লোড হচ্ছে...</p>';
 
+            // ১. ভিউ কাউন্ট ১ বাড়িয়ে দেওয়া
+            try {
+                const { data: currentBlog } = await supabaseClient.from('blogs').select('views').eq('id', blogId).single();
+                const newViews = ((currentBlog?.views) || 0) + 1;
+                await supabaseClient.from('blogs').update({ views: newViews }).eq('id', blogId);
+            } catch(e) { console.log('View count update error:', e); }
+
+            // ২. পোস্টের সম্পূর্ণ তথ্য লোড
             const { data: blog } = await supabaseClient.from('blogs').select('*').eq('id', blogId).single();
             if(!blog) { contentDiv.innerHTML = '<p class="text-red-500 text-center">পোস্ট পাওয়া যায়নি।</p>'; return; }
 
@@ -489,28 +501,24 @@
             const authorName = author?.full_name || 'নামহীন লেখক';
             const authorImg = author?.profile_image || `https://ui-avatars.com/api/?name=${encodeURIComponent(authorName)}&background=random`;
 
-            // লাইক ডেটা ও ইউজার চেক
+            // ৩. লাইক চেক
             const { data: likes } = await supabaseClient.from('blog_likes').select('user_id').eq('blog_id', blogId);
             const totalLikes = likes ? likes.length : 0;
             const hasLiked = currentUser ? likes?.some(l => l.user_id === currentUser.id) : false;
 
-            // লাইক দেওয়া ব্যবহারকারীদের নাম সংগ্রহ (ফেসবুকের মতো দেখানোর জন্য)
             let likerNamesText = '';
             if (totalLikes > 0 && likes) {
                 const likerIds = likes.slice(0, 3).map(l => l.user_id);
                 const { data: likerProfiles } = await supabaseClient.from('profiles').select('full_name').in('id', likerIds);
                 if (likerProfiles && likerProfiles.length > 0) {
                     const names = likerProfiles.map(p => p.full_name);
-                    if (totalLikes === 1) {
-                        likerNamesText = `${names[0]} এটি লাইক করেছেন`;
-                    } else if (totalLikes === 2) {
-                        likerNamesText = `${names[0]} এবং ${names[1]} এটি লাইক করেছেন`;
-                    } else {
-                        likerNamesText = `${names[0]}, ${names[1]} এবং আরও ${totalLikes - 2} জন এটি লাইক করেছেন`;
-                    }
+                    if (totalLikes === 1) likerNamesText = `${names[0]} এটি লাইক করেছেন`;
+                    else if (totalLikes === 2) likerNamesText = `${names[0]} এবং ${names[1]} এটি লাইক করেছেন`;
+                    else likerNamesText = `${names[0]}, ${names[1]} এবং আরও ${totalLikes - 2} জন এটি লাইক করেছেন`;
                 }
             }
 
+            // ৪. কমেন্ট ও রিপ্লাই লোড করা
             const { data: comments } = await supabaseClient.from('blog_comments').select('*').eq('blog_id', blogId).order('created_at', { ascending: true });
             
             let commentProfiles = {};
@@ -520,23 +528,34 @@
                 if(cProfiles) cProfiles.forEach(p => commentProfiles[p.id] = p);
             }
 
+            // মেইন কমেন্ট ও রিপ্লাইগুলোকে আলাদা সাজানো
+            const mainComments = comments ? comments.filter(c => !c.parent_id) : [];
+            const replies = comments ? comments.filter(c => c.parent_id) : [];
+
             contentDiv.innerHTML = `
-                <div class="flex items-center gap-3 mb-4 cursor-pointer hover:opacity-80 transition" onclick="window.location.href='/profile.html?id=${blog.author_id}'">
-                    <img src="${authorImg}" class="w-12 h-12 rounded-full object-cover border">
-                    <div>
-                        <h3 class="font-bold text-base text-gray-900 dark:text-white hover:text-blue-600">${escapeHTML(authorName)}</h3>
-                        <p class="text-xs text-gray-400">${new Date(blog.created_at).toLocaleString('bn-BD')}</p>
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-3 cursor-pointer hover:opacity-80 transition" onclick="window.location.href='/profile.html?id=${blog.author_id}'">
+                        <img src="${authorImg}" class="w-12 h-12 rounded-full object-cover border">
+                        <div>
+                            <h3 class="font-bold text-base text-gray-900 dark:text-white hover:text-blue-600">${escapeHTML(authorName)}</h3>
+                            <p class="text-xs text-gray-400">${new Date(blog.created_at).toLocaleString('bn-BD')}</p>
+                        </div>
+                    </div>
+                    <!-- ভিউ কাউন্ট প্রদর্শন -->
+                    <div class="flex items-center gap-1 text-xs font-bold bg-blue-50 dark:bg-gray-700 text-blue-600 dark:text-blue-300 px-3 py-1 rounded-full border border-blue-100 dark:border-gray-600">
+                        👁️ <span>${blog.views || 1} ভিউ</span>
                     </div>
                 </div>
+
                 <h2 class="text-2xl font-extrabold text-gray-900 dark:text-white mb-2">${escapeHTML(blog.title)}</h2>
                 ${blog.image_url ? `<img src="${blog.image_url}" class="w-full max-h-96 object-cover rounded-xl mb-4 shadow-sm">` : ''}
                 <div class="text-gray-700 dark:text-gray-200 text-base leading-relaxed whitespace-pre-line mb-4">${escapeHTML(blog.content)}</div>
 
-                <!-- ফেসবুক স্টাইল লাইক সেকশন -->
+                <!-- ফেসবুক স্টাইল লাইক ও ভিউ সামারি -->
                 <div class="flex items-center justify-between text-xs sm:text-sm text-gray-500 dark:text-gray-400 border-y dark:border-gray-700 py-2.5 my-3">
                     <div class="flex items-center gap-1.5">
                         <span class="bg-blue-600 text-white p-1 rounded-full text-[10px]">👍</span>
-                        <span id="modalLikeCountText">${totalLikes} জনের ভালো লেগেছে</span>
+                        <span>${totalLikes} জন</span>
                     </div>
                     <div>${totalLikes > 0 ? `<span class="italic text-xs">${escapeHTML(likerNamesText)}</span>` : 'প্রথমে লাইক দিন'}</div>
                 </div>
@@ -552,19 +571,60 @@
 
                 <h4 class="font-bold text-lg mb-3 text-gray-900 dark:text-white">💬 কমেন্টসমূহ (${comments ? comments.length : 0})</h4>
                 
-                <div class="space-y-3 max-h-60 overflow-y-auto mb-4 pr-2">
-                    ${(!comments || comments.length === 0) ? '<p class="text-sm text-gray-400 text-center py-4">এখনো কোনো কমেন্ট নেই। প্রথম কমেন্ট করুন!</p>' : 
-                        comments.map(c => {
-                            const commenter = commentProfiles[c.user_id] || { full_name: 'ব্যবহারকারী', profile_image: 'https://via.placeholder.com/30' };
+                <!-- কমেন্ট ও রিপ্লাই লিস্ট -->
+                <div class="space-y-4 max-h-72 overflow-y-auto mb-4 pr-2">
+                    ${(mainComments.length === 0) ? '<p class="text-sm text-gray-400 text-center py-4">এখনো কোনো কমেন্ট নেই। প্রথম কমেন্ট করুন!</p>' : 
+                        mainComments.map(c => {
+                            const commenter = commentProfiles[c.user_id] || { full_name: 'ব্যবহারকারী', profile_image: '' };
+                            const cImg = commenter.profile_image || `https://ui-avatars.com/api/?name=${encodeURIComponent(commenter.full_name)}&background=random`;
+                            
+                            // এই কমেন্টের আন্ডারে থাকা রিপ্লাইগুলো
+                            const childReplies = replies.filter(r => r.parent_id === c.id);
+
                             return `
-                            <div class="flex items-start gap-2.5 bg-gray-50 dark:bg-gray-700 p-3 rounded-xl">
-                                <img src="${commenter.profile_image || 'https://via.placeholder.com/30'}" class="w-8 h-8 rounded-full object-cover mt-0.5">
-                                <div class="flex-1">
-                                    <div class="flex justify-between items-center">
-                                        <span class="font-bold text-xs text-gray-900 dark:text-white">${escapeHTML(commenter.full_name)}</span>
-                                        <span class="text-[10px] text-gray-400">${new Date(c.created_at).toLocaleTimeString('bn-BD', {hour: '2-digit', minute:'2-digit'})}</span>
+                            <div class="space-y-2">
+                                <div class="flex items-start gap-2.5 bg-gray-50 dark:bg-gray-700 p-3 rounded-xl">
+                                    <img src="${cImg}" class="w-8 h-8 rounded-full object-cover mt-0.5">
+                                    <div class="flex-1">
+                                        <div class="flex justify-between items-center">
+                                            <span class="font-bold text-xs text-gray-900 dark:text-white">${escapeHTML(commenter.full_name)}</span>
+                                            <span class="text-[10px] text-gray-400">${new Date(c.created_at).toLocaleTimeString('bn-BD', {hour: '2-digit', minute:'2-digit'})}</span>
+                                        </div>
+                                        <p class="text-sm text-gray-700 dark:text-gray-200 mt-1">${escapeHTML(c.comment)}</p>
+                                        
+                                        <!-- রিপ্লাই বাটন -->
+                                        <button onclick="toggleReplyBox('${c.id}')" class="text-xs text-blue-600 font-bold mt-1 hover:underline">রিপ্লাই দিন</button>
                                     </div>
-                                    <p class="text-sm text-gray-700 dark:text-gray-200 mt-1">${escapeHTML(c.comment)}</p>
+                                </div>
+
+                                <!-- কমেন্টের নিচে সাব-রিপ্লাইসমূহ -->
+                                ${childReplies.length > 0 ? `
+                                    <div class="pl-8 space-y-2 border-l-2 border-gray-200 dark:border-gray-600 ml-4">
+                                        ${childReplies.map(r => {
+                                            const replier = commentProfiles[r.user_id] || { full_name: 'ব্যবহারকারী', profile_image: '' };
+                                            const rImg = replier.profile_image || `https://ui-avatars.com/api/?name=${encodeURIComponent(replier.full_name)}&background=random`;
+                                            return `
+                                            <div class="flex items-start gap-2 bg-gray-100 dark:bg-gray-800 p-2.5 rounded-xl text-xs">
+                                                <img src="${rImg}" class="w-6 h-6 rounded-full object-cover mt-0.5">
+                                                <div class="flex-1">
+                                                    <div class="flex justify-between items-center">
+                                                        <span class="font-bold text-gray-900 dark:text-white">${escapeHTML(replier.full_name)}</span>
+                                                        <span class="text-[9px] text-gray-400">${new Date(r.created_at).toLocaleTimeString('bn-BD', {hour: '2-digit', minute:'2-digit'})}</span>
+                                                    </div>
+                                                    <p class="text-gray-700 dark:text-gray-200 mt-0.5">${escapeHTML(r.comment)}</p>
+                                                </div>
+                                            </div>
+                                            `;
+                                        }).join('')}
+                                    </div>
+                                ` : ''}
+
+                                <!-- রিপ্লাই লেখার ইনপুট ফিল্ড (ডিফল্টভাবে হাইড থাকবে) -->
+                                <div id="replyBox_${c.id}" class="hidden pl-8 ml-4">
+                                    <form onsubmit="submitComment(event, '${blog.id}', '${c.id}')" class="flex gap-2">
+                                        <input type="text" id="replyInput_${c.id}" required placeholder="${escapeHTML(commenter.full_name)}-কে রিপ্লাই দিন..." class="flex-1 px-3 py-1.5 border rounded-lg dark:bg-gray-800 dark:border-gray-600 text-xs outline-none focus:ring-1 focus:ring-blue-500">
+                                        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition">রিপ্লাই</button>
+                                    </form>
                                 </div>
                             </div>
                             `;
@@ -572,8 +632,9 @@
                     }
                 </div>
 
+                <!-- মূল কমেন্ট ইনপুট (Parent ID ছাড়া) -->
                 ${currentUser ? `
-                <form onsubmit="submitComment(event, '${blog.id}')" class="flex gap-2">
+                <form onsubmit="submitComment(event, '${blog.id}', null)" class="flex gap-2">
                     <input type="text" id="commentInput_${blog.id}" required placeholder="একটি সুন্দর কমেন্ট লিখুন..." class="flex-1 px-4 py-2 border rounded-xl dark:bg-gray-700 dark:border-gray-600 text-sm outline-none focus:ring-2 focus:ring-blue-500">
                     <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-5 py-2 rounded-xl text-sm transition">পাঠান</button>
                 </form>
@@ -583,32 +644,47 @@
             `;
         }
 
+        window.toggleReplyBox = (commentId) => {
+            const box = document.getElementById(`replyBox_${commentId}`);
+            if(box) box.classList.toggle('hidden');
+        }
+
         window.toggleModalLike = async (blogId) => {
             await likeBlog(blogId);
-            openPostDetails(blogId); // মডাল রিফ্রেশ করে লাইক কাউন্ট ও স্ট্যাটাস আপডেট করার জন্য
+            openPostDetails(blogId);
         }
 
         window.closePostModal = () => document.getElementById('postDetailsModal').classList.add('hidden');
 
-        window.submitComment = async (e, blogId) => {
+        // কমেন্ট এবং রিপ্লাই সেভ করার ফাংশন
+        window.submitComment = async (e, blogId, parentId = null) => {
             e.preventDefault();
-            if(!currentUser) { alert('লগইন করুন'); return; }
+            if(!currentUser) { showToast('লগইন করুন', true); return; }
 
-            const input = document.getElementById(`commentInput_${blogId}`);
-            const text = input.value.trim();
+            let text = '';
+            if (parentId) {
+                const replyInput = document.getElementById(`replyInput_${parentId}`);
+                text = replyInput ? replyInput.value.trim() : '';
+            } else {
+                const mainInput = document.getElementById(`commentInput_${blogId}`);
+                text = mainInput ? mainInput.value.trim() : '';
+            }
+
             if(!text) return;
 
-            const { error } = await supabaseClient.from('blog_comments').insert([{
+            const insertData = {
                 blog_id: blogId,
                 user_id: currentUser.id,
                 comment: text
-            }]);
+            };
+            if(parentId) insertData.parent_id = parentId;
+
+            const { error } = await supabaseClient.from('blog_comments').insert([insertData]);
 
             if(!error) {
-                input.value = '';
                 openPostDetails(blogId);
             } else {
-                alert('কমেন্ট করতে সমস্যা হয়েছে: ' + error.message);
+                showToast('কমেন্ট সাবমিট সমস্যা: ' + error.message, true);
             }
         }
 
@@ -634,7 +710,7 @@
                 }
 
                 const { error } = await supabaseClient.from('blogs').insert([{ 
-                    author_id: currentUser.id, title: title, content: content, image_url: image_url, status: 'pending' 
+                    author_id: currentUser.id, title: title, content: content, image_url: image_url, status: 'pending', views: 0 
                 }]);
                 
                 if (error) throw new Error(error.message);
