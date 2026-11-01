@@ -113,10 +113,10 @@
             </div>
         </section>
 
-        <!-- ২. ব্লগ ও সাহিত্য ফিড সেকশন -->
+        <!-- ২. ব্লগ ও পোস্ট সমূহ সেকশন -->
         <section id="blogSection" class="mt-16 mb-12">
             <div class="flex justify-between items-center mb-6">
-                <h2 class="text-3xl font-bold text-gray-900 dark:text-white border-l-4 border-blue-600 pl-3">গল্প এবং সাহিত্য</h2>
+                <h2 class="text-3xl font-bold text-gray-900 dark:text-white border-l-4 border-blue-600 pl-3">ব্লগ ও পোস্ট সমূহ</h2>
                 <button onclick="document.getElementById('writeBlogForm').classList.toggle('hidden')" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-700 transition">✍️ নতুন পোস্ট লিখুন</button>
             </div>
 
@@ -139,7 +139,7 @@
         </section>
     </main>
 
-    <!-- ফুল পোস্ট ভিউ ও কমেন্ট মডাল -->
+    <!-- ফুল পোস্ট ভিউ ও কমেন্ট মডাল (পপ-আপ) -->
     <div id="postDetailsModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
         <div class="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl relative modal-animate">
             <button onclick="closePostModal()" class="absolute top-4 right-4 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-red-500 hover:text-white h-8 w-8 rounded-full flex items-center justify-center font-bold transition">✕</button>
@@ -396,7 +396,7 @@
         }
 
         // ==========================================
-        // ব্লগ ও সাহিত্য ফিড লোড ও ডিটেইলস মডাল ফাংশন
+        // ব্লগ ও পোস্ট ফিড লোড ও ডিটেইলস মডাল ফাংশন
         // ==========================================
         async function loadBlogs() {
             const blogList = document.getElementById('blogList');
@@ -409,7 +409,7 @@
                 .order('created_at', { ascending: false });
             
             if (error || !blogs || blogs.length === 0) {
-                blogList.innerHTML = `<div class="col-span-full text-center py-10 bg-white dark:bg-gray-800 rounded-xl shadow-sm"><p class="text-gray-500">এখনো কোনো গল্প বা ব্লগ প্রকাশিত হয়নি।</p></div>`;
+                blogList.innerHTML = `<div class="col-span-full text-center py-10 bg-white dark:bg-gray-800 rounded-xl shadow-sm"><p class="text-gray-500">এখনো কোনো পোস্ট প্রকাশিত হয়নি।</p></div>`;
                 return;
             }
 
@@ -437,11 +437,9 @@
                             </div>
                         </div>
 
-                        <!-- ছবিতে ক্লিক করলে ডিটেইলস মডাল ওপেন হবে -->
                         ${blog.image_url ? `<div class="max-h-60 overflow-hidden bg-gray-100 cursor-pointer" onclick="openPostDetails('${blog.id}')"><img src="${blog.image_url}" class="w-full h-full object-cover hover:scale-105 transition duration-300"></div>` : ''}
                         
                         <div class="p-4 space-y-2">
-                            <!-- টাইটেলে ক্লিক করলে ডিটেইলস মডাল ওপেন হবে -->
                             <h3 class="text-lg font-bold text-gray-900 dark:text-white cursor-pointer hover:text-blue-600 transition line-clamp-2" onclick="openPostDetails('${blog.id}')">${escapeHTML(blog.title)}</h3>
                             <p class="text-sm text-gray-600 dark:text-gray-300 line-clamp-3">${escapeHTML(blog.content)}</p>
                         </div>
@@ -477,6 +475,7 @@
             loadBlogs();
         }
 
+        // পপ-আপ (ডিটেইলস মডাল) ফাংশন যেখানে ফেসবুকের মতো লাইক বাটন ও কারা লাইক দিল তা দেখাবে
         window.openPostDetails = async (blogId) => {
             const modal = document.getElementById('postDetailsModal');
             const contentDiv = document.getElementById('modalBodyContent');
@@ -489,6 +488,28 @@
             const { data: author } = await supabaseClient.from('profiles').select('id, full_name, profile_image').eq('id', blog.author_id).maybeSingle();
             const authorName = author?.full_name || 'নামহীন লেখক';
             const authorImg = author?.profile_image || `https://ui-avatars.com/api/?name=${encodeURIComponent(authorName)}&background=random`;
+
+            // লাইক ডেটা ও ইউজার চেক
+            const { data: likes } = await supabaseClient.from('blog_likes').select('user_id').eq('blog_id', blogId);
+            const totalLikes = likes ? likes.length : 0;
+            const hasLiked = currentUser ? likes?.some(l => l.user_id === currentUser.id) : false;
+
+            // লাইক দেওয়া ব্যবহারকারীদের নাম সংগ্রহ (ফেসবুকের মতো দেখানোর জন্য)
+            let likerNamesText = '';
+            if (totalLikes > 0 && likes) {
+                const likerIds = likes.slice(0, 3).map(l => l.user_id);
+                const { data: likerProfiles } = await supabaseClient.from('profiles').select('full_name').in('id', likerIds);
+                if (likerProfiles && likerProfiles.length > 0) {
+                    const names = likerProfiles.map(p => p.full_name);
+                    if (totalLikes === 1) {
+                        likerNamesText = `${names[0]} এটি লাইক করেছেন`;
+                    } else if (totalLikes === 2) {
+                        likerNamesText = `${names[0]} এবং ${names[1]} এটি লাইক করেছেন`;
+                    } else {
+                        likerNamesText = `${names[0]}, ${names[1]} এবং আরও ${totalLikes - 2} জন এটি লাইক করেছেন`;
+                    }
+                }
+            }
 
             const { data: comments } = await supabaseClient.from('blog_comments').select('*').eq('blog_id', blogId).order('created_at', { ascending: true });
             
@@ -509,9 +530,25 @@
                 </div>
                 <h2 class="text-2xl font-extrabold text-gray-900 dark:text-white mb-2">${escapeHTML(blog.title)}</h2>
                 ${blog.image_url ? `<img src="${blog.image_url}" class="w-full max-h-96 object-cover rounded-xl mb-4 shadow-sm">` : ''}
-                <div class="text-gray-700 dark:text-gray-200 text-base leading-relaxed whitespace-pre-line mb-6">${escapeHTML(blog.content)}</div>
+                <div class="text-gray-700 dark:text-gray-200 text-base leading-relaxed whitespace-pre-line mb-4">${escapeHTML(blog.content)}</div>
 
-                <hr class="dark:border-gray-700 my-4">
+                <!-- ফেসবুক স্টাইল লাইক সেকশন -->
+                <div class="flex items-center justify-between text-xs sm:text-sm text-gray-500 dark:text-gray-400 border-y dark:border-gray-700 py-2.5 my-3">
+                    <div class="flex items-center gap-1.5">
+                        <span class="bg-blue-600 text-white p-1 rounded-full text-[10px]">👍</span>
+                        <span id="modalLikeCountText">${totalLikes} জনের ভালো লেগেছে</span>
+                    </div>
+                    <div>${totalLikes > 0 ? `<span class="italic text-xs">${escapeHTML(likerNamesText)}</span>` : 'প্রথমে লাইক দিন'}</div>
+                </div>
+
+                <div class="flex items-center justify-around border-b dark:border-gray-700 pb-2 mb-4">
+                    <button onclick="toggleModalLike('${blog.id}')" class="flex items-center justify-center gap-2 flex-1 py-1.5 rounded-lg font-bold text-sm transition ${hasLiked ? 'text-blue-600 bg-blue-50 dark:bg-gray-700' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'}">
+                        <span>${hasLiked ? '👍 লাইকড' : '👍 লাইক'}</span>
+                    </button>
+                    <button onclick="document.getElementById('commentInput_${blog.id}').focus()" class="flex items-center justify-center gap-2 flex-1 py-1.5 rounded-lg font-bold text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition">
+                        <span>💬 কমেন্ট করুন</span>
+                    </button>
+                </div>
 
                 <h4 class="font-bold text-lg mb-3 text-gray-900 dark:text-white">💬 কমেন্টসমূহ (${comments ? comments.length : 0})</h4>
                 
@@ -544,6 +581,11 @@
                 <p class="text-center text-sm py-2 bg-gray-50 dark:bg-gray-700 rounded-xl text-gray-500">কমেন্ট করতে অনুগ্রহ করে <a href="/login.html" class="text-blue-600 font-bold underline">লগইন করুন</a>।</p>
                 `}
             `;
+        }
+
+        window.toggleModalLike = async (blogId) => {
+            await likeBlog(blogId);
+            openPostDetails(blogId); // মডাল রিফ্রেশ করে লাইক কাউন্ট ও স্ট্যাটাস আপডেট করার জন্য
         }
 
         window.closePostModal = () => document.getElementById('postDetailsModal').classList.add('hidden');
@@ -602,6 +644,7 @@
                 document.getElementById('newBlogContent').value = '';
                 document.getElementById('newBlogImage').value = '';
                 document.getElementById('writeBlogForm').classList.add('hidden');
+                loadBlogs();
             } catch (err) {
                 showToast('সমস্যা: ' + err.message, true);
             } finally {
