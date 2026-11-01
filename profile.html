@@ -17,10 +17,8 @@
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 transition-colors min-h-screen flex flex-col">
 
-    <!-- টোস্ট নোটিফিকেশন কন্টেইনার -->
     <div id="toast-container" class="fixed top-20 right-4 md:right-10 z-[100] flex flex-col gap-3 pointer-events-none"></div>
 
-    <!-- নেভিগেশন বার -->
     <nav class="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-40 no-print">
         <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
             <a href="/index.html" class="text-2xl font-extrabold text-blue-600 dark:text-blue-400 tracking-tight">Boi Chokro</a>
@@ -37,10 +35,8 @@
     <main class="flex-grow max-w-6xl mx-auto w-full px-4 py-8 no-print">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
             
-            <!-- বাম দিক: প্রোফাইল কার্ড -->
             <div class="md:col-span-1">
                 <div id="profileCard" class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden sticky top-24">
-                    <!-- কভার ছবি -->
                     <div class="h-32 bg-blue-600 relative group">
                         <img id="coverImageDisplay" src="" class="w-full h-full object-cover hidden">
                         <label id="coverUploadLabel" for="coverImageInput" class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 cursor-pointer text-white text-sm font-bold transition hidden">
@@ -50,7 +46,6 @@
                         <input type="file" id="coverImageInput" accept="image/*" class="hidden" onchange="uploadCoverImage(event)">
                     </div>
                     
-                    <!-- প্রোফাইল ছবি ও নাম -->
                     <div class="px-6 pb-6 relative">
                         <div class="-mt-12 flex justify-center mb-4">
                             <div class="relative group w-24 h-24">
@@ -63,7 +58,8 @@
                         </div>
                         <div class="text-center">
                             <h2 id="displayName" class="text-2xl font-bold text-gray-900 dark:text-white mb-1">লোড হচ্ছে...</h2>
-                            <p id="displayEmail" class="text-sm text-gray-500 mb-2">...</p>
+                            <p id="displayEmail" class="text-sm text-gray-500 mb-1">...</p>
+                            <p id="displayBio" class="text-xs text-gray-600 dark:text-gray-400 mb-2 italic"></p>
                             <p id="displayAddress" class="text-sm text-gray-500"></p>
                         </div>
                         <div id="actionButtonsContainer" class="mt-4 flex justify-center"></div>
@@ -71,10 +67,7 @@
                 </div>
             </div>
 
-            <!-- ডান দিক: কন্টেন্ট এরিয়া -->
             <div class="md:col-span-2">
-                
-                <!-- ট্যাব মেনু -->
                 <div id="myProfileTabs" class="hidden mb-6 border-b border-gray-200 dark:border-gray-700 flex flex-wrap">
                     <button onclick="switchTab('myBlogs')" id="tabBtnMyBlogs" class="px-4 py-2 font-bold text-blue-600 border-b-2 border-blue-600 focus:outline-none">আমার ব্লগ ও পোস্ট</button>
                     <button onclick="switchTab('friends')" id="tabBtnFriends" class="px-4 py-2 font-bold text-gray-500 hover:text-blue-600 focus:outline-none border-b-2 border-transparent">বন্ধু তালিকা</button>
@@ -98,7 +91,6 @@
                     <div id="requestsList" class="space-y-3"></div>
                 </div>
 
-                <!-- ফটো ট্যাব -->
                 <div id="tabContentPhotos" class="hidden">
                     <div class="flex justify-between items-center mb-4">
                         <h3 class="text-xl font-bold text-gray-900 dark:text-white">আমার আপলোড করা ছবিসমূহ</h3>
@@ -107,16 +99,17 @@
                         </label>
                         <input type="file" id="galleryImagesInput" accept="image/*" multiple class="hidden" onchange="uploadGalleryImages(event)">
                     </div>
-                    <div id="photoGallery" class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                        <!-- ছবিগুলো এখানে দেখাবে -->
-                    </div>
+                    <div id="photoGallery" class="grid grid-cols-2 sm:grid-cols-3 gap-3"></div>
                 </div>
 
+                <!-- ইনফো এডিট ট্যাব (নতুন ফিল্ডসহ) -->
                 <div id="tabContentEdit" class="hidden">
                     <h3 class="text-xl font-bold mb-4 text-gray-900 dark:text-white">তথ্য আপডেট করুন</h3>
                     <form id="profileForm" class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 space-y-4">
                         <div><label class="block text-sm font-semibold mb-1">পুরো নাম</label><input type="text" id="profName" class="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600"></div>
                         <div><label class="block text-sm font-semibold mb-1">মোবাইল নম্বর</label><input type="text" id="profPhone" class="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600"></div>
+                        <div><label class="block text-sm font-semibold mb-1">সংক্ষিপ্ত বায়ো (Bio)</label><input type="text" id="profBio" placeholder="নিজের সম্পর্কে এক লাইনে কিছু বলুন..." class="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600"></div>
+                        <div><label class="block text-sm font-semibold mb-1">পেশা</label><input type="text" id="profOccupation" placeholder="যেমন: শিক্ষার্থী, ব্লগার, চাকরিজীবী" class="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600"></div>
                         <div><label class="block text-sm font-semibold mb-1">ঠিকানা</label><textarea id="profAddress" rows="2" class="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600"></textarea></div>
                         <button type="submit" id="updateProfileBtn" class="bg-blue-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-700 transition">সেভ করুন</button>
                     </form>
@@ -214,6 +207,13 @@
                 document.getElementById('galleryUploadLabel').classList.remove('hidden');
                 switchTab('myBlogs');
                 loadMyBlogs();
+
+                // ফর্মে আগের ডেটা বসিয়ে দেওয়া
+                document.getElementById('profName').value = profile.full_name || '';
+                document.getElementById('profPhone').value = profile.phone || '';
+                document.getElementById('profBio').value = profile.bio || '';
+                document.getElementById('profOccupation').value = profile.occupation || '';
+                document.getElementById('profAddress').value = profile.address || '';
             } else if (currentUser) {
                 if (friendStatus === 'none') {
                     actionButtons = `<button onclick="sendFriendRequest()" class="w-full mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-700 transition">➕ ফ্রেন্ড রিকোয়েস্ট</button>`;
@@ -229,22 +229,16 @@
             document.getElementById('actionButtonsContainer').innerHTML = actionButtons;
             document.getElementById('displayName').innerText = profile.full_name || 'নামহীন ব্যবহারকারী';
             document.getElementById('displayEmail').innerText = profile.email || '';
+            document.getElementById('displayBio').innerText = profile.bio ? `"${profile.bio}"` : (profile.occupation ? `পেশা: ${profile.occupation}` : '');
             document.getElementById('displayAddress').innerText = profile.address ? `📍 ${profile.address}` : '';
 
-            if (isOwnProfile) {
-                loadFriends();
-                loadFriendRequests();
-                document.getElementById('profName').value = profile.full_name || '';
-                document.getElementById('profPhone').value = profile.phone || '';
-                document.getElementById('profAddress').value = profile.address || '';
-            } else {
+            if (!isOwnProfile) {
                 document.getElementById('tabContentMyBlogs').classList.remove('hidden');
                 document.getElementById('blogHeaderTitle').innerText = "এই ব্যবহারকারীর পোস্টসমূহ";
                 loadMyBlogs(viewingUserId);
             }
         }
 
-        // কভার ফটো আপলোড, গ্যালারি ও ফেসবুকের মতো পোস্টে যোগ করা
         window.uploadCoverImage = async (event) => {
             const file = event.target.files[0];
             if(!file || !currentUser) return;
@@ -267,7 +261,6 @@
             if(dbError) {
                 showToast('ডেটাবেসে সেভ হচ্ছে না: ' + dbError.message, true);
             } else {
-                // ফেসবুকের মতো ব্লগে পোস্ট হিসেবে যুক্ত করা
                 await supabaseClient.from('blogs').insert([{
                     author_id: currentUser.id,
                     title: 'কভার ফটো আপডেট',
@@ -284,7 +277,6 @@
             }
         }
 
-        // প্রোফাইল পিকচার আপলোড, গ্যালারি ও ফেসবুকের মতো পোস্টে যোগ করা
         window.uploadProfileImage = async (event) => {
             const file = event.target.files[0];
             if(!file || !currentUser) return;
@@ -309,7 +301,6 @@
                 return; 
             }
             
-            // ফেসবুকের মতো ব্লগে পোস্ট হিসেবে যুক্ত করা
             await supabaseClient.from('blogs').insert([{
                 author_id: currentUser.id,
                 title: 'প্রোফাইল ছবি আপডেট',
@@ -510,11 +501,17 @@
             const updates = {
                 full_name: document.getElementById('profName').value,
                 phone: document.getElementById('profPhone').value,
+                bio: document.getElementById('profBio').value,
+                occupation: document.getElementById('profOccupation').value,
                 address: document.getElementById('profAddress').value
             };
             const { error } = await supabaseClient.from('profiles').update(updates).eq('id', currentUser.id);
-            if(error) showToast('সমস্যা: ' + error.message, true);
-            else { showToast('✅ তথ্য সেভ হয়েছে!'); loadProfileDetails(); }
+            if(error) {
+                showToast('সমস্যা: ' + error.message, true);
+            } else { 
+                showToast('✅ তথ্য সফলভাবে সেভ হয়েছে!'); 
+                loadProfileDetails(); 
+            }
             btn.innerText = 'সেভ করুন'; btn.disabled = false;
         });
 
