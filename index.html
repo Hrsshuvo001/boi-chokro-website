@@ -422,7 +422,7 @@
         }
 
         // ==========================================
-        // ব্লগ ও সাহিত্য ফিড (সঠিক লেখক ও মডাল সহ)
+        // ব্লগ ও সাহিত্য ফিড (সঠিক প্রোফাইল লিংক সহ)
         // ==========================================
         async function loadBlogs() {
             const blogList = document.getElementById('blogList');
@@ -438,7 +438,6 @@
                 return;
             }
 
-            // লেখকের প্রোফাইল তথ্য ফেচ করা
             const authorIds = [...new Set(blogs.map(b => b.author_id))];
             const { data: profiles } = await supabaseClient.from('profiles').select('id, full_name, profile_image').in('id', authorIds);
             const profileMap = {};
@@ -455,10 +454,11 @@
                 return `
                 <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col h-full overflow-hidden hover:shadow-md transition">
                     <div>
-                        <div class="p-4 flex items-center gap-3 border-b dark:border-gray-700">
+                        <!-- লেখকের প্রোফাইল পেজে যাওয়ার সঠিক লিংক -->
+                        <div class="p-4 flex items-center gap-3 border-b dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition" onclick="window.location.href='/profile.html?id=${blog.author_id}'">
                             <img src="${authorImg}" class="w-10 h-10 rounded-full object-cover border">
                             <div>
-                                <h4 class="font-bold text-sm text-gray-900 dark:text-white">${escapeHTML(author.full_name)}</h4>
+                                <h4 class="font-bold text-sm text-gray-900 dark:text-white hover:text-blue-600 transition">${escapeHTML(author.full_name)}</h4>
                                 <p class="text-xs text-gray-400">${new Date(blog.created_at).toLocaleDateString('bn-BD')}</p>
                             </div>
                         </div>
@@ -510,7 +510,7 @@
             const { data: blog } = await supabaseClient.from('blogs').select('*').eq('id', blogId).single();
             if(!blog) { contentDiv.innerHTML = '<p class="text-red-500 text-center">পোস্ট পাওয়া যায়নি।</p>'; return; }
 
-            const { data: author } = await supabaseClient.from('profiles').select('full_name, profile_image').eq('id', blog.author_id).maybeSingle();
+            const { data: author } = await supabaseClient.from('profiles').select('id, full_name, profile_image').eq('id', blog.author_id).maybeSingle();
             const authorName = author?.full_name || 'নামহীন লেখক';
             const authorImg = author?.profile_image || `https://ui-avatars.com/api/?name=${encodeURIComponent(authorName)}&background=random`;
 
@@ -524,10 +524,10 @@
             }
 
             contentDiv.innerHTML = `
-                <div class="flex items-center gap-3 mb-4">
+                <div class="flex items-center gap-3 mb-4 cursor-pointer hover:opacity-80 transition" onclick="window.location.href='/profile.html?id=${blog.author_id}'">
                     <img src="${authorImg}" class="w-12 h-12 rounded-full object-cover border">
                     <div>
-                        <h3 class="font-bold text-base text-gray-900 dark:text-white">${escapeHTML(authorName)}</h3>
+                        <h3 class="font-bold text-base text-gray-900 dark:text-white hover:text-blue-600">${escapeHTML(authorName)}</h3>
                         <p class="text-xs text-gray-400">${new Date(blog.created_at).toLocaleString('bn-BD')}</p>
                     </div>
                 </div>
