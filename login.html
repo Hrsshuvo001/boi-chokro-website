@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="bn" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,39 +11,45 @@
         body { font-family: 'Hind Siliguri', sans-serif; }
     </style>
 </head>
-<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 min-h-screen flex items-center justify-center p-4">
 
-    <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md border-t-4 border-blue-600">
-        <div class="text-center mb-8">
-            <h2 class="text-3xl font-bold text-gray-800">স্বাগতম!</h2>
-            <p class="text-gray-500 mt-2">আপনার অ্যাকাউন্টে লগইন করুন</p>
+    <div class="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-xl w-full max-w-md border border-gray-100 dark:border-gray-700">
+        <div class="text-center mb-6">
+            <h2 class="text-2xl font-extrabold text-gray-900 dark:text-white">স্বাগতম!</h2>
+            <p class="text-sm text-gray-500 mt-1">আপনার অ্যাকাউন্টে লগইন করুন</p>
         </div>
-        
-        <form id="loginForm" class="space-y-5">
+
+        <div id="errorMsg" class="hidden mb-4 p-3 bg-red-100 text-red-700 rounded-lg text-sm font-semibold text-center"></div>
+
+        <form id="loginForm" class="space-y-4">
             <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-1">ইমেইল</label>
-                <input type="email" id="email" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <label class="block text-sm font-semibold mb-1">ইমেইল</label>
+                <input type="email" id="email" required class="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
             </div>
             
+            <!-- পাসওয়ার্ড ফিল্ড উইথ শো/হাইড আইকন -->
             <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-1">পাসওয়ার্ড</label>
-                <input type="password" id="password" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <label class="block text-sm font-semibold mb-1">পাসওয়ার্ড</label>
+                <div class="relative">
+                    <input type="password" id="password" required class="w-full px-4 py-2 pr-10 border rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <button type="button" onclick="togglePassword()" class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 focus:outline-none">
+                        <svg id="eyeIcon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                    </button>
+                </div>
             </div>
 
-            <!-- পাসওয়ার্ড ভুলে গেছেন লিংক -->
-            <div class="text-right">
-                <a href="/forgot-password.html" class="text-sm text-blue-600 hover:underline font-semibold">পাসওয়ার্ড ভুলে গেছেন?</a>
+            <div class="flex justify-end">
+                <a href="#" class="text-xs text-blue-600 dark:text-blue-400 hover:underline">পাসওয়ার্ড ভুলে গেছেন?</a>
             </div>
-            
-            <button type="submit" id="loginBtn" class="w-full bg-blue-600 text-white font-bold py-2.5 rounded-lg hover:bg-blue-700 transition shadow-md">
-                লগইন
-            </button>
+
+            <button type="submit" id="submitBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-lg transition shadow-md">লগইন</button>
         </form>
 
-        <div id="message" class="text-center text-sm mt-4 hidden font-semibold"></div>
-
-        <p class="text-center text-gray-600 mt-6 text-sm">
-            অ্যাকাউন্ট নেই? <a href="/signup.html" class="text-blue-600 font-bold hover:underline">সাইন আপ করুন</a>
+        <p class="text-center text-sm text-gray-600 dark:text-gray-400 mt-4">
+            অ্যাকাউন্ট নেই? <a href="/signup.html" class="text-blue-600 dark:text-blue-400 font-bold hover:underline">সাইন আপ করুন</a>
         </p>
     </div>
 
@@ -52,67 +58,43 @@
         const SUPABASE_ANON_KEY = 'sb_publishable_oBzutzPKvIvujmSG7icXug_SwwveL5g';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        const loginForm = document.getElementById('loginForm');
-        const messageDiv = document.getElementById('message');
-        const loginBtn = document.getElementById('loginBtn');
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const eyeIcon = document.getElementById('eyeIcon');
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                eyeIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7a10.05 10.05 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.542 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />`;
+            } else {
+                passwordInput.type = 'password';
+                eyeIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />`;
+            }
+        }
 
-        loginForm.addEventListener('submit', async (e) => {
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            
-            loginBtn.innerText = 'অপেক্ষা করুন...';
-            loginBtn.disabled = true;
-            messageDiv.classList.add('hidden');
+            const submitBtn = document.getElementById('submitBtn');
+            const errorDiv = document.getElementById('errorMsg');
+            errorDiv.classList.add('hidden');
+            submitBtn.innerText = 'লগইন হচ্ছে...';
+            submitBtn.disabled = true;
 
-            const email = document.getElementById('email').value;
+            const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
 
-            try {
-                const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+            const { data, error } = await supabaseClient.auth.signInWithPassword({
+                email: email,
+                password: password
+            });
 
-                if (error) {
-                    throw new Error(error.message === 'Invalid login credentials' ? 'ভুল ইমেইল বা পাসওয়ার্ড!' : error.message);
-                }
-
-                if (data.user) {
-                    const { data: profile, error: profileError } = await supabaseClient
-                        .from('profiles')
-                        .select('role')
-                        .eq('id', data.user.id)
-                        .maybeSingle();
-
-                    if (profileError) throw new Error("প্রোফাইল চেক করতে সমস্যা হয়েছে!");
-
-                    if (profile && profile.role === 'admin') {
-                        await supabaseClient.auth.signOut();
-                        messageDiv.classList.remove('hidden', 'text-green-600');
-                        messageDiv.classList.add('text-red-600');
-                        messageDiv.innerText = '❌ আপনি একজন অ্যাডমিন! দয়া করে অ্যাডমিন পোর্টাল দিয়ে লগইন করুন।';
-                    } else if (profile && profile.role === 'employee') {
-                        // ইমপ্লয়ি হলে অ্যাডমিন প্যানেলে পাঠাবে
-                        messageDiv.classList.remove('hidden', 'text-red-600');
-                        messageDiv.classList.add('text-green-600');
-                        messageDiv.innerText = '✅ সফলভাবে লগইন হয়েছে! অ্যাডমিন প্যানেলে যাচ্ছেন...';
-                        setTimeout(() => {
-                            window.location.href = '/admin-dashboard.html'; 
-                        }, 1000);
-                    } else {
-                        // সাধারণ কাস্টমার
-                        messageDiv.classList.remove('hidden', 'text-red-600');
-                        messageDiv.classList.add('text-green-600');
-                        messageDiv.innerText = '✅ সফলভাবে লগইন হয়েছে! হোম পেজে যাচ্ছেন...';
-                        setTimeout(() => {
-                            window.location.href = '/index.html'; 
-                        }, 1000);
-                    }
-                }
-            } catch (err) {
-                messageDiv.classList.remove('hidden', 'text-green-600');
-                messageDiv.classList.add('text-red-600');
-                messageDiv.innerText = '⚠️ ' + err.message;
-            } finally {
-                loginBtn.innerText = 'লগইন';
-                loginBtn.disabled = false;
+            if (error) {
+                errorDiv.innerText = '⚠️ ভুল ইমেইল বা পাসওয়ার্ড!';
+                errorDiv.classList.remove('hidden');
+                submitBtn.innerText = 'লগইন';
+                submitBtn.disabled = false;
+                return;
             }
+
+            window.location.href = '/index.html';
         });
     </script>
 </body>
