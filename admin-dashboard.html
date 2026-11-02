@@ -121,7 +121,7 @@
                 </div>
             </section>
 
-            <!-- ৩. অ্যাড নিউ বুক (অ্যাফিলিয়েট লিংক অপশনসহ) -->
+            <!-- ৩. অ্যাড নিউ বুক -->
             <section id="section-add-book" class="section-content">
                 <h2 class="text-2xl font-bold text-gray-800 mb-6">নতুন বই যোগ করুন</h2>
                 <div class="bg-white p-6 rounded-xl shadow-sm max-w-2xl">
@@ -141,7 +141,6 @@
                             </select>
                         </div>
                         
-                        <!-- বইয়ের ধরন (নিজের বই নাকি অ্যাফিলিয়েট লিংক) -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-blue-50 p-4 border border-blue-200 rounded-md">
                             <div>
                                 <label class="block text-xs font-bold text-blue-800 mb-1">বইয়ের ধরন</label>
@@ -358,19 +357,47 @@
         </div>
     </div>
 
-    <!-- বই এডিট মডাল -->
+    <!-- সম্পূর্ণ বই এডিট মডাল (সকল ফিল্ডসহ) -->
     <div id="editBookModal" class="fixed inset-0 z-[100] hidden items-center justify-center modal-overlay p-4">
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6">
             <div class="flex justify-between items-center mb-4 border-b pb-2">
-                <h2 class="text-xl font-bold text-gray-800">বই এডিট করুন</h2>
+                <h2 class="text-xl font-bold text-gray-800">বই এডিট করুন (সম্পূর্ণ তথ্য)</h2>
                 <button onclick="closeEditModal()" class="text-red-500 font-bold text-xl">&times;</button>
             </div>
             <form id="editBookForm" class="space-y-4">
                 <input type="hidden" id="edit_book_id">
-                <div><label class="block text-sm font-medium text-gray-700">বইয়ের নাম</label><input type="text" id="edit_title" required class="w-full px-4 py-2 border rounded-md"></div>
-                <div><label class="block text-sm font-medium text-gray-700">স্টক</label><input type="number" id="edit_stock_quantity" required class="w-full px-4 py-2 border rounded-md"></div>
-                <div><label class="block text-sm font-medium text-gray-700">মূল্য (৳)</label><input type="number" id="edit_discount_price" required class="w-full px-4 py-2 border rounded-md"></div>
-                <button type="submit" class="w-full bg-green-600 text-white font-bold py-2 rounded">আপডেট করুন</button>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div><label class="block text-xs font-medium text-gray-700 mb-1">বইয়ের নাম</label><input type="text" id="edit_title" required class="w-full px-4 py-2 border rounded-md"></div>
+                    <div><label class="block text-xs font-medium text-gray-700 mb-1">লেখক</label><select id="edit_author" required class="w-full px-4 py-2 border rounded-md bg-white"></select></div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div><label class="block text-xs font-medium text-gray-700 mb-1">ক্যাটাগরি</label><select id="edit_category" required class="w-full px-4 py-2 border rounded-md bg-white"></select></div>
+                    <div><label class="block text-xs font-medium text-gray-700 mb-1">প্রকাশনী</label><select id="edit_publisher" required class="w-full px-4 py-2 border rounded-md bg-white"></select></div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-blue-50 p-3 border border-blue-200 rounded-md">
+                    <div>
+                        <label class="block text-xs font-bold text-blue-800 mb-1">বইয়ের ধরন</label>
+                        <select id="edit_book_type" onchange="toggleEditAffiliateField()" class="w-full px-3 py-2 border rounded-md bg-white text-sm">
+                            <option value="own">নিজের বই</option>
+                            <option value="affiliate">অ্যাফিলিয়েট লিংক</option>
+                        </select>
+                    </div>
+                    <div id="edit_affiliate_url_div" class="hidden">
+                        <label class="block text-xs font-bold text-blue-800 mb-1">অ্যাফিলিয়েট লিংক</label>
+                        <input type="url" id="edit_affiliate_url" placeholder="https://..." class="w-full px-3 py-2 border rounded-md bg-white text-sm">
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div><label class="block text-xs font-medium text-gray-700 mb-1">স্টক পরিমাণ</label><input type="number" id="edit_stock_quantity" required class="w-full px-4 py-2 border rounded-md"></div>
+                    <div><label class="block text-xs font-medium text-gray-700 mb-1">কভার ছবি (নতুন দিতে চাইলে)</label><input type="file" id="edit_cover_file" accept="image/*" class="w-full px-3 py-1.5 border rounded-md bg-gray-50 text-sm"></div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 p-3 bg-gray-50 border rounded-md">
+                    <div><label class="block text-xs text-gray-500 mb-1">ক্রয় মূল্য (৳)</label><input type="number" id="edit_purchase_price" class="w-full px-3 py-2 border rounded-md"></div>
+                    <div><label class="block text-xs text-gray-500 mb-1">আসল মূল্য (MRP)</label><input type="number" id="edit_original_price" class="w-full px-3 py-2 border rounded-md"></div>
+                    <div><label class="block text-xs text-gray-500 mb-1">ডিসকাউন্ট মূল্য (৳)</label><input type="number" id="edit_discount_price" required class="w-full px-3 py-2 border rounded-md"></div>
+                </div>
+                <div><label class="block text-xs font-medium text-gray-700 mb-1">বইয়ের বিবরণ</label><textarea id="edit_description" rows="3" class="w-full px-4 py-2 border rounded-md"></textarea></div>
+                <button type="submit" class="w-full bg-green-600 text-white font-bold py-3 rounded-md hover:bg-green-700">বই আপডেট করুন</button>
             </form>
         </div>
     </div>
@@ -417,7 +444,6 @@
             if(sectionId === 'settings') loadSettings();
         };
 
-        // অ্যাফিলিয়েট ফিল্ড টগল করার ফাংশন
         window.toggleAffiliateField = () => {
             const bookType = document.getElementById('book_type').value;
             const affiliateDiv = document.getElementById('affiliate_url_div');
@@ -430,9 +456,19 @@
             }
         };
 
-        // ==========================================
-        // নতুন বই যোগ করার হ্যান্ডলার (অ্যাফিলিয়েট লিংক ও এরর ফিক্সড)
-        // ==========================================
+        window.toggleEditAffiliateField = () => {
+            const bookType = document.getElementById('edit_book_type').value;
+            const affiliateDiv = document.getElementById('edit_affiliate_url_div');
+            if(bookType === 'affiliate') {
+                affiliateDiv.classList.remove('hidden');
+                document.getElementById('edit_affiliate_url').required = true;
+            } else {
+                affiliateDiv.classList.add('hidden');
+                document.getElementById('edit_affiliate_url').required = false;
+            }
+        };
+
+        // নতুন বই যোগ
         document.getElementById('addBookForm')?.addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('addBookBtn');
@@ -458,36 +494,16 @@
                 if (imageFile) {
                     const fileExt = imageFile.name.split('.').pop();
                     const fileName = `book_${Date.now()}.${fileExt}`;
-                    
-                    const { error: uploadError } = await supabaseClient.storage
-                        .from('book-covers')
-                        .upload(fileName, imageFile);
-
+                    const { error: uploadError } = await supabaseClient.storage.from('book-covers').upload(fileName, imageFile);
                     if (uploadError) throw uploadError;
-
-                    const { data: urlData } = supabaseClient.storage
-                        .from('book-covers')
-                        .getPublicUrl(fileName);
-                        
+                    const { data: urlData } = supabaseClient.storage.from('book-covers').getPublicUrl(fileName);
                     cover_url = urlData.publicUrl;
                 }
 
-                const { error: insertError } = await supabaseClient.from('books').insert([{
-                    title,
-                    author,
-                    category,
-                    publisher,
-                    book_type,
-                    affiliate_url,
-                    stock_quantity,
-                    purchase_price,
-                    original_price,
-                    discount_price,
-                    price: discount_price,
-                    description,
-                    cover_url
-                }]);
+                const bookData = { title, author, category, publisher, stock_quantity, purchase_price, original_price, discount_price, price: discount_price, description, cover_url };
+                try { bookData.book_type = book_type; bookData.affiliate_url = affiliate_url; } catch(err) {}
 
+                const { error: insertError } = await supabaseClient.from('books').insert([bookData]);
                 if (insertError) throw insertError;
 
                 showToast('✅ নতুন বই সফলভাবে যোগ হয়েছে!');
@@ -495,7 +511,6 @@
                 toggleAffiliateField();
                 loadAllBooks();
                 showSection('all-books');
-
             } catch (err) {
                 showToast('ত্রুটি: ' + (err.message || 'বই যোগ করা যায়নি!'), true);
             } finally {
@@ -504,9 +519,6 @@
             }
         });
 
-        // ==========================================
-        // ক্যাটাগরি, লেখক ও প্রকাশনী ম্যানেজমেন্ট ও লিস্ট
-        // ==========================================
         async function loadMetaLists() {
             const catContainer = document.getElementById('categoryListContainer');
             const { data: categories } = await supabaseClient.from('categories').select('*').order('name');
@@ -579,10 +591,8 @@
                     const { data } = supabaseClient.storage.from('book-covers').getPublicUrl(fileName);
                     image_url = data.publicUrl;
                 }
-
                 const { error } = await supabaseClient.from('authors').insert([{ name, bio, image_url }]);
                 if(error) throw error;
-
                 showToast('✅ লেখক সফলভাবে যোগ হয়েছে!');
                 document.getElementById('addAuthorForm').reset();
                 loadMetaLists();
@@ -603,15 +613,11 @@
             document.getElementById('edit_meta_table').value = table;
             document.getElementById('edit_meta_id').value = id;
             document.getElementById('edit_meta_name').value = name;
-            
             const authorFields = document.getElementById('edit_meta_author_fields');
             if(table === 'authors') {
                 authorFields.classList.remove('hidden');
                 document.getElementById('edit_meta_bio').value = bio;
-            } else {
-                authorFields.classList.add('hidden');
-            }
-
+            } else { authorFields.classList.add('hidden'); }
             document.getElementById('editMetaModal').classList.remove('hidden');
             document.getElementById('editMetaModal').classList.add('flex');
         }
@@ -627,7 +633,6 @@
             const id = document.getElementById('edit_meta_id').value;
             const name = document.getElementById('edit_meta_name').value;
             let updates = { name };
-
             if(table === 'authors') {
                 updates.bio = document.getElementById('edit_meta_bio').value;
                 const imageFile = document.getElementById('edit_meta_image').files[0];
@@ -640,14 +645,9 @@
                     }
                 }
             }
-
             const { error } = await supabaseClient.from(table).update(updates).eq('id', id);
             if(error) showToast(error.message, true);
-            else {
-                showToast('✅ সফলভাবে আপডেট হয়েছে!');
-                closeEditMetaModal();
-                loadMetaLists();
-            }
+            else { showToast('✅ সফলভাবে আপডেট হয়েছে!'); closeEditMetaModal(); loadMetaLists(); }
         });
 
         window.deleteMeta = async (tableName, id) => {
@@ -657,35 +657,24 @@
             else { showToast('🗑️ সফলভাবে ডিলিট করা হয়েছে!'); loadMetaLists(); }
         }
 
-        // ==========================================
-        // ড্রপডাউন ডেটা লোড
-        // ==========================================
         async function loadDropdowns() {
             const { data: categories } = await supabaseClient.from('categories').select('name');
             const { data: authors } = await supabaseClient.from('authors').select('name');
             const { data: publishers } = await supabaseClient.from('publishers').select('name');
 
-            const catSelect = document.getElementById('category');
-            const authorSelect = document.getElementById('author');
-            const pubSelect = document.getElementById('publisher');
+            const fillSelect = (elId, list, defaultText) => {
+                const el = document.getElementById(elId);
+                const editEl = document.getElementById('edit_' + elId);
+                const options = `<option value="" disabled selected>${defaultText}</option>` + (list ? list.map(x => `<option value="${escapeHTML(x.name)}">${escapeHTML(x.name)}</option>`).join('') : '');
+                if(el) el.innerHTML = options;
+                if(editEl) editEl.innerHTML = options;
+            };
 
-            if(catSelect && categories) {
-                catSelect.innerHTML = '<option value="" disabled selected>ক্যাটাগরি সিলেক্ট করুন</option>';
-                categories.forEach(c => catSelect.innerHTML += `<option value="${escapeHTML(c.name)}">${escapeHTML(c.name)}</option>`);
-            }
-            if(authorSelect && authors) {
-                authorSelect.innerHTML = '<option value="" disabled selected>লেখক সিলেক্ট করুন</option>';
-                authors.forEach(a => authorSelect.innerHTML += `<option value="${escapeHTML(a.name)}">${escapeHTML(a.name)}</option>`);
-            }
-            if(pubSelect && publishers) {
-                pubSelect.innerHTML = '<option value="" disabled selected>প্রকাশনী সিলেক্ট করুন</option>';
-                publishers.forEach(p => pubSelect.innerHTML += `<option value="${escapeHTML(p.name)}">${escapeHTML(p.name)}</option>`);
-            }
+            fillSelect('category', categories, 'ক্যাটাগরি সিলেক্ট করুন');
+            fillSelect('author', authors, 'লেখক সিলেক্ট করুন');
+            fillSelect('publisher', publishers, 'প্রকাশনী সিলেক্ট করুন');
         }
 
-        // ==========================================
-        // সব বই, এডিট ও ডিলিট
-        // ==========================================
         async function loadAllBooks() {
             const tbody = document.getElementById('allBooksTableBody');
             if(!tbody) return;
@@ -716,6 +705,7 @@
         }
 
         window.editBook = async (id) => {
+            await loadDropdowns();
             let { data: book } = await supabaseClient.from('books').select('*').eq('id', id).maybeSingle();
             if(!book) {
                 const res = await supabaseClient.from('books').select('*').eq('book_id', id).maybeSingle();
@@ -725,27 +715,69 @@
 
             document.getElementById('edit_book_id').value = book.id || book.book_id;
             document.getElementById('edit_title').value = book.title || '';
+            document.getElementById('edit_author').value = book.author || '';
+            document.getElementById('edit_category').value = book.category || '';
+            document.getElementById('edit_publisher').value = book.publisher || '';
+            document.getElementById('edit_book_type').value = book.book_type || 'own';
+            document.getElementById('edit_affiliate_url').value = book.affiliate_url || '';
             document.getElementById('edit_stock_quantity').value = book.stock_quantity || 0;
+            document.getElementById('edit_purchase_price').value = book.purchase_price || 0;
+            document.getElementById('edit_original_price').value = book.original_price || 0;
             document.getElementById('edit_discount_price').value = book.discount_price || book.price || 0;
+            document.getElementById('edit_description').value = book.description || '';
+
+            toggleEditAffiliateField();
+
             document.getElementById('editBookModal').classList.remove('hidden');
             document.getElementById('editBookModal').classList.add('flex');
         }
 
-        window.closeEditModal = () => { document.getElementById('editBookModal').classList.add('hidden'); }
+        window.closeEditModal = () => { 
+            document.getElementById('editBookModal').classList.add('hidden'); 
+            document.getElementById('editBookModal').classList.remove('flex'); 
+        }
 
+        // সম্পূর্ণ বই আপডেট হ্যান্ডলার
         document.getElementById('editBookForm')?.addEventListener('submit', async (e) => {
             e.preventDefault();
             const id = document.getElementById('edit_book_id').value;
-            const updates = {
-                title: document.getElementById('edit_title').value,
-                stock_quantity: parseInt(document.getElementById('edit_stock_quantity').value),
-                discount_price: parseFloat(document.getElementById('edit_discount_price').value),
-                price: parseFloat(document.getElementById('edit_discount_price').value)
-            };
-            await supabaseClient.from('books').update(updates).eq('id', id);
-            showToast('✅ বই আপডেট হয়েছে!');
-            closeEditModal();
-            loadAllBooks();
+            
+            try {
+                const updates = {
+                    title: document.getElementById('edit_title').value,
+                    author: document.getElementById('edit_author').value,
+                    category: document.getElementById('edit_category').value,
+                    publisher: document.getElementById('edit_publisher').value,
+                    book_type: document.getElementById('edit_book_type').value,
+                    affiliate_url: document.getElementById('edit_book_type').value === 'affiliate' ? document.getElementById('edit_affiliate_url').value : '',
+                    stock_quantity: parseInt(document.getElementById('edit_stock_quantity').value) || 0,
+                    purchase_price: parseFloat(document.getElementById('edit_purchase_price').value) || 0,
+                    original_price: parseFloat(document.getElementById('edit_original_price').value) || 0,
+                    discount_price: parseFloat(document.getElementById('edit_discount_price').value) || 0,
+                    price: parseFloat(document.getElementById('edit_discount_price').value) || 0,
+                    description: document.getElementById('edit_description').value
+                };
+
+                const imageFile = document.getElementById('edit_cover_file').files[0];
+                if (imageFile) {
+                    const fileExt = imageFile.name.split('.').pop();
+                    const fileName = `book_${Date.now()}.${fileExt}`;
+                    const { error: uploadError } = await supabaseClient.storage.from('book-covers').upload(fileName, imageFile);
+                    if (!uploadError) {
+                        const { data: urlData } = supabaseClient.storage.from('book-covers').getPublicUrl(fileName);
+                        updates.cover_url = urlData.publicUrl;
+                    }
+                }
+
+                const { error } = await supabaseClient.from('books').update(updates).eq('id', id);
+                if(error) throw error;
+
+                showToast('✅ বই সফলভাবে আপডেট হয়েছে!');
+                closeEditModal();
+                loadAllBooks();
+            } catch(err) {
+                showToast('ত্রুটি: ' + err.message, true);
+            }
         });
 
         window.deleteBook = async (id) => {
