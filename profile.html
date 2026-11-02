@@ -434,7 +434,7 @@
             btn.disabled = false;
         });
 
-        // কভার ছবি আপলোড (অটো এপ্রুভ - সরাসরি প্রোফাইলে সেভ হবে)
+        // কভার ছবি আপলোড (অটো এপ্রুভড পোস্ট তৈরি হবে)
         window.uploadCoverImage = async (event) => {
             const file = event.target.files[0];
             if(!file || !currentUser) return;
@@ -458,7 +458,7 @@
             let currentGal = currProf?.gallery_images || [];
             let newGallery = [newCoverUrl, ...currentGal];
 
-            // শুধু প্রোফাইল আপডেট হবে, কোনো ব্লগ তৈরি হবে না
+            // ১. প্রোফাইল আপডেট
             const { error: dbError } = await supabaseClient.from('profiles').upsert([{ 
                 id: currentUser.id,
                 cover_image: newCoverUrl,
@@ -467,13 +467,24 @@
 
             if(dbError) {
                 showToast('ডেটাবেসে সেভ হচ্ছে না: ' + dbError.message, true);
-            } else {
-                showToast('✅ কভার ছবি সফলভাবে আপডেট হয়েছে!');
-                loadProfileDetails();
+                return;
             }
+
+            // ২. পোস্ট তৈরি করা (সরাসরি অ্যাপ্রুভড স্ট্যাটাসে)
+            await supabaseClient.from('blogs').insert([{
+                author_id: currentUser.id,
+                title: 'কভার ছবি আপডেট',
+                content: 'কভার ফটো আপডেট হয়েছে',
+                image_url: newCoverUrl,
+                status: 'approved' // সরাসরি অ্যাপ্রুভড
+            }]);
+
+            showToast('✅ কভার ছবি আপডেট এবং পোস্ট তৈরি হয়েছে!');
+            loadProfileDetails();
+            loadMyBlogs(); // পোস্ট লিস্ট রিফ্রেশ
         }
 
-        // প্রোফাইল ছবি আপলোড (অটো এপ্রুভ - সরাসরি প্রোফাইলে সেভ হবে)
+        // প্রোফাইল ছবি আপলোড (অটো এপ্রুভড পোস্ট তৈরি হবে)
         window.uploadProfileImage = async (event) => {
             const file = event.target.files[0];
             if(!file || !currentUser) return;
@@ -497,7 +508,7 @@
             let currentGal = currProf?.gallery_images || [];
             let newGallery = [newProfileUrl, ...currentGal];
 
-            // শুধু প্রোফাইল আপডেট হবে, কোনো ব্লগ তৈরি হবে না
+            // ১. প্রোফাইল আপডেট
             const { error: dbError } = await supabaseClient.from('profiles').upsert([{ 
                 id: currentUser.id,
                 profile_image: newProfileUrl,
@@ -509,8 +520,18 @@
                 return; 
             }
             
-            showToast('✅ প্রোফাইল ছবি সফলভাবে আপডেট হয়েছে!');
+            // ২. পোস্ট তৈরি করা (সরাসরি অ্যাপ্রুভড স্ট্যাটাসে)
+            await supabaseClient.from('blogs').insert([{
+                author_id: currentUser.id,
+                title: 'প্রোফাইল ছবি আপডেট',
+                content: 'প্রোফাইল ছবি আপডেট হয়েছে',
+                image_url: newProfileUrl,
+                status: 'approved' // সরাসরি অ্যাপ্রুভড
+            }]);
+
+            showToast('✅ প্রোফাইল ছবি আপডেট এবং পোস্ট তৈরি হয়েছে!');
             loadProfileDetails();
+            loadMyBlogs(); // পোস্ট লিস্ট রিফ্রেশ
         }
 
         // গ্যালারি ছবি আপলোড
