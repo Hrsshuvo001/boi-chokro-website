@@ -420,8 +420,15 @@
 
         window.onload = function() {
             const urlHash = window.location.hash.replace('#', '');
-            if (urlHash) showSection(urlHash);
-            else showSection('home');
+            if (urlHash) {
+                showSection(urlHash);
+                // যদি রিভিউ ট্যাব হয়, তবে ডিফল্টভাবে পেন্ডিং রিভিউ দেখাবে
+                if(urlHash === 'review-management') {
+                    switchReviewTab('pending');
+                }
+            } else {
+                showSection('home');
+            }
         };
 
         window.showToast = (message, isError = false) => {
@@ -453,6 +460,10 @@
             if(sectionId === 'blog-management') switchBlogTab('pending');
             if(sectionId === 'review-management') switchReviewTab('pending');
             if(sectionId === 'settings') loadSettings();
+            if(sectionId === 'customer-list') loadCustomers();
+            if(sectionId === 'newsletter-list') loadSubscribers();
+            if(sectionId === 'employee') loadEmployees();
+            if(sectionId === 'activity-logs') loadActivityLogs();
         };
 
         window.toggleAffiliateField = () => {
@@ -507,7 +518,6 @@
             const container = document.getElementById('blog-tab-pending');
             container.innerHTML = '<p class="text-center text-gray-500 py-4">লোড হচ্ছে...</p>';
             
-            // শুধুমাত্র pending ব্লগগুলো আনা হচ্ছে
             const { data: blogs, error } = await supabaseClient
                 .from('blogs')
                 .select('*')
@@ -544,7 +554,6 @@
             const container = document.getElementById('allBlogsList');
             container.innerHTML = '<p class="text-center text-gray-500 py-4">লোড হচ্ছে...</p>';
             
-            // শুধুমাত্র approved ব্লগগুলো আনা হচ্ছে
             const { data: blogs, error } = await supabaseClient
                 .from('blogs')
                 .select('*')
@@ -597,7 +606,7 @@
         };
 
         // ==========================================
-        // রিভিউ ম্যানেজমেন্ট লজিক
+        // রিভিউ ম্যানেজমেন্ট লজিক (নতুন)
         // ==========================================
         window.switchReviewTab = (tab) => {
             const btnPending = document.getElementById('review-tab-btn-pending');
@@ -671,12 +680,13 @@
                 const { data: reviews, error } = await supabaseClient
                     .from('reviews')
                     .select('*, profiles(full_name), books(title)')
+                    .eq('status', 'approved') // শুধু approved
                     .order('created_at', { ascending: false });
                 
                 if(error) throw error;
 
                 if(!reviews || reviews.length === 0) {
-                    container.innerHTML = '<div class="bg-white p-6 rounded-xl shadow-sm text-center text-gray-500">কোনো রিভিউ পাওয়া যায়নি।</div>';
+                    container.innerHTML = '<div class="bg-white p-6 rounded-xl shadow-sm text-center text-gray-500">কোনো অ্যাপ্রুভড রিভিউ পাওয়া যায়নি।</div>';
                     return;
                 }
 
@@ -685,15 +695,13 @@
                     const bookTitle = rev.books?.title || 'Unknown Book';
                     const date = new Date(rev.created_at).toLocaleDateString('bn-BD');
                     const stars = Array(rev.rating || 5).fill('⭐').join('');
-                    const isPending = rev.status === 'pending';
-                    const statusBadge = isPending ? `<span class="px-2 py-0.5 text-xs rounded bg-yellow-100 text-yellow-700">Pending</span>` : `<span class="px-2 py-0.5 text-xs rounded bg-green-100 text-green-700">Approved</span>`;
 
                     return `
                     <div class="bg-white p-5 rounded-xl shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border">
                         <div class="space-y-1">
                             <div class="flex items-center gap-2">
                                 <h3 class="font-bold text-lg text-gray-800">বই: ${escapeHTML(bookTitle)}</h3>
-                                ${statusBadge}
+                                <span class="px-2 py-0.5 text-xs rounded bg-green-100 text-green-700">Approved</span>
                             </div>
                             <p class="text-xs text-gray-500">লেখক: <span class="font-semibold text-blue-600">${escapeHTML(authorName)}</span> | তারিখ: ${date}</p>
                             <p class="text-yellow-500 text-sm mt-1">${stars}</p>
