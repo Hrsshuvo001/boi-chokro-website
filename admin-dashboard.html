@@ -471,7 +471,7 @@
         };
 
         // ==========================================
-        // ব্লগ ম্যানেজমেন্ট লজিক
+        // ব্লগ ম্যানেজমেন্ট লজিক (সিস্টেম নোটিফিকেশন ফিল্টারযুক্ত)
         // ==========================================
         window.switchBlogTab = (tab) => {
             const btnPending = document.getElementById('tab-btn-pending');
@@ -512,8 +512,13 @@
                 return;
             }
 
-            // অত্যন্ত সহজ ও নিশ্চিত ফিল্টার: যেগুলো এপ্রুভড না, কেবল সেগুলো দেখাবে
+            // ফিল্টারিং: প্রোফাইল বা কভার ফটো আপডেটের সিস্টেম নোটিফিকেশনগুলো বাদ দিয়ে আসল পেন্ডিং ব্লগগুলো বের করা
             const pendingBlogs = blogs.filter(b => {
+                const title = (b.title || '').trim();
+                if (title === 'কভার ফটো আপডেট' || title === 'প্রোফাইল ছবি আপডেট') {
+                    return false; // এগুলো অ্যাডমিন প্যানেলে দেখানোর দরকার নেই
+                }
+
                 const isApproved = b.is_approved === true || (b.status && b.status.toLowerCase() === 'approved');
                 return !isApproved;
             });
@@ -549,7 +554,18 @@
                 return;
             }
 
-            container.innerHTML = blogs.map(blog => {
+            // 'সব ব্লগ' ট্যাবে সিস্টেম নোটিফিকেশন বাদ দিয়ে বা রেখেও দেখাতে পারেন (এখানে সিস্টেম নোটিফিকেশন বাদ দিয়ে ফিল্টার করা হয়েছে)
+            const filteredBlogs = blogs.filter(b => {
+                const title = (b.title || '').trim();
+                return title !== 'কভার ফটো আপডেট' && title !== 'প্রোফাইল ছবি আপডেট';
+            });
+
+            if(filteredBlogs.length === 0) {
+                container.innerHTML = '<div class="bg-white p-6 rounded-xl shadow-sm text-center text-gray-500">কোনো ব্লগ পাওয়া যায়নি।</div>';
+                return;
+            }
+
+            container.innerHTML = filteredBlogs.map(blog => {
                 const isApproved = blog.status === 'approved' || blog.is_approved === true;
                 return `
                 <div class="bg-white p-5 rounded-xl shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border">
