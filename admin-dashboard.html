@@ -471,7 +471,7 @@
         };
 
         // ==========================================
-        // ব্লগ ম্যানেজমেন্ট লজিক (পেন্ডিং লিস্ট ফিক্স)
+        // ব্লগ ম্যানেজমেন্ট লজিক (সিস্টেম নোটিফিকেশন ফিল্টারযুক্ত)
         // ==========================================
         window.switchBlogTab = (tab) => {
             const btnPending = document.getElementById('tab-btn-pending');
@@ -498,10 +498,11 @@
             const container = document.getElementById('blog-tab-pending');
             container.innerHTML = '<p class="text-center text-gray-500 py-4">লোড হচ্ছে...</p>';
             
-            // সরাসরি সব ব্লগ আনা হচ্ছে, তারপর আমরা জাভাস্ক্রিপ্ট দিয়ে pending ফিল্টার করব
+            // শুধুমাত্র pending ব্লগগুলো আনা হচ্ছে
             const { data: blogs, error } = await supabaseClient
                 .from('blogs')
                 .select('*')
+                .eq('status', 'pending')
                 .order('created_at', { ascending: false });
             
             if(error) {
@@ -510,28 +511,17 @@
             }
 
             if(!blogs || blogs.length === 0) {
-                container.innerHTML = '<div class="bg-white p-6 rounded-xl shadow-sm text-center text-gray-500">ডেটাবেসে কোনো ব্লগ নেই।</div>';
-                return;
-            }
-
-            // এখানে চেক করা হচ্ছে: status যাই থাকুক, যদি approved না হয়, তবে সেটা pending
-            const pendingBlogs = blogs.filter(b => {
-                const status = (b.status || '').toLowerCase();
-                return status !== 'approved'; // approved না হলেই সেটা পেন্ডিং হিসেবে দেখাবে
-            });
-
-            if(pendingBlogs.length === 0) {
                 container.innerHTML = '<div class="bg-white p-6 rounded-xl shadow-sm text-center text-gray-500">কোনো পেন্ডিং ব্লগ নেই।</div>';
                 return;
             }
 
-            container.innerHTML = pendingBlogs.map(blog => {
+            container.innerHTML = blogs.map(blog => {
                 return `
                 <div class="bg-white p-5 rounded-xl shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border">
                     <div class="space-y-1">
                         <h3 class="font-bold text-lg text-gray-800">${escapeHTML(blog.title || 'শিরোনামহীন')}</h3>
                         <p class="text-sm text-gray-600 line-clamp-2">${escapeHTML(blog.content || '')}</p>
-                        <span class="text-xs text-gray-400">স্ট্যাটাস: ${blog.status || 'N/A'} | তারিখ: ${blog.created_at ? new Date(blog.created_at).toLocaleDateString() : ''}</span>
+                        <span class="text-xs text-gray-400">স্ট্যাটাস: ${blog.status} | তারিখ: ${blog.created_at ? new Date(blog.created_at).toLocaleDateString() : ''}</span>
                     </div>
                     <div class="flex gap-2 flex-shrink-0">
                         <button onclick="approveBlog('${blog.id}')" class="bg-green-600 text-white px-4 py-2 rounded text-sm font-bold hover:bg-green-700">এপ্রুভ করুন</button>
@@ -545,26 +535,29 @@
             const container = document.getElementById('allBlogsList');
             container.innerHTML = '<p class="text-center text-gray-500 py-4">লোড হচ্ছে...</p>';
             
-            const { data: blogs, error } = await supabaseClient.from('blogs').select('*').order('created_at', { ascending: false });
+            // শুধুমাত্র approved ব্লগগুলো আনা হচ্ছে
+            const { data: blogs, error } = await supabaseClient
+                .from('blogs')
+                .select('*')
+                .eq('status', 'approved')
+                .order('created_at', { ascending: false });
             
             if(error || !blogs || blogs.length === 0) {
-                container.innerHTML = '<div class="bg-white p-6 rounded-xl shadow-sm text-center text-gray-500">কোনো ব্লগ পাওয়া যায়নি।</div>';
+                container.innerHTML = '<div class="bg-white p-6 rounded-xl shadow-sm text-center text-gray-500">কোনো অ্যাপ্রুভড ব্লগ পাওয়া যায়নি।</div>';
                 return;
             }
 
             container.innerHTML = blogs.map(blog => {
-                const isApproved = blog.status === 'approved';
                 return `
                 <div class="bg-white p-5 rounded-xl shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border">
                     <div class="space-y-1">
                         <div class="flex items-center gap-2">
                             <h3 class="font-bold text-lg text-gray-800">${escapeHTML(blog.title)}</h3>
-                            <span class="px-2 py-0.5 text-xs rounded ${isApproved ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">${blog.status}</span>
+                            <span class="px-2 py-0.5 text-xs rounded bg-green-100 text-green-700">Approved</span>
                         </div>
                         <p class="text-sm text-gray-600 line-clamp-2">${escapeHTML(blog.content)}</p>
                     </div>
                     <div class="flex gap-2 flex-shrink-0">
-                        ${!isApproved ? `<button onclick="approveBlog('${blog.id}')" class="bg-green-600 text-white px-4 py-2 rounded text-sm font-bold hover:bg-green-700">এপ্রুভ</button>` : ''}
                         <button onclick="deleteBlog('${blog.id}')" class="bg-red-100 text-red-600 px-4 py-2 rounded text-sm font-bold hover:bg-red-200">ডিলিট</button>
                     </div>
                 </div>`;
