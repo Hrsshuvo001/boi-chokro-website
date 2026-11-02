@@ -239,8 +239,8 @@
             <section id="section-blog-management" class="section-content">
                 <h2 class="text-2xl font-bold text-gray-800 mb-6">ব্লগ ম্যানেজমেন্ট</h2>
                 <div class="flex border-b border-gray-200 mb-6 gap-4">
-                    <button onclick="switchBlogTab('pending')" id="tab-btn-pending" class="px-6 py-3 font-bold text-blue-600 border-b-2 border-blue-600 focus:outline-none">ব্লগ লিস্ট (সব)</button>
-                    <button onclick="switchBlogTab('all')" id="tab-btn-all" class="px-6 py-3 font-bold text-gray-500 border-b-2 border-transparent focus:outline-none">স্ট্যাটাস সহ</button>
+                    <button onclick="switchBlogTab('pending')" id="tab-btn-pending" class="px-6 py-3 font-bold text-blue-600 border-b-2 border-blue-600 focus:outline-none">পেন্ডিং ব্লগ (শুধুমাত্র নতুন পোস্ট)</button>
+                    <button onclick="switchBlogTab('all')" id="tab-btn-all" class="px-6 py-3 font-bold text-gray-500 border-b-2 border-transparent focus:outline-none">সব ব্লগ ও স্ট্যাটাস</button>
                 </div>
                 <div id="blog-tab-pending" class="space-y-4"></div>
                 <div id="blog-tab-all" class="hidden">
@@ -471,7 +471,7 @@
         };
 
         // ==========================================
-        // ব্লগ ম্যানেজমেন্ট লজিক (চূড়ান্ত ফিক্স - সব ব্লগ সরাসরি দেখাবে)
+        // ব্লগ ম্যানেজমেন্ট লজিক (সঠিক ফিল্টারিং পলিসি)
         // ==========================================
         window.switchBlogTab = (tab) => {
             const btnPending = document.getElementById('tab-btn-pending');
@@ -506,19 +506,40 @@
             }
 
             if(!blogs || blogs.length === 0) {
-                container.innerHTML = '<div class="bg-white p-6 rounded-xl shadow-sm text-center text-gray-500">ডেটাবেজে কোনো ব্লগ পাওয়া যায়নি!</div>';
+                container.innerHTML = '<div class="bg-white p-6 rounded-xl shadow-sm text-center text-gray-500">কোনো পেন্ডিং ব্লগ নেই।</div>';
                 return;
             }
 
-            // এখানে আর কোনো শর্ত ছাড়াই ডেটাবেজের সব ব্লগ সরাসরি রেন্ডার করা হবে যাতে নতুন বা পুরোনো কোনো পোস্ট মিস না হয়
-            container.innerHTML = blogs.map(blog => {
+            // সঠিক পলিসি: 
+            // ১. প্রোফাইল ছবি আপডেট বা কভার ফটো আপডেটের স্বয়ংক্রিয় নোটিফিকেশনগুলো ফিল্টার করে বাদ দেওয়া হবে।
+            // ২. শুধুমাত্র যেগুলোর স্ট্যাটাস পেন্ডিং এবং যেগুলো সত্যিকারের ব্লগ পোস্ট, সেগুলোই দেখাবে।
+            const pendingBlogs = blogs.filter(b => {
+                const title = (b.title || '').toLowerCase();
+                const content = (b.content || b.body || b.description || '').toLowerCase();
+                const status = (b.status || '').toLowerCase();
+
+                // প্রোফাইল বা কভার ফটো আপডেটের স্বয়ংক্রিয় নোটিফিকেশনগুলো বাদ দেওয়ার শর্ত
+                const isSystemPhotoUpdate = title.includes('কভার ফটো আপডেট') || title.includes('প্রোফাইল ছবি আপডেট') || content.includes('আপডেট হয়েছে');
+                if (isSystemPhotoUpdate) return false;
+
+                // যেগুলো ইতিমধ্যে এপ্রুভড বা পাবলিশড সেগুলোকে বাদ দেওয়া
+                const isApproved = b.is_approved === true || status === 'approved' || status === 'published';
+                return !isApproved;
+            });
+
+            if(pendingBlogs.length === 0) {
+                container.innerHTML = '<div class="bg-white p-6 rounded-xl shadow-sm text-center text-gray-500">কোনো পেন্ডিং ব্লগ নেই।</div>';
+                return;
+            }
+
+            container.innerHTML = pendingBlogs.map(blog => {
                 const blogId = blog.id || blog.blog_id;
                 return `
                 <div class="bg-white p-5 rounded-xl shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border">
                     <div class="space-y-1">
                         <h3 class="font-bold text-lg text-gray-800">${escapeHTML(blog.title || blog.heading || 'শিরোনামহীন')}</h3>
                         <p class="text-sm text-gray-600 line-clamp-2">${escapeHTML(blog.content || blog.body || blog.description || '')}</p>
-                        <span class="text-xs text-blue-600 font-semibold">স্ট্যাটাস: ${blog.status || 'সাধারণ পোস্ট'} | তারিখ: ${blog.created_at ? new Date(blog.created_at).toLocaleDateString() : ''}</span>
+                        <span class="text-xs text-gray-400">স্ট্যাটাস: ${blog.status || 'Pending'} | তারিখ: ${blog.created_at ? new Date(blog.created_at).toLocaleDateString() : ''}</span>
                     </div>
                     <div class="flex gap-2 flex-shrink-0">
                         <button onclick="approveBlog('${blogId}')" class="bg-green-600 text-white px-4 py-2 rounded text-sm font-bold hover:bg-green-700">এপ্রুভ করুন</button>
@@ -540,13 +561,14 @@
             }
 
             container.innerHTML = blogs.map(blog => {
+                const isApproved = blog.status === 'approved' || blog.is_approved === true || blog.status === 'published';
                 const blogId = blog.id || blog.blog_id;
                 return `
                 <div class="bg-white p-5 rounded-xl shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border">
                     <div class="space-y-1">
                         <div class="flex items-center gap-2">
                             <h3 class="font-bold text-lg text-gray-800">${escapeHTML(blog.title || blog.heading || 'শিরোনামহীন')}</h3>
-                            <span class="px-2 py-0.5 text-xs rounded bg-gray-100 text-gray-700">${blog.status || 'Active'}</span>
+                            <span class="px-2 py-0.5 text-xs rounded ${isApproved ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">${blog.status || (isApproved ? 'Approved' : 'Pending')}</span>
                         </div>
                         <p class="text-sm text-gray-600 line-clamp-2">${escapeHTML(blog.content || blog.body || blog.description || '')}</p>
                     </div>
