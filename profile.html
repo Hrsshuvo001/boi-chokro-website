@@ -556,3 +556,229 @@
                 showToast('কোনো ছবি আপলোড হয়নি বা আপত্তিকর হিসেবে ব্লক হয়েছে।', true);
             }
         }
+
+        function renderGallery() {
+            const container = document.getElementById('photoGallery');
+            if (!container) return;
+            if (currentGallery.length === 0) {
+                container.innerHTML = `<p class="text-gray-500 col-span-full text-center py-6">কোনো ছবি নেই।</p>`;
+                return;
+            }
+            container.innerHTML = currentGallery.map((url, index) => `
+                <div class="relative group aspect-square bg-gray-200 rounded-lg overflow-hidden shadow-sm">
+                    <img src="${url}" class="w-full h-full object-cover">
+                    ${isOwnProfile ? `
+                    <button onclick="deleteGalleryImage(${index})" class="absolute top-2 right-2 bg-red-500 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition shadow-lg hover:bg-red-600">
+                        🗑️
+                    </button>
+                    ` : ''}
+                </div>
+            `).join('');
+        }
+
+        window.deleteGalleryImage = async (index) => {
+            if(!confirm('ছবিটি ডিলিট করতে চান?')) return;
+            let newGallery = [...currentGallery];
+            newGallery.splice(index, 1);
+            
+            const { error } = await supabaseClient.from('profiles').upsert([{ 
+                id: currentUser.id,
+                gallery_images: newGallery 
+            }]);
+            if(!error) {
+                currentGallery = newGallery;
+                renderGallery();
+                showToast('ছবি ডিলিট করা হয়েছে');
+            }
+        }
+
+        window.switchTab = (tab, saveState = true) => {
+            const tabs = ['myBlogs', 'friends', 'requests', 'photos', 'edit'];
+            tabs.forEach(t => {
+                const content = document.getElementById(`tabContent${t.charAt(0).toUpperCase() + t.slice(1)}`);
+                if(content) content.classList.add('hidden');
+                
+                const btn = document.getElementById(`tabBtn${t.charAt(0).toUpperCase() + t.slice(1)}`);
+                if(btn) btn.className = "px-4 py-2 font-bold text-gray-500 hover:text-blue-600 focus:outline-none border-b-2 border-transparent";
+            });
+
+            const targetContent = document.getElementById(`tabContent${tab.charAt(0).toUpperCase() + tab.slice(1)}`);
+            const targetBtn = document.getElementById(`tabBtn${tab.charAt(0).toUpperCase() + tab.slice(1)}`);
+            
+            if(targetContent) targetContent.classList.remove('hidden');
+            if(targetBtn) targetBtn.className = "px-4 py-2 font-bold text-blue-600 border-b-2 border-blue-600 focus:outline-none";
+
+            if (saveState && isOwnProfile) {
+                localStorage.setItem('active_profile_tab', tab);
+            }
+
+            if(tab === 'photos') {
+                renderGallery();
+            } else if(tab === 'myBlogs') {
+                loadMyBlogs(viewingUserId);
+            } else if(tab === 'friends' && isOwnProfile) {
+                loadFriends();
+            } else if(tab === 'requests' && isOwnProfile) {
+                loadFriendRequests();
+            }
+        }
+
+        // নতুন পোস্ট ক্রিয়েট মডাল ওপেন/ক্লোজ
+        window.openCreatePostModal = () => document.getElementById('postModal').classList.remove('hidden');
+        window.closeCreatePostModal = () => document.getElementById('postModal').classList.add('hidden');
+
+        // ফেসবুক স্টাইল পোস্ট সাবমিট (স্ট্যাটাস pending থাকবে)
+        document.getElementById('createPostForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('publishPostBtn');
+            btn.innerText = 'পোস্ট জমা হচ্ছে...';
+            btn.disabled = true;
+
+            const title = document.getElementById('postTitle').value.trim();
+            const content = document.getElementById('postContent').value.trim();
+            const imageFile = document.getElementById('postImageFile').files[0];
+            let imageUrl = '';
+
+            if (imageFile) {
+                const isExplicit = await checkNudeOrExplicitImage(imageFile);
+                if(isExplicit) {
+                    showToast('⚠️ পোস্টে আপত্তিকর ছবি থাকায় আপলোড করা যায়নি!', true);
+                    btn.innerText = 'পোস্ট প্রকাশ করুন (এপ্রুভালের জন্য জমা দিন)';
+                    btn.disabled = false;
+                    return;
+                }
+
+                const fileName = `post_${currentUser.id}_${Date.now()}.${imageFile.name.split('.').pop()}`;
+                const { error: uploadError } = await supabaseClient.storage.from('book-covers').upload(fileName, imageFile);
+                if (!uploadError) {
+                    const { data: pubData } = supabaseClient.storage.from('book-covers').getPublicUrl(fileName);
+                    imageUrl = pubData.publicUrl;
+                }
+            }
+
+            // ব্লগ বা পোস্ট লেখার সময় pending হবে
+            const { error: insertError } = await supabaseClient.from('blogs').insert([{
+                author_id: currentUser.id,
+                title: title,
+                content: content,
+                image_url: imageUrl,
+                status: 'pending' // অ্যাডমিন এপ্রুভ না করা পর্যন্ত পেন্ডিং থাকবে
+            }]);
+
+            if (insertError) {
+                showToast('সমস্যা: ' + insertError.message, true);
+            } else {
+                showToast('✅ আপনার পোস্ট সফলভাবে জমা হয়েছে! অ্যাডমিন এপ্রুভ করলে সাইটে দেখাবে।');
+                closeCreatePostModal();
+                document.getElementById('createPostForm').reset();
+                loadMyBlogs();
+            }
+            btn.innerText = 'পোস্ট প্রকাশ করুন (এপ্রুভালের জন্য জমা দিন)';
+            btn.disabled = false;
+        });
+
+        async function loadMyBlogs(userId = null) {
+            const targetId = userId || currentUser?.id;
+            if(!targetId) return;
+            const list = document.getElementById('blogsList');
+            if(!list) return;
+            list.innerHTML = '<p class="text-gray-500">লোড হচ্ছে...</p>';
+
+            const { data: blogs } = await supabaseClient.from('blogs').select('*').eq('author_id', targetId).order('created_at', { ascending: false });
+
+            if (!blogs || blogs.length === 0) {
+                list.innerHTML = `<p class="text-gray-500">কোনো পোস্ট বা ব্লগ পাওয়া যায়নি।</p>`;
+                return;
+            }
+
+            list.innerHTML = blogs.map(blog => {
+                const isApproved = blog.status === 'approved';
+                const statusColor = isApproved ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700';
+                const statusText = isApproved ? 'প্রকাশিত' : 'অ্যাপ্রুভালের অপেক্ষায় (Pending)';
+                return `
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-4">
+                    ${blog.image_url ? `<img src="${blog.image_url}" class="w-full h-48 object-cover rounded-lg mb-3">` : ''}
+                    <div class="flex justify-between items-start mb-2">
+                        <h4 class="text-lg font-bold text-gray-900 dark:text-white">${escapeHTML(blog.title)}</h4>
+                        <span class="text-xs font-bold px-2.5 py-1 rounded-full ${statusColor}">${statusText}</span>
+                    </div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">${escapeHTML(blog.content)}</p>
+                </div>
+                `;
+            }).join('');
+        }
+
+        async function loadFriends() {
+            const list = document.getElementById('friendsList');
+            if(!list) return;
+            const { data: friends } = await supabaseClient.from('friends')
+                .select('*')
+                .or(`sender_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`)
+                .eq('status', 'accepted');
+
+            if (!friends || friends.length === 0) {
+                list.innerHTML = `<p class="text-gray-500 col-span-full">আপনার কোনো বন্ধু নেই।</p>`;
+                return;
+            }
+
+            const friendIds = friends.map(f => f.sender_id === currentUser.id ? f.receiver_id : f.sender_id);
+            const { data: profiles } = await supabaseClient.from('profiles').select('id, full_name, profile_image').in('id', friendIds);
+
+            list.innerHTML = profiles.map(p => `
+                <div class="flex items-center gap-3 p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-100 dark:border-gray-700">
+                    <img src="${p.profile_image || 'https://via.placeholder.com/40'}" class="w-10 h-10 rounded-full object-cover">
+                    <a href="/profile.html?id=${p.id}" class="font-bold text-sm text-gray-800 dark:text-white hover:text-blue-600">${escapeHTML(p.full_name)}</a>
+                </div>
+            `).join('');
+        }
+
+        async function loadFriendRequests() {
+            const list = document.getElementById('requestsList');
+            if(!list) return;
+            const { data: requests } = await supabaseClient.from('friends')
+                .select('*')
+                .eq('receiver_id', currentUser.id)
+                .eq('status', 'pending');
+
+            if (!requests || requests.length === 0) {
+                list.innerHTML = `<p class="text-gray-500">আপনার কোনো নতুন ফ্রেন্ড রিকোয়েস্ট নেই।</p>`;
+                return;
+            }
+
+            const senderIds = requests.map(r => r.sender_id);
+            const { data: profiles } = await supabaseClient.from('profiles').select('id, full_name, profile_image').in('id', senderIds);
+
+            list.innerHTML = profiles.map(p => `
+                <div class="flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-100 dark:border-gray-700">
+                    <div class="flex items-center gap-3">
+                        <img src="${p.profile_image || 'https://via.placeholder.com/40'}" class="w-10 h-10 rounded-full object-cover">
+                        <span class="font-bold text-sm text-gray-800 dark:text-white">${escapeHTML(p.full_name)}</span>
+                    </div>
+                    <button onclick="acceptFriendRequest('${p.id}')" class="bg-green-500 hover:bg-green-600 text-white px-4 py-1.5 rounded-lg text-xs font-bold transition">একসেপ্ট</button>
+                </div>
+            `).join('');
+        }
+
+        window.sendFriendRequest = async () => {
+            if (!currentUser) return;
+            const { error } = await supabaseClient.from('friends').insert([{ sender_id: currentUser.id, receiver_id: viewingUserId, status: 'pending' }]);
+            if (error) showToast('সমস্যা: ' + error.message, true);
+            else { showToast('রিকোয়েস্ট পাঠানো হয়েছে!'); loadProfileDetails(); }
+        }
+
+        window.acceptFriendRequest = async (senderId = null) => {
+            if (!currentUser) return;
+            const targetId = senderId || viewingUserId;
+            const { error } = await supabaseClient.from('friends')
+                .update({ status: 'accepted' })
+                .eq('sender_id', targetId)
+                .eq('receiver_id', currentUser.id);
+            
+            if (error) showToast('সমস্যা: ' + error.message, true);
+            else { showToast('বন্ধু হয়েছেন!'); loadProfileDetails(); }
+        }
+
+        init();
+    </script>
+</body>
+</html>
