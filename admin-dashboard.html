@@ -67,7 +67,7 @@
 
         <main class="flex-grow p-4 md:p-8 overflow-y-auto relative">
 
-            <!-- ১. হোম (KPI) -->
+            <!-- ১. হোম -->
             <section id="section-home" class="section-content active">
                 <h2 class="text-2xl font-bold text-gray-800 mb-6">ড্যাশবোর্ড ওভারভিউ</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
@@ -174,11 +174,10 @@
                 </div>
             </section>
 
-            <!-- ৫. অ্যাড মেটা (ক্যাটাগরি, লেখক ও প্রকাশনী + এডিট/ডিলিটসহ লিস্ট) -->
+            <!-- ৫. ক্যাটাগরি, লেখক ও প্রকাশনী ম্যানেজমেন্ট -->
             <section id="section-add-meta" class="section-content">
                 <h2 class="text-2xl font-bold text-gray-800 mb-6">ক্যাটাগরি, লেখক ও প্রকাশনী ম্যানেজমেন্ট</h2>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                    <!-- ক্যাটাগরি ফর্ম -->
                     <div class="bg-white p-6 rounded-xl shadow-sm border-t-4 border-purple-500">
                         <h3 class="font-bold mb-4 text-lg">ক্যাটাগরি যোগ করুন</h3>
                         <form id="addCategoryForm" class="flex flex-col gap-3">
@@ -186,7 +185,6 @@
                             <button type="submit" class="bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700 font-bold">যোগ করুন</button>
                         </form>
                     </div>
-                    <!-- লেখক ফর্ম (ছবিসহ) -->
                     <div class="bg-white p-6 rounded-xl shadow-sm border-t-4 border-indigo-500">
                         <h3 class="font-bold mb-4 text-lg">লেখক যোগ করুন</h3>
                         <form id="addAuthorForm" class="flex flex-col gap-3">
@@ -197,7 +195,6 @@
                             <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 font-bold">যোগ করুন</button>
                         </form>
                     </div>
-                    <!-- প্রকাশনী ফর্ম -->
                     <div class="bg-white p-6 rounded-xl shadow-sm border-t-4 border-teal-500">
                         <h3 class="font-bold mb-4 text-lg">প্রকাশনী যোগ করুন</h3>
                         <form id="addPublisherForm" class="flex flex-col gap-3">
@@ -207,19 +204,15 @@
                     </div>
                 </div>
 
-                <!-- নিচে সব ক্যাটাগরি, লেখক ও প্রকাশনীর তালিকা (স্ক্রোলযোগ্য বক্স) -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <!-- ক্যাটাগরি লিস্ট -->
                     <div class="bg-white p-5 rounded-xl shadow-sm">
                         <h3 class="font-bold text-base mb-3 border-b pb-2 text-purple-600">সব ক্যাটাগরি</h3>
                         <div id="categoryListContainer" class="space-y-2 max-h-60 overflow-y-auto pr-1"></div>
                     </div>
-                    <!-- লেখক লিস্ট -->
                     <div class="bg-white p-5 rounded-xl shadow-sm">
                         <h3 class="font-bold text-base mb-3 border-b pb-2 text-indigo-600">সব লেখক</h3>
                         <div id="authorListContainer" class="space-y-2 max-h-60 overflow-y-auto pr-1"></div>
                     </div>
-                    <!-- প্রকাশনী লিস্ট -->
                     <div class="bg-white p-5 rounded-xl shadow-sm">
                         <h3 class="font-bold text-base mb-3 border-b pb-2 text-teal-600">সব প্রকাশনী</h3>
                         <div id="publisherListContainer" class="space-y-2 max-h-60 overflow-y-auto pr-1"></div>
@@ -409,10 +402,80 @@
         };
 
         // ==========================================
-        // ক্যাটাগরি, লেখক ও প্রকাশনী ম্যানেজমেন্ট ও লিস্ট (এডিট ও ডিলিটসহ)
+        // নতুন বই যোগ করার হ্যান্ডলার (ফাইল আপলোডসহ ফিক্সড)
+        // ==========================================
+        document.getElementById('addBookForm')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('addBookBtn');
+            btn.innerText = 'বই যোগ হচ্ছে...'; 
+            btn.disabled = true;
+
+            try {
+                const title = document.getElementById('title').value;
+                const author = document.getElementById('author').value;
+                const category = document.getElementById('category').value;
+                const publisher = document.getElementById('publisher').value;
+                const stock_quantity = parseInt(document.getElementById('stock_quantity').value) || 0;
+                const purchase_price = parseFloat(document.getElementById('purchase_price').value) || 0;
+                const original_price = parseFloat(document.getElementById('original_price').value) || 0;
+                const discount_price = parseFloat(document.getElementById('discount_price').value) || 0;
+                const description = document.getElementById('description').value;
+                
+                const imageFile = document.getElementById('cover_files').files[0];
+                let cover_url = '';
+
+                if (imageFile) {
+                    const fileExt = imageFile.name.split('.').pop();
+                    const fileName = `book_${Date.now()}.${fileExt}`;
+                    
+                    const { error: uploadError } = await supabaseClient.storage
+                        .from('book-covers')
+                        .upload(fileName, imageFile);
+
+                    if (uploadError) throw uploadError;
+
+                    const { data: urlData } = supabaseClient.storage
+                        .from('book-covers')
+                        .getPublicUrl(fileName);
+                        
+                    cover_url = urlData.publicUrl;
+                }
+
+                const { error: insertError } = await supabaseClient.from('books').insert([{
+                    title,
+                    name: title,
+                    author,
+                    category,
+                    publisher,
+                    stock_quantity,
+                    purchase_price,
+                    original_price,
+                    discount_price,
+                    price: discount_price,
+                    description,
+                    cover_url,
+                    image_url: cover_url
+                }]);
+
+                if (insertError) throw insertError;
+
+                showToast('✅ নতুন বই সফলভাবে যোগ হয়েছে!');
+                document.getElementById('addBookForm').reset();
+                loadAllBooks();
+                showSection('all-books');
+
+            } catch (err) {
+                showToast('ত্রুটি: ' + (err.message || 'বই যোগ করা যায়নি!'), true);
+            } finally {
+                btn.innerText = 'বই যোগ করুন'; 
+                btn.disabled = false;
+            }
+        });
+
+        // ==========================================
+        // ক্যাটাগরি, লেখক ও প্রকাশনী ম্যানেজমেন্ট ও লিস্ট
         // ==========================================
         async function loadMetaLists() {
-            // ক্যাটাগরি লিস্ট
             const catContainer = document.getElementById('categoryListContainer');
             const { data: categories } = await supabaseClient.from('categories').select('*').order('name');
             if(categories && categories.length > 0) {
@@ -427,7 +490,6 @@
                 `).join('');
             } else { catContainer.innerHTML = '<p class="text-xs text-gray-400">কোনো ক্যাটাগরি নেই।</p>'; }
 
-            // লেখক লিস্ট (ছবিসহ)
             const authorContainer = document.getElementById('authorListContainer');
             const { data: authors } = await supabaseClient.from('authors').select('*').order('name');
             if(authors && authors.length > 0) {
@@ -445,7 +507,6 @@
                 `).join('');
             } else { authorContainer.innerHTML = '<p class="text-xs text-gray-400">কোনো লেখক নেই।</p>'; }
 
-            // প্রকাশনী লিস্ট
             const pubContainer = document.getElementById('publisherListContainer');
             const { data: publishers } = await supabaseClient.from('publishers').select('*').order('name');
             if(publishers && publishers.length > 0) {
@@ -463,7 +524,6 @@
             loadDropdowns();
         }
 
-        // ক্যাটাগরি সেভ
         document.getElementById('addCategoryForm')?.addEventListener('submit', async (e) => {
             e.preventDefault();
             const name = document.getElementById('categoryName').value;
@@ -472,7 +532,6 @@
             else { showToast('✅ ক্যাটাগরি যোগ হয়েছে!'); document.getElementById('addCategoryForm').reset(); loadMetaLists(); }
         });
 
-        // লেখক সেভ (ছবিসহ)
         document.getElementById('addAuthorForm')?.addEventListener('submit', async (e) => {
             e.preventDefault();
             const name = document.getElementById('authorName').value;
@@ -500,7 +559,6 @@
             }
         });
 
-        // প্রকাশনী সেভ
         document.getElementById('addPublisherForm')?.addEventListener('submit', async (e) => {
             e.preventDefault();
             const name = document.getElementById('publisherName').value;
@@ -509,7 +567,6 @@
             else { showToast('✅ প্রকাশনী যোগ হয়েছে!'); document.getElementById('addPublisherForm').reset(); loadMetaLists(); }
         });
 
-        // মেটা এডিট মডাল ওপেন
         window.openEditMetaModal = (table, id, name, bio = '') => {
             document.getElementById('edit_meta_table').value = table;
             document.getElementById('edit_meta_id').value = id;
@@ -532,7 +589,6 @@
             document.getElementById('editMetaModal').classList.remove('flex');
         }
 
-        // মেটা আপডেট সাবমিট
         document.getElementById('editMetaForm')?.addEventListener('submit', async (e) => {
             e.preventDefault();
             const table = document.getElementById('edit_meta_table').value;
@@ -562,7 +618,6 @@
             }
         });
 
-        // মেটা ডিলিট
         window.deleteMeta = async (tableName, id) => {
             if(!confirm('আপনি কি এটি ডিলিট করতে চান?')) return;
             const { error } = await supabaseClient.from(tableName).delete().eq('id', id);
@@ -571,7 +626,7 @@
         }
 
         // ==========================================
-        // ড্রপডাউন ডেটা লোড (বই অ্যাড পেজের জন্য)
+        // ড্রপডাউন ডেটা লোড
         // ==========================================
         async function loadDropdowns() {
             const { data: categories } = await supabaseClient.from('categories').select('name');
@@ -611,8 +666,8 @@
                 const bookId = book.id || book.book_id;
                 return `
                 <tr class="border-b">
-                    <td class="p-4"><img src="${book.cover_url || 'https://via.placeholder.com/40'}" class="w-10 h-14 object-cover rounded"></td>
-                    <td class="p-4"><p class="font-bold">${escapeHTML(book.title)}</p><p class="text-xs text-gray-500">${escapeHTML(book.author)}</p></td>
+                    <td class="p-4"><img src="${book.cover_url || book.image_url || 'https://via.placeholder.com/40'}" class="w-10 h-14 object-cover rounded"></td>
+                    <td class="p-4"><p class="font-bold">${escapeHTML(book.title || book.name)}</p><p class="text-xs text-gray-500">${escapeHTML(book.author)}</p></td>
                     <td class="p-4 text-sm">${escapeHTML(book.category)}</td>
                     <td class="p-4 font-bold text-green-600">৳ ${book.discount_price || book.price || 0}</td>
                     <td class="p-4 font-bold">${book.stock_quantity || 0}</td>
@@ -633,9 +688,9 @@
             if(!book) { showToast('বই পাওয়া যায়নি!', true); return; }
 
             document.getElementById('edit_book_id').value = book.id || book.book_id;
-            document.getElementById('edit_title').value = book.title || '';
+            document.getElementById('edit_title').value = book.title || book.name || '';
             document.getElementById('edit_stock_quantity').value = book.stock_quantity || 0;
-            document.getElementById('edit_discount_price').value = book.discount_price || 0;
+            document.getElementById('edit_discount_price').value = book.discount_price || book.price || 0;
             document.getElementById('editBookModal').classList.remove('hidden');
             document.getElementById('editBookModal').classList.add('flex');
         }
@@ -647,8 +702,10 @@
             const id = document.getElementById('edit_book_id').value;
             const updates = {
                 title: document.getElementById('edit_title').value,
+                name: document.getElementById('edit_title').value,
                 stock_quantity: parseInt(document.getElementById('edit_stock_quantity').value),
-                discount_price: parseFloat(document.getElementById('edit_discount_price').value)
+                discount_price: parseFloat(document.getElementById('edit_discount_price').value),
+                price: parseFloat(document.getElementById('edit_discount_price').value)
             };
             await supabaseClient.from('books').update(updates).eq('id', id);
             showToast('✅ বই আপডেট হয়েছে!');
@@ -663,14 +720,14 @@
             loadAllBooks();
         }
 
-        // অন্যান্য সাধারণ লোডার
         async function loadDashboardData() {}
         async function loadOrders() {}
         async function switchBlogTab() {}
         async function loadPendingReviews() {}
         async function loadSettings() {}
+        async function handleLogout() { await supabaseClient.auth.signOut(); window.location.href = '/admin-login.html'; }
 
-        init();
+        showSection('home');
     </script>
 </body>
 </html>
