@@ -458,7 +458,7 @@
             let currentGal = currProf?.gallery_images || [];
             let newGallery = [newCoverUrl, ...currentGal];
 
-            // সরাসরি profiles টেবিল আপডেট (কোনো blogs টেবিলে পেন্ডিং ডেটা যাবে না)
+            // শুধু প্রোফাইল আপডেট হবে, কোনো ব্লগ তৈরি হবে না
             const { error: dbError } = await supabaseClient.from('profiles').upsert([{ 
                 id: currentUser.id,
                 cover_image: newCoverUrl,
@@ -497,7 +497,7 @@
             let currentGal = currProf?.gallery_images || [];
             let newGallery = [newProfileUrl, ...currentGal];
 
-            // সরাসরি profiles টেবিল আপডেট (কোনো blogs টেবিলে পেন্ডিং ডেটা যাবে না)
+            // শুধু প্রোফাইল আপডেট হবে, কোনো ব্লগ তৈরি হবে না
             const { error: dbError } = await supabaseClient.from('profiles').upsert([{ 
                 id: currentUser.id,
                 profile_image: newProfileUrl,
