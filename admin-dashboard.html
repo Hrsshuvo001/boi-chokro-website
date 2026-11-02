@@ -235,15 +235,17 @@
                 </div>
             </section>
 
-            <!-- ৬. ব্লগ ম্যানেজমেন্ট -->
+            <!-- ৬. ব্লগ ম্যানেজমেন্ট (সক্রিয় ও আপডেট করা) -->
             <section id="section-blog-management" class="section-content">
                 <h2 class="text-2xl font-bold text-gray-800 mb-6">ব্লগ ম্যানেজমেন্ট</h2>
-                <div class="flex border-b border-gray-200 mb-6">
+                <div class="flex border-b border-gray-200 mb-6 gap-4">
                     <button onclick="switchBlogTab('pending')" id="tab-btn-pending" class="px-6 py-3 font-bold text-blue-600 border-b-2 border-blue-600 focus:outline-none">পেন্ডিং ব্লগ</button>
                     <button onclick="switchBlogTab('all')" id="tab-btn-all" class="px-6 py-3 font-bold text-gray-500 border-b-2 border-transparent focus:outline-none">সব ব্লগ</button>
                 </div>
                 <div id="blog-tab-pending" class="space-y-4"></div>
-                <div id="blog-tab-all" class="hidden"><div id="allBlogsList" class="space-y-4"></div></div>
+                <div id="blog-tab-all" class="hidden">
+                    <div id="allBlogsList" class="space-y-4"></div>
+                </div>
             </section>
 
             <!-- ৭. রিভিউ ম্যানেজমেন্ট -->
@@ -357,7 +359,7 @@
         </div>
     </div>
 
-    <!-- সম্পূর্ণ বই এডিট মডাল (সকল ফিল্ডসহ) -->
+    <!-- সম্পূর্ণ বই এডিট মডাল -->
     <div id="editBookModal" class="fixed inset-0 z-[100] hidden items-center justify-center modal-overlay p-4">
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6">
             <div class="flex justify-between items-center mb-4 border-b pb-2">
@@ -465,6 +467,102 @@
             } else {
                 affiliateDiv.classList.add('hidden');
                 document.getElementById('edit_affiliate_url').required = false;
+            }
+        };
+
+        // ==========================================
+        // ব্লগ ম্যানেজমেন্ট লজিক (নতুন যুক্ত করা হয়েছে)
+        // ==========================================
+        window.switchBlogTab = (tab) => {
+            const btnPending = document.getElementById('tab-btn-pending');
+            const btnAll = document.getElementById('tab-btn-all');
+            const divPending = document.getElementById('blog-tab-pending');
+            const divAll = document.getElementById('blog-tab-all');
+
+            if(tab === 'pending') {
+                btnPending.className = "px-6 py-3 font-bold text-blue-600 border-b-2 border-blue-600 focus:outline-none";
+                btnAll.className = "px-6 py-3 font-bold text-gray-500 border-b-2 border-transparent focus:outline-none";
+                divPending.classList.remove('hidden');
+                divAll.classList.add('hidden');
+                loadPendingBlogs();
+            } else {
+                btnAll.className = "px-6 py-3 font-bold text-blue-600 border-b-2 border-blue-600 focus:outline-none";
+                btnPending.className = "px-6 py-3 font-bold text-gray-500 border-b-2 border-transparent focus:outline-none";
+                divAll.classList.remove('hidden');
+                divPending.classList.add('hidden');
+                loadAllBlogs();
+            }
+        };
+
+        async function loadPendingBlogs() {
+            const container = document.getElementById('blog-tab-pending');
+            container.innerHTML = '<p class="text-gray-500">লোড হচ্ছে...</p>';
+            
+            // Supabase-এ টেবিলের নাম 'blogs' ধরে কোড করা হয়েছে (স্ট্যাটাস 'pending' বা is_approved false থাকলে)
+            const { data: blogs, error } = await supabaseClient.from('blogs').select('*').or('status.eq.pending,is_approved.eq.false').order('created_at', { ascending: false });
+            
+            if(error || !blogs || blogs.length === 0) {
+                container.innerHTML = '<div class="bg-white p-6 rounded-xl shadow-sm text-center text-gray-500">কোনো পেন্ডিং ব্লগ নেই।</div>';
+                return;
+            }
+
+            container.innerHTML = blogs.map(blog => `
+                <div class="bg-white p-5 rounded-xl shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div class="space-y-1">
+                        <h3 class="font-bold text-lg text-gray-800">${escapeHTML(blog.title)}</h3>
+                        <p class="text-sm text-gray-600 line-clamp-2">${escapeHTML(blog.content || blog.body || '')}</p>
+                        <span class="text-xs text-gray-400">তারিখ: ${new Date(blog.created_at).toLocaleDateString()}</span>
+                    </div>
+                    <div class="flex gap-2 flex-shrink-0">
+                        <button onclick="approveBlog('${blog.id}')" class="bg-green-600 text-white px-4 py-2 rounded text-sm font-bold hover:bg-green-700">এপ্রুভ করুন</button>
+                        <button onclick="deleteBlog('${blog.id}')" class="bg-red-100 text-red-600 px-4 py-2 rounded text-sm font-bold hover:bg-red-200">ডিলিট</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function loadAllBlogs() {
+            const container = document.getElementById('allBlogsList');
+            container.innerHTML = '<p class="text-gray-500">লোড হচ্ছে...</p>';
+            
+            const { data: blogs, error } = await supabaseClient.from('blogs').select('*').order('created_at', { ascending: false });
+            
+            if(error || !blogs || blogs.length === 0) {
+                container.innerHTML = '<div class="bg-white p-6 rounded-xl shadow-sm text-center text-gray-500">কোনো ব্লগ পাওয়া যায়নি।</div>';
+                return;
+            }
+
+            container.innerHTML = blogs.map(blog => `
+                <div class="bg-white p-5 rounded-xl shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div class="space-y-1">
+                        <div class="flex items-center gap-2">
+                            <h3 class="font-bold text-lg text-gray-800">${escapeHTML(blog.title)}</h3>
+                            <span class="px-2 py-0.5 text-xs rounded ${blog.status === 'approved' || blog.is_approved ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">${blog.status || (blog.is_approved ? 'Approved' : 'Pending')}</span>
+                        </div>
+                        <p class="text-sm text-gray-600 line-clamp-2">${escapeHTML(blog.content || blog.body || '')}</p>
+                    </div>
+                    <button onclick="deleteBlog('${blog.id}')" class="bg-red-100 text-red-600 px-4 py-2 rounded text-sm font-bold hover:bg-red-200 flex-shrink-0">ডিলিট</button>
+                </div>
+            `).join('');
+        }
+
+        window.approveBlog = async (id) => {
+            const { error } = await supabaseClient.from('blogs').update({ status: 'approved', is_approved: true }).eq('id', id);
+            if(error) showToast(error.message, true);
+            else {
+                showToast('✅ ব্লগ সফলভাবে এপ্রুভ করা হয়েছে!');
+                loadPendingBlogs();
+            }
+        };
+
+        window.deleteBlog = async (id) => {
+            if(!confirm('এই ব্লগটি ডিলিট করতে চান?')) return;
+            const { error } = await supabaseClient.from('blogs').delete().eq('id', id);
+            if(error) showToast(error.message, true);
+            else {
+                showToast('🗑️ ব্লগটি ডিলিট করা হয়েছে!');
+                loadPendingBlogs();
+                loadAllBlogs();
             }
         };
 
@@ -737,7 +835,6 @@
             document.getElementById('editBookModal').classList.remove('flex'); 
         }
 
-        // সম্পূর্ণ বই আপডেট হ্যান্ডলার
         document.getElementById('editBookForm')?.addEventListener('submit', async (e) => {
             e.preventDefault();
             const id = document.getElementById('edit_book_id').value;
@@ -789,7 +886,6 @@
 
         async function loadDashboardData() {}
         async function loadOrders() {}
-        async function switchBlogTab() {}
         async function loadPendingReviews() {}
         async function loadSettings() {}
         async function handleLogout() { await supabaseClient.auth.signOut(); window.location.href = '/admin-login.html'; }
