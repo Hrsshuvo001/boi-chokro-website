@@ -111,7 +111,7 @@
                                 <th class="p-4 border-b">ছবি</th>
                                 <th class="p-4 border-b">বই ও লেখক</th>
                                 <th class="p-4 border-b">ক্যাটাগরি/প্রকাশনী</th>
-                                <th class="p-4 border-b">দাম</th>
+                                <th class="p-4 border-b">দাম ও ধরন</th>
                                 <th class="p-4 border-b">স্টক</th>
                                 <th class="p-4 border-b text-center">অ্যাকশন</th>
                             </tr>
@@ -121,7 +121,7 @@
                 </div>
             </section>
 
-            <!-- ৩. অ্যাড নিউ বুক -->
+            <!-- ৩. অ্যাড নিউ বুক (অ্যাফিলিয়েট লিংক অপশনসহ) -->
             <section id="section-add-book" class="section-content">
                 <h2 class="text-2xl font-bold text-gray-800 mb-6">নতুন বই যোগ করুন</h2>
                 <div class="bg-white p-6 rounded-xl shadow-sm max-w-2xl">
@@ -140,6 +140,22 @@
                                 <option value="" disabled selected>প্রকাশনী সিলেক্ট করুন</option>
                             </select>
                         </div>
+                        
+                        <!-- বইয়ের ধরন (নিজের বই নাকি অ্যাফিলিয়েট লিংক) -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-blue-50 p-4 border border-blue-200 rounded-md">
+                            <div>
+                                <label class="block text-xs font-bold text-blue-800 mb-1">বইয়ের ধরন</label>
+                                <select id="book_type" onchange="toggleAffiliateField()" class="w-full px-3 py-2 border rounded-md bg-white text-sm font-semibold">
+                                    <option value="own">নিজের বই (পেমেন্ট পেজে যাবে)</option>
+                                    <option value="affiliate">অ্যাফিলিয়েট লিংক (বাহ্যিক লিংকে যাবে)</option>
+                                </select>
+                            </div>
+                            <div id="affiliate_url_div" class="hidden">
+                                <label class="block text-xs font-bold text-blue-800 mb-1">অ্যাফিলিয়েট বাই লিংক (Buy URL)</label>
+                                <input type="url" id="affiliate_url" placeholder="https://example.com/book-link" class="w-full px-3 py-2 border rounded-md bg-white text-sm">
+                            </div>
+                        </div>
+
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <input type="number" id="stock_quantity" required placeholder="স্টক পরিমাণ (কত কপি)" class="w-full px-4 py-2 border rounded-md">
                             <input type="file" id="cover_files" accept="image/*" required class="w-full px-4 py-2 border rounded-md bg-gray-50">
@@ -322,7 +338,7 @@
         </main>
     </div>
 
-    <!-- মেটা (ক্যাটাগরি/লেখক/প্রকাশনী) এডিট মডাল -->
+    <!-- মেটা এডিট মডাল -->
     <div id="editMetaModal" class="fixed inset-0 z-[100] hidden items-center justify-center modal-overlay p-4">
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-md p-6">
             <div class="flex justify-between items-center mb-4 border-b pb-2">
@@ -401,8 +417,21 @@
             if(sectionId === 'settings') loadSettings();
         };
 
+        // অ্যাফিলিয়েট ফিল্ড টগল করার ফাংশন
+        window.toggleAffiliateField = () => {
+            const bookType = document.getElementById('book_type').value;
+            const affiliateDiv = document.getElementById('affiliate_url_div');
+            if(bookType === 'affiliate') {
+                affiliateDiv.classList.remove('hidden');
+                document.getElementById('affiliate_url').required = true;
+            } else {
+                affiliateDiv.classList.add('hidden');
+                document.getElementById('affiliate_url').required = false;
+            }
+        };
+
         // ==========================================
-        // নতুন বই যোগ করার হ্যান্ডলার (এরর ফিক্সড)
+        // নতুন বই যোগ করার হ্যান্ডলার (অ্যাফিলিয়েট লিংক ও এরর ফিক্সড)
         // ==========================================
         document.getElementById('addBookForm')?.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -415,6 +444,8 @@
                 const author = document.getElementById('author').value;
                 const category = document.getElementById('category').value;
                 const publisher = document.getElementById('publisher').value;
+                const book_type = document.getElementById('book_type').value;
+                const affiliate_url = book_type === 'affiliate' ? document.getElementById('affiliate_url').value : '';
                 const stock_quantity = parseInt(document.getElementById('stock_quantity').value) || 0;
                 const purchase_price = parseFloat(document.getElementById('purchase_price').value) || 0;
                 const original_price = parseFloat(document.getElementById('original_price').value) || 0;
@@ -443,10 +474,11 @@
 
                 const { error: insertError } = await supabaseClient.from('books').insert([{
                     title,
-                    name: title,
                     author,
                     category,
                     publisher,
+                    book_type,
+                    affiliate_url,
                     stock_quantity,
                     purchase_price,
                     original_price,
@@ -460,6 +492,7 @@
 
                 showToast('✅ নতুন বই সফলভাবে যোগ হয়েছে!');
                 document.getElementById('addBookForm').reset();
+                toggleAffiliateField();
                 loadAllBooks();
                 showSection('all-books');
 
@@ -663,12 +696,16 @@
             }
             tbody.innerHTML = books.map(book => {
                 const bookId = book.id || book.book_id;
+                const isAffiliate = book.book_type === 'affiliate';
                 return `
                 <tr class="border-b">
                     <td class="p-4"><img src="${book.cover_url || 'https://via.placeholder.com/40'}" class="w-10 h-14 object-cover rounded"></td>
-                    <td class="p-4"><p class="font-bold">${escapeHTML(book.title || book.name)}</p><p class="text-xs text-gray-500">${escapeHTML(book.author)}</p></td>
+                    <td class="p-4"><p class="font-bold">${escapeHTML(book.title)}</p><p class="text-xs text-gray-500">${escapeHTML(book.author)}</p></td>
                     <td class="p-4 text-sm">${escapeHTML(book.category)}</td>
-                    <td class="p-4 font-bold text-green-600">৳ ${book.discount_price || book.price || 0}</td>
+                    <td class="p-4">
+                        <span class="font-bold text-green-600">৳ ${book.discount_price || book.price || 0}</span>
+                        <div class="text-[10px] ${isAffiliate ? 'text-purple-600 font-bold' : 'text-gray-500'}">${isAffiliate ? '🔗 অ্যাফিলিয়েট' : '🛒 নিজের বই'}</div>
+                    </td>
                     <td class="p-4 font-bold">${book.stock_quantity || 0}</td>
                     <td class="p-4 text-center">
                         <button onclick="editBook('${bookId}')" class="bg-blue-100 text-blue-600 px-3 py-1 rounded text-xs mr-1">এডিট</button>
@@ -687,7 +724,7 @@
             if(!book) { showToast('বই পাওয়া যায়নি!', true); return; }
 
             document.getElementById('edit_book_id').value = book.id || book.book_id;
-            document.getElementById('edit_title').value = book.title || book.name || '';
+            document.getElementById('edit_title').value = book.title || '';
             document.getElementById('edit_stock_quantity').value = book.stock_quantity || 0;
             document.getElementById('edit_discount_price').value = book.discount_price || book.price || 0;
             document.getElementById('editBookModal').classList.remove('hidden');
@@ -701,7 +738,6 @@
             const id = document.getElementById('edit_book_id').value;
             const updates = {
                 title: document.getElementById('edit_title').value,
-                name: document.getElementById('edit_title').value,
                 stock_quantity: parseInt(document.getElementById('edit_stock_quantity').value),
                 discount_price: parseFloat(document.getElementById('edit_discount_price').value),
                 price: parseFloat(document.getElementById('edit_discount_price').value)
