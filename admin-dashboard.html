@@ -402,7 +402,7 @@
         };
 
         // ==========================================
-        // নতুন বই যোগ করার হ্যান্ডলার (ফাইল আপলোডসহ ফিক্সড)
+        // নতুন বই যোগ করার হ্যান্ডলার (এরর ফিক্সড)
         // ==========================================
         document.getElementById('addBookForm')?.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -453,8 +453,7 @@
                     discount_price,
                     price: discount_price,
                     description,
-                    cover_url,
-                    image_url: cover_url
+                    cover_url
                 }]);
 
                 if (insertError) throw insertError;
@@ -666,7 +665,7 @@
                 const bookId = book.id || book.book_id;
                 return `
                 <tr class="border-b">
-                    <td class="p-4"><img src="${book.cover_url || book.image_url || 'https://via.placeholder.com/40'}" class="w-10 h-14 object-cover rounded"></td>
+                    <td class="p-4"><img src="${book.cover_url || 'https://via.placeholder.com/40'}" class="w-10 h-14 object-cover rounded"></td>
                     <td class="p-4"><p class="font-bold">${escapeHTML(book.title || book.name)}</p><p class="text-xs text-gray-500">${escapeHTML(book.author)}</p></td>
                     <td class="p-4 text-sm">${escapeHTML(book.category)}</td>
                     <td class="p-4 font-bold text-green-600">৳ ${book.discount_price || book.price || 0}</td>
