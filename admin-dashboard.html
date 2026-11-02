@@ -471,7 +471,7 @@
         };
 
         // ==========================================
-        // ব্লগ ম্যানেজমেন্ট লজিক (সঠিক ফিল্টারিং সহ)
+        // ব্লগ ম্যানেজমেন্ট লজিক (সঠিক ফিল্টারিং ফিক্স)
         // ==========================================
         window.switchBlogTab = (tab) => {
             const btnPending = document.getElementById('tab-btn-pending');
@@ -510,7 +510,8 @@
                 return;
             }
 
-            // সঠিক ফিল্টার: কেবল যেগুলো এপ্রুভড নয় (বা পেন্ডিং অবস্থায় আছে)
+            // নতুন ও পেন্ডিং ব্লগ ফিল্টার করার সঠিক লজিক:
+            // যেগুলোর is_approved ট্রু নয় বা স্ট্যাটাস approved/published নয়, সেগুলোই পেন্ডিং ট্যাবে আসবে।
             const pendingBlogs = blogs.filter(b => {
                 const status = (b.status || '').toLowerCase();
                 const isApproved = b.is_approved === true || status === 'approved' || status === 'published';
