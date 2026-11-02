@@ -239,8 +239,8 @@
             <section id="section-blog-management" class="section-content">
                 <h2 class="text-2xl font-bold text-gray-800 mb-6">ব্লগ ম্যানেজমেন্ট</h2>
                 <div class="flex border-b border-gray-200 mb-6 gap-4">
-                    <button onclick="switchBlogTab('pending')" id="tab-btn-pending" class="px-6 py-3 font-bold text-blue-600 border-b-2 border-blue-600 focus:outline-none">পেন্ডিং ব্লগ (শুধুমাত্র নতুন পোস্ট)</button>
-                    <button onclick="switchBlogTab('all')" id="tab-btn-all" class="px-6 py-3 font-bold text-gray-500 border-b-2 border-transparent focus:outline-none">সব ব্লগ ও স্ট্যাটাস</button>
+                    <button onclick="switchBlogTab('pending')" id="tab-btn-pending" class="px-6 py-3 font-bold text-blue-600 border-b-2 border-blue-600 focus:outline-none">পেন্ডিং ব্লগ (সরাসরি শো)</button>
+                    <button onclick="switchBlogTab('all')" id="tab-btn-all" class="px-6 py-3 font-bold text-gray-500 border-b-2 border-transparent focus:outline-none">সব ব্লগ</button>
                 </div>
                 <div id="blog-tab-pending" class="space-y-4"></div>
                 <div id="blog-tab-all" class="hidden">
@@ -471,7 +471,7 @@
         };
 
         // ==========================================
-        // ব্লগ ম্যানেজমেন্ট লজিক (সঠিক ফিল্টারিং পলিসি)
+        // ব্লগ ম্যানেজমেন্ট লজিক (লোডিং ছাড়া সরাসরি ডেটা প্রদর্শন)
         // ==========================================
         window.switchBlogTab = (tab) => {
             const btnPending = document.getElementById('tab-btn-pending');
@@ -496,31 +496,27 @@
 
         async function loadPendingBlogs() {
             const container = document.getElementById('blog-tab-pending');
-            container.innerHTML = '<p class="text-gray-500">লোড হচ্ছে...</p>';
             
+            // কোনো 'লোড হচ্ছে...' টেক্সট বা ডিলে রাখা হয়নি, সরাসরি ডেটা ফেচ করা হবে
             const { data: blogs, error } = await supabaseClient.from('blogs').select('*').order('created_at', { ascending: false });
             
-            if(error) {
-                container.innerHTML = `<div class="bg-white p-6 rounded-xl shadow-sm text-center text-red-500">এরর: ${error.message}</div>`;
+            if(error || !blogs || blogs.length === 0) {
+                container.innerHTML = '<div class="bg-white p-6 rounded-xl shadow-sm text-center text-gray-500">কোনো ব্লগ পাওয়া যায়নি।</div>';
                 return;
             }
 
-            if(!blogs || blogs.length === 0) {
-                container.innerHTML = '<div class="bg-white p-6 rounded-xl shadow-sm text-center text-gray-500">কোনো পেন্ডিং ব্লগ নেই।</div>';
-                return;
-            }
-
-            // সঠিক পলিসি: 
-            // ১. প্রোফাইল ছবি আপডেট বা কভার ফটো আপডেটের স্বয়ংক্রিয় নোটিফিকেশনগুলো ফিল্টার করে বাদ দেওয়া হবে।
-            // ২. শুধুমাত্র যেগুলোর স্ট্যাটাস পেন্ডিং এবং যেগুলো সত্যিকারের ব্লগ পোস্ট, সেগুলোই দেখাবে।
+            // একদম নিখুঁত ফিল্টারিং:
+            // ১. কভার ফটো বা প্রোফাইল পিকচার আপডেটের অটোমেটিক সিস্টেম নোটিফিকেশনগুলো পুরোপুরি বাদ দেওয়া হলো।
+            // ২. শুধু সেইসব পোস্ট দেখাবে যেগুলোর স্ট্যাটাস বা অ্যাপ্রুভাল এপ্রুভড/পাবলিশড নয়।
             const pendingBlogs = blogs.filter(b => {
-                const title = (b.title || '').toLowerCase();
-                const content = (b.content || b.body || b.description || '').toLowerCase();
+                const title = (b.title || '').trim();
+                const content = (b.content || b.body || b.description || '').trim();
                 const status = (b.status || '').toLowerCase();
 
-                // প্রোফাইল বা কভার ফটো আপডেটের স্বয়ংক্রিয় নোটিফিকেশনগুলো বাদ দেওয়ার শর্ত
-                const isSystemPhotoUpdate = title.includes('কভার ফটো আপডেট') || title.includes('প্রোফাইল ছবি আপডেট') || content.includes('আপডেট হয়েছে');
-                if (isSystemPhotoUpdate) return false;
+                // সিস্টেম প্রোফাইল বা কভার ফটো আপডেটের নোটিফিকেশন ফিল্টার করে বাদ দেওয়া
+                if (title === 'কভার ফটো আপডেট' || title === 'প্রোফাইল ছবি আপডেট' || content.includes('আপনার কভার ফটো আপলোড হয়েছে') || content.includes('আপনার প্রোফাইল ছবি আপলোড হয়েছে')) {
+                    return false;
+                }
 
                 // যেগুলো ইতিমধ্যে এপ্রুভড বা পাবলিশড সেগুলোকে বাদ দেওয়া
                 const isApproved = b.is_approved === true || status === 'approved' || status === 'published';
@@ -551,7 +547,6 @@
 
         async function loadAllBlogs() {
             const container = document.getElementById('allBlogsList');
-            container.innerHTML = '<p class="text-gray-500">লোড হচ্ছে...</p>';
             
             const { data: blogs, error } = await supabaseClient.from('blogs').select('*').order('created_at', { ascending: false });
             
