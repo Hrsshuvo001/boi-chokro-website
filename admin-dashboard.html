@@ -471,7 +471,7 @@
         };
 
         // ==========================================
-        // ব্লগ ম্যানেজমেন্ট লজিক (আল্টিমেট ফিক্স)
+        // ব্লগ ম্যানেজমেন্ট লজিক (সঠিক ফিল্টারিং সহ)
         // ==========================================
         window.switchBlogTab = (tab) => {
             const btnPending = document.getElementById('tab-btn-pending');
@@ -506,20 +506,23 @@
             }
 
             if(!blogs || blogs.length === 0) {
-                container.innerHTML = '<div class="bg-white p-6 rounded-xl shadow-sm text-center text-gray-500">ডেটাবেজে কোনো ব্লগই পাওয়া যায়নি!</div>';
+                container.innerHTML = '<div class="bg-white p-6 rounded-xl shadow-sm text-center text-gray-500">কোনো ব্লগ পাওয়া যায়নি।</div>';
                 return;
             }
 
-            // যে ব্লগগুলো এখনো এপ্রুভড বা পাবলিশড না (বা স্ট্যাটাস পেন্ডিং আছে)
+            // সঠিক ফিল্টার: কেবল যেগুলো এপ্রুভড নয় (বা পেন্ডিং অবস্থায় আছে)
             const pendingBlogs = blogs.filter(b => {
                 const status = (b.status || '').toLowerCase();
-                return status === 'pending' || !b.is_approved && status !== 'approved' && status !== 'published';
+                const isApproved = b.is_approved === true || status === 'approved' || status === 'published';
+                return !isApproved;
             });
 
-            // যদি ফিল্টার করে না পাওয়া যায়, তবে সব ব্লগই দেখাবে যাতে ইউজার দেখতে পায়
-            const displayList = pendingBlogs.length > 0 ? pendingBlogs : blogs;
+            if(pendingBlogs.length === 0) {
+                container.innerHTML = '<div class="bg-white p-6 rounded-xl shadow-sm text-center text-gray-500">কোনো পেন্ডিং ব্লগ নেই।</div>';
+                return;
+            }
 
-            container.innerHTML = displayList.map(blog => {
+            container.innerHTML = pendingBlogs.map(blog => {
                 const blogId = blog.id || blog.blog_id;
                 return `
                 <div class="bg-white p-5 rounded-xl shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border">
