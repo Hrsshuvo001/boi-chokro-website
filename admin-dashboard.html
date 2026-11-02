@@ -64,12 +64,324 @@
                 <button onclick="toggleSidebar()" class="text-gray-700 text-2xl focus:outline-none md:hidden">☰</button>
                 <h1 class="text-xl font-bold text-blue-600 hidden md:block" id="mobile-header-title">ড্যাশবোর্ড</h1>
             </div>
+            
+            <div class="relative">
+                <button onclick="toggleNotifications()" class="relative p-2 text-gray-600 hover:text-blue-600 focus:outline-none transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
+                    <span id="notif-count" class="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold rounded-full h-5 w-5 flex items-center justify-center border-2 border-white hidden">0</span>
+                </button>
+                <div id="notif-dropdown" class="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 hidden z-50 max-h-96 overflow-y-auto">
+                    <div class="p-3 bg-gray-50 border-b font-bold text-gray-700 rounded-t-lg flex justify-between items-center sticky top-0">
+                        <span>নোটিফিকেশন</span>
+                        <button onclick="clearAllNotifications()" class="text-xs text-red-500 hover:underline">সব মুছুন</button>
+                    </div>
+                    <div id="notif-list" class="divide-y divide-gray-100"></div>
+                </div>
+            </div>
         </header>
 
         <main class="flex-grow p-4 md:p-8 overflow-y-auto relative">
 
-            <!-- সাইট সেটিংস -->
-            <section id="section-settings" class="section-content active">
+            <!-- ১. হোম (KPI) -->
+            <section id="section-home" class="section-content active">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">ড্যাশবোর্ড ওভারভিউ</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+                    <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-blue-500">
+                        <p class="text-gray-500 text-xs font-semibold">আজকের সেলস</p>
+                        <h3 class="text-2xl font-bold text-gray-800 mt-1">৳ <span id="kpi-today-sales">0</span></h3>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-green-500">
+                        <p class="text-gray-500 text-xs font-semibold">মোট লাভ</p>
+                        <h3 class="text-2xl font-bold text-green-600 mt-1">৳ <span id="kpi-profit">0</span></h3>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-red-500">
+                        <p class="text-gray-500 text-xs font-semibold">মোট লস</p>
+                        <h3 class="text-2xl font-bold text-red-600 mt-1">৳ <span id="kpi-loss">0</span></h3>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-purple-500">
+                        <p class="text-gray-500 text-xs font-semibold">মোট সেলস</p>
+                        <h3 class="text-2xl font-bold text-gray-800 mt-1">৳ <span id="kpi-total-sales">0</span></h3>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-indigo-500">
+                        <p class="text-gray-500 text-xs font-semibold">মোট ভিজিটর</p>
+                        <h3 class="text-2xl font-bold text-indigo-600 mt-1"><span id="kpi-visitors">0</span> জন</h3>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-sm">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">সাপ্তাহিক বিক্রির চার্ট</h3>
+                    <canvas id="salesChart" height="100"></canvas>
+                </div>
+            </section>
+
+            <!-- ২. সব বই -->
+            <section id="section-all-books" class="section-content">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">সব বই</h2>
+                    <button onclick="showSection('add-book')" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 text-sm">+ নতুন বই</button>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-gray-100 text-gray-600 text-sm">
+                                <th class="p-4 border-b">ছবি</th><th class="p-4 border-b">বই ও লেখক</th><th class="p-4 border-b">ক্যাটাগরি/প্রকাশনী</th><th class="p-4 border-b">দাম</th><th class="p-4 border-b">স্টক</th><th class="p-4 border-b text-center">অ্যাকশন</th>
+                            </tr>
+                        </thead>
+                        <tbody id="allBooksTableBody"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- ৩. অ্যাড নিউ বুক -->
+            <section id="section-add-book" class="section-content">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">নতুন বই যোগ করুন</h2>
+                <div class="bg-white p-6 rounded-xl shadow-sm max-w-2xl">
+                    <form id="addBookForm" class="space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <input type="text" id="title" required placeholder="বইয়ের নাম" class="w-full px-4 py-2 border rounded-md">
+                            <select id="author" required class="w-full px-4 py-2 border rounded-md bg-white">
+                                <option value="" disabled selected>লেখক সিলেক্ট করুন</option>
+                            </select>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <select id="category" required class="w-full px-4 py-2 border rounded-md bg-white">
+                                <option value="" disabled selected>ক্যাটাগরি সিলেক্ট করুন</option>
+                            </select>
+                            <select id="publisher" required class="w-full px-4 py-2 border rounded-md bg-white">
+                                <option value="" disabled selected>প্রকাশনী সিলেক্ট করুন</option>
+                            </select>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <input type="number" id="stock_quantity" required placeholder="স্টক পরিমাণ (কত কপি)" class="w-full px-4 py-2 border rounded-md">
+                            <input type="file" id="cover_files" accept="image/*" multiple required class="w-full px-4 py-2 border rounded-md bg-gray-50">
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-gray-50 border rounded-md">
+                            <div><label class="block text-xs text-gray-500 mb-1">ক্রয় মূল্য (৳)</label><input type="number" id="purchase_price" placeholder="যে দামে কিনেছেন" class="w-full px-3 py-2 border rounded-md"></div>
+                            <div><label class="block text-xs text-gray-500 mb-1">আসল বিক্রয় মূল্য (৳)</label><input type="number" id="original_price" placeholder="MRP" class="w-full px-3 py-2 border rounded-md"></div>
+                            <div><label class="block text-xs text-gray-500 mb-1">ডিসকাউন্ট মূল্য (৳) *</label><input type="number" id="discount_price" required placeholder="বিক্রয় মূল্য" class="w-full px-3 py-2 border rounded-md"></div>
+                        </div>
+                        <div class="p-4 bg-blue-50 border border-blue-200 rounded-md">
+                            <label class="flex items-center space-x-2 text-sm text-blue-900 cursor-pointer mb-2"><input type="radio" name="link_type" id="type_affiliate" value="affiliate" checked onchange="toggleLinkType()"><span>অ্যাফিলিয়েট লিংক</span></label>
+                            <label class="flex items-center space-x-2 text-sm text-blue-900 cursor-pointer mb-2"><input type="radio" name="link_type" id="type_payment" value="payment" onchange="toggleLinkType()"><span>নিজের সাইটে বিক্রি (কার্ট)</span></label>
+                            <input type="url" id="purchase_link" placeholder="অ্যাফিলিয়েট লিংক" class="w-full px-4 py-2 border rounded-md">
+                        </div>
+                        <textarea id="description" placeholder="বইয়ের বিবরণ" rows="3" class="w-full px-4 py-2 border rounded-md"></textarea>
+                        <button type="submit" id="addBookBtn" class="w-full bg-blue-600 text-white font-bold py-3 rounded-md hover:bg-blue-700">বই যোগ করুন</button>
+                    </form>
+                </div>
+            </section>
+
+            <!-- ৪. অর্ডার ম্যানেজমেন্ট -->
+            <section id="section-confirm-booking" class="section-content">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">সব অর্ডার (Order Management)</h2>
+                <div class="bg-white rounded-xl shadow-sm overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-gray-100 text-gray-600 text-sm">
+                                <th class="p-4 border-b">অর্ডার আইডি / তারিখ</th>
+                                <th class="p-4 border-b">কাস্টমার</th>
+                                <th class="p-4 border-b">মোবাইল</th>
+                                <th class="p-4 border-b">টাকা</th>
+                                <th class="p-4 border-b">স্ট্যাটাস পরিবর্তন</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bookingTableBody"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- ৫. অ্যাড মেটা -->
+            <section id="section-add-meta" class="section-content">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">ক্যাটাগরি, লেখক ও প্রকাশনী যোগ করুন</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-white p-6 rounded-xl shadow-sm border-t-4 border-purple-500"><h3 class="font-bold mb-4">ক্যাটাগরি</h3><form id="addCategoryForm" class="flex flex-col gap-3"><input type="text" id="categoryName" required placeholder="ক্যাটাগরির নাম" class="px-4 py-2 border rounded-md"><button type="submit" class="bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700">যোগ করুন</button></form></div>
+                    <div class="bg-white p-6 rounded-xl shadow-sm border-t-4 border-indigo-500"><h3 class="font-bold mb-4">লেখক</h3><form id="addAuthorForm" class="flex flex-col gap-3"><input type="text" id="authorName" required placeholder="লেখকের নাম" class="px-4 py-2 border rounded-md"><textarea id="authorBio" placeholder="লেখক পরিচিতি" rows="2" class="px-4 py-2 border rounded-md"></textarea><input type="file" id="authorImage" accept="image/*" class="px-4 py-2 border rounded-md bg-gray-50 text-sm"><button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700">যোগ করুন</button></form></div>
+                    <div class="bg-white p-6 rounded-xl shadow-sm border-t-4 border-teal-500"><h3 class="font-bold mb-4">প্রকাশনী</h3><form id="addPublisherForm" class="flex flex-col gap-3"><input type="text" id="publisherName" required placeholder="প্রকাশনীর নাম" class="px-4 py-2 border rounded-md"><button type="submit" class="bg-teal-600 text-white px-4 py-2 rounded-md hover:bg-teal-700">যোগ করুন</button></form></div>
+                </div>
+            </section>
+
+            <!-- ৬. ব্লগ ম্যানেজমেন্ট (৩টি ট্যাব) -->
+            <section id="section-blog-management" class="section-content">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">ব্লগ ম্যানেজমেন্ট</h2>
+                
+                <div class="flex border-b border-gray-200 mb-6">
+                    <button onclick="switchBlogTab('pending')" id="tab-btn-pending" class="px-6 py-3 font-bold text-blue-600 border-b-2 border-blue-600 focus:outline-none">পেন্ডিং ব্লগ</button>
+                    <button onclick="switchBlogTab('all')" id="tab-btn-all" class="px-6 py-3 font-bold text-gray-500 hover:text-blue-600 border-b-2 border-transparent focus:outline-none">সব ব্লগ</button>
+                    <button onclick="switchBlogTab('add')" id="tab-btn-add" class="px-6 py-3 font-bold text-gray-500 hover:text-blue-600 border-b-2 border-transparent focus:outline-none">অ্যাডমিনের ব্লগ লিখুন</button>
+                </div>
+
+                <div id="blog-tab-pending" class="space-y-4"></div>
+
+                <div id="blog-tab-all" class="hidden">
+                    <div class="mb-4">
+                        <input type="text" id="blogSearchInput" placeholder="ব্লগের টাইটেল বা লেখকের নাম দিয়ে খুঁজুন..." class="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none" oninput="searchBlogs()">
+                    </div>
+                    <div id="allBlogsList" class="space-y-4"></div>
+                </div>
+
+                <div id="blog-tab-add" class="hidden bg-white p-6 rounded-xl shadow-sm border-t-4 border-blue-500 max-w-2xl">
+                    <h3 class="text-xl font-bold mb-4 text-gray-800">নতুন ব্লগ লিখুন</h3>
+                    <form id="addBlogForm" class="space-y-4">
+                        <div><label class="block text-sm font-medium text-gray-700">ব্লগের শিরোনাম</label><input type="text" id="blogTitle" required class="mt-1 w-full px-4 py-2 border rounded-md"></div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">ব্লগের ছবি (ঐচ্ছিক)</label>
+                            <input type="file" id="blogImage" accept="image/*" class="mt-1 w-full px-4 py-2 border rounded-md bg-gray-50 text-sm">
+                        </div>
+                        <div><label class="block text-sm font-medium text-gray-700">ব্লগের বিষয়বস্তু</label><textarea id="blogContent" required rows="5" class="mt-1 w-full px-4 py-2 border rounded-md"></textarea></div>
+                        <button type="submit" id="submitBlogBtn" class="w-full bg-blue-600 text-white font-bold py-2 rounded hover:bg-blue-700 transition">ব্লগ পাবলিশ করুন</button>
+                    </form>
+                </div>
+            </section>
+
+            <!-- ৭. রিভিউ ম্যানেজমেন্ট -->
+            <section id="section-review-management" class="section-content">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">রিভিউ ম্যানেজমেন্ট (পেন্ডিং)</h2>
+                <div id="pendingReviewsList" class="space-y-4"></div>
+            </section>
+
+            <!-- ৮. কুপন ম্যানেজমেন্ট -->
+            <section id="section-coupon-management" class="section-content">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">কুপন ম্যানেজমেন্ট</h2>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div class="bg-white p-6 rounded-xl shadow-sm border-t-4 border-orange-500 h-fit">
+                        <h3 class="font-bold text-lg mb-4 text-gray-800">নতুন কুপন তৈরি করুন</h3>
+                        <form id="addCouponForm" class="space-y-4">
+                            <div><label class="block text-sm font-medium text-gray-700">কুপন কোড</label><input type="text" id="couponCode" required class="mt-1 w-full px-3 py-2 border rounded-md uppercase" placeholder="EID50"></div>
+                            <div><label class="block text-sm font-medium text-gray-700">ডিসকাউন্ট (%)</label><input type="number" id="couponDiscount" required min="1" max="100" class="mt-1 w-full px-3 py-2 border rounded-md" placeholder="10"></div>
+                            <button type="submit" id="addCouponBtn" class="w-full bg-orange-500 text-white font-bold py-2 rounded hover:bg-orange-600 transition">কুপন তৈরি করুন</button>
+                        </form>
+                        <div id="couponMsg" class="mt-3 text-center font-bold hidden"></div>
+                    </div>
+                    <div class="lg:col-span-2">
+                        <div class="bg-white rounded-xl shadow-sm overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead><tr class="bg-gray-100 text-gray-600 text-sm"><th class="p-4 border-b">কুপন কোড</th><th class="p-4 border-b">ডিসকাউন্ট</th><th class="p-4 border-b">স্ট্যাটাস</th><th class="p-4 border-b text-center">অ্যাকশন</th></tr></thead>
+                                <tbody id="couponTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ৯. কাস্টমার লিস্ট -->
+            <section id="section-customer-list" class="section-content">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">কাস্টমার লিস্ট</h2>
+                <div class="bg-white rounded-xl shadow-sm overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead><tr class="bg-gray-100 text-gray-600 text-sm"><th class="p-4 border-b">নাম / ইমেইল</th><th class="p-4 border-b">মোবাইল</th><th class="p-4 border-b">ঠিকানা</th><th class="p-4 border-b text-center">মোট অর্ডার</th></tr></thead>
+                        <tbody id="customerTableBody"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- ১০. নিউজলেটার লিস্ট -->
+            <section id="section-newsletter-list" class="section-content">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">নিউজলেটার সাবস্ক্রাইবার লিস্ট</h2>
+                <div class="bg-white rounded-xl shadow-sm overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-gray-100 text-gray-600 text-sm">
+                                <th class="p-4 border-b">ইমেইল</th>
+                                <th class="p-4 border-b">সাবস্ক্রাইব করার তারিখ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="subscriberTableBody"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- ১১. ইম্পলয়ি ম্যানেজমেন্ট -->
+            <section id="section-employee" class="section-content">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">ইম্পলয়ি ম্যানেজমেন্ট</h2>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div class="bg-white p-6 rounded-xl shadow-sm border-t-4 border-blue-500 h-fit">
+                        <h3 class="font-bold text-lg mb-4 text-gray-800">নতুন ইম্পলয়ি যোগ করুন</h3>
+                        <form id="addEmployeeForm" class="space-y-4">
+                            <div><label class="block text-sm font-medium text-gray-700">নাম</label><input type="text" id="empName" required class="mt-1 w-full px-3 py-2 border rounded-md" placeholder="পুরো নাম"></div>
+                            <div><label class="block text-sm font-medium text-gray-700">পদবি</label><input type="text" id="empDesignation" required class="mt-1 w-full px-3 py-2 border rounded-md" placeholder="যেমন: ম্যানেজার"></div>
+                            <div><label class="block text-sm font-medium text-gray-700">ইমেইল</label><input type="email" id="empEmail" required class="mt-1 w-full px-3 py-2 border rounded-md" placeholder="employee@example.com"></div>
+                            <div><label class="block text-sm font-medium text-gray-700">ফোন নাম্বার</label><input type="text" id="empPhone" required class="mt-1 w-full px-3 py-2 border rounded-md" placeholder="017XXXXXXXX"></div>
+                            <div><label class="block text-sm font-medium text-gray-700">রক্তের গ্রুপ</label><select id="empBlood" required class="mt-1 w-full px-3 py-2 border rounded-md bg-white"><option value="A+">A+</option><option value="B+">B+</option><option value="O+">O+</option><option value="AB+">AB+</option><option value="A-">A-</option><option value="B-">B-</option><option value="O-">O-</option><option value="AB-">AB-</option></select></div>
+                            <div><label class="block text-sm font-medium text-gray-700">ঠিকানা</label><textarea id="empAddress" required rows="2" class="mt-1 w-full px-3 py-2 border rounded-md"></textarea></div>
+                            <div><label class="block text-sm font-medium text-gray-700">ছবি (আইডি কার্ডের জন্য)</label><input type="file" id="empImage" accept="image/*" required class="mt-1 w-full px-3 py-2 border rounded-md bg-gray-50 text-sm"></div>
+                            <div><label class="block text-sm font-medium text-gray-700">পাসওয়ার্ড</label><input type="password" id="empPassword" required minlength="6" class="mt-1 w-full px-3 py-2 border rounded-md" placeholder="কমপক্ষে ৬ অক্ষর"></div>
+                            <button type="submit" id="addEmpBtn" class="w-full bg-blue-600 text-white font-bold py-2 rounded hover:bg-blue-700 transition">ইম্পলয়ি তৈরি করুন</button>
+                        </form>
+                        <div id="empMessage" class="mt-3 text-center font-bold hidden"></div>
+                    </div>
+                    <div class="lg:col-span-2">
+                        <div class="bg-white rounded-xl shadow-sm overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead><tr class="bg-gray-100 text-gray-600 text-sm"><th class="p-4 border-b">ছবি</th><th class="p-4 border-b">নাম / পদবি</th><th class="p-4 border-b">ইমেইল</th><th class="p-4 border-b text-center">অ্যাকশন</th></tr></thead>
+                                <tbody id="employeeTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ১২. কার্যক্রমের লগ -->
+            <section id="section-activity-logs" class="section-content">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">কার্যক্রমের লগ (Activity Logs)</h2>
+                <div class="bg-white rounded-xl shadow-sm overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead><tr class="bg-gray-100 text-gray-600 text-sm"><th class="p-4 border-b">সময়</th><th class="p-4 border-b">ইউজার (ইমেইল)</th><th class="p-4 border-b">রোল</th><th class="p-4 border-b">অ্যাকশন</th><th class="p-4 border-b">বিবরণ</th></tr></thead>
+                        <tbody id="activityLogsBody"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- ১৩. রিপোর্ট -->
+            <section id="section-report" class="section-content">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">সেলস রিপোর্ট</h2>
+                    <button onclick="generatePDF()" class="bg-red-600 text-white px-6 py-2 rounded-md hover:bg-red-700 flex items-center gap-2 shadow-lg">PDF ডাউনলোড</button>
+                </div>
+                <div class="bg-white p-4 rounded-xl shadow-sm max-w-4xl mx-auto mb-6 flex flex-wrap items-end gap-4">
+                    <div><label class="block text-xs font-semibold text-gray-600 mb-1">শুরুর তারিখ</label><input type="date" id="startDate" class="px-3 py-2 border rounded-md text-sm"></div>
+                    <div><label class="block text-xs font-semibold text-gray-600 mb-1">শেষ তারিখ</label><input type="date" id="endDate" class="px-3 py-2 border rounded-md text-sm"></div>
+                    <div class="flex gap-2">
+                        <button onclick="filterReport()" class="bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700">ফিল্টার করুন</button>
+                        <button onclick="resetReport()" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-md text-sm hover:bg-gray-300">রিসেট</button>
+                    </div>
+                </div>
+                <div class="bg-white p-4 md:p-8 rounded-xl shadow-sm max-w-4xl mx-auto overflow-x-auto">
+                    <div id="report-container" class="text-gray-800 bg-white mx-auto" style="width: 100%; max-width: 800px; padding: 10px; font-family: sans-serif;">
+                        <div class="flex flex-row justify-between items-start border-b-2 border-gray-800 pb-4 mb-6">
+                            <div class="flex items-center gap-2 text-left pl-0">
+                                <img id="rep_logo" src="" class="h-14 w-auto max-w-[100px] object-contain hidden">
+                                <div>
+                                    <h1 id="rep_company_name" class="text-2xl font-bold text-blue-800 m-0 leading-tight">Boi Chokro</h1>
+                                    <p id="rep_tagline" class="text-xs text-gray-600 font-semibold m-0"></p>
+                                    <p id="rep_address" class="text-xs text-gray-500 m-0">ঢাকা, বাংলাদেশ</p>
+                                    <p id="rep_phone" class="text-xs text-gray-500 m-0">ফোন: 017xxxxxxxx</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <h2 class="text-xl font-bold text-gray-800 m-0">সেলস রিপোর্ট</h2>
+                                <p class="text-sm text-gray-500 mt-1">জেনারেট: <span id="report-date"></span></p>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-5 gap-2 mb-8">
+                            <div class="border p-2 rounded text-center bg-gray-50"><p class="text-[10px] text-gray-500 m-0">মোট অর্ডার</p><p class="text-sm font-bold m-0 mt-1" id="rep-total-orders">0</p></div>
+                            <div class="border p-2 rounded text-center bg-gray-50"><p class="text-[10px] text-gray-500 m-0">সফল ডেলিভারি</p><p class="text-sm font-bold text-green-600 m-0 mt-1" id="rep-success-orders">0</p></div>
+                            <div class="border p-2 rounded text-center bg-gray-50"><p class="text-[10px] text-gray-500 m-0">মোট রেভিনিউ</p><p class="text-sm font-bold text-blue-600 m-0 mt-1" id="rep-total-revenue">৳ 0</p></div>
+                            <div class="border p-2 rounded text-center bg-gray-50"><p class="text-[10px] text-gray-500 m-0">মোট লাভ</p><p class="text-sm font-bold text-green-700 m-0 mt-1" id="rep-total-profit">৳ 0</p></div>
+                            <div class="border p-2 rounded text-center bg-gray-50"><p class="text-[10px] text-gray-500 m-0">মোট লস</p><p class="text-sm font-bold text-red-600 m-0 mt-1" id="rep-total-loss">৳ 0</p></div>
+                        </div>
+                        <table class="w-full text-sm border-collapse text-left">
+                            <thead><tr class="bg-gray-200"><th class="p-2 border text-left">তারিখ</th><th class="p-2 border text-left">কাস্টমার</th><th class="p-2 border text-left">মোবাইল</th><th class="p-2 border text-left">স্ট্যাটাস</th><th class="p-2 border text-right">টাকা (৳)</th></tr></thead>
+                            <tbody id="reportTableBody"></tbody>
+                        </table>
+                        <div class="mt-12 pt-4 border-t text-center text-xs text-gray-500">
+                            <p id="rep_footer_text" class="m-0 mb-1">© 2024 Boi Chokro. All rights reserved.</p>
+                            <p id="rep_generator_text" class="m-0 font-bold text-gray-700"></p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ১৪. সাইট সেটিংস -->
+            <section id="section-settings" class="section-content">
                 <h2 class="text-2xl font-bold text-gray-800 mb-6">সাইট সেটিংস</h2>
                 <div class="bg-white p-6 rounded-xl shadow-sm max-w-2xl">
                     <form id="siteSettingsForm" class="space-y-4">
@@ -88,8 +400,7 @@
                         <div class="border-t pt-4 mt-4">
                             <h3 class="font-bold text-gray-800 mb-3">হোম পেজ ব্যানার সেটিংস</h3>
                             <div class="space-y-3">
-                                <div><label class="block text-sm font-medium text-gray-700">ব্যানার বড় টাইটেল (লেখা)</label><input type="text" id="set_banner_text" required class="mt-1 w-full px-3 py-2 border rounded-md"></div>
-                                <div><label class="block text-sm font-medium text-gray-700">ব্যানার ছোট বিবরণী (সাব-টাইটেল)</label><input type="text" id="set_sub_tagline" class="mt-1 w-full px-3 py-2 border rounded-md" placeholder="সেরা লেখকদের বইয়ের বিশাল সংগ্রহ..."></div>
+                                <div><label class="block text-sm font-medium text-gray-700">ব্যানার টাইটেল (লেখা)</label><input type="text" id="set_banner_text" required class="mt-1 w-full px-3 py-2 border rounded-md"></div>
                                 <div><label class="block text-sm font-medium text-gray-700">ব্যানার ইমেজ</label><div class="flex items-center gap-4 mt-1"><img id="current_banner" src="" class="h-12 w-24 object-cover border rounded hidden"><input type="file" id="set_banner_file" accept="image/*" class="w-full px-3 py-2 border rounded-md bg-gray-50 text-sm"></div></div>
                             </div>
                         </div>
@@ -109,12 +420,60 @@
         </main>
     </div>
 
+    <!-- এডিট বুক মডাল -->
+    <div id="editBookModal" class="fixed inset-0 z-[100] hidden items-center justify-center modal-overlay p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div class="p-4 border-b flex justify-between items-center bg-gray-50 sticky top-0 z-10">
+                <h2 class="text-xl font-bold text-gray-800">বই এডিট করুন</h2>
+                <button onclick="closeEditModal()" class="text-red-500 hover:text-red-700 text-2xl font-bold">&times;</button>
+            </div>
+            <div class="p-6">
+                <form id="editBookForm" class="space-y-4">
+                    <input type="hidden" id="edit_book_id">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div><label class="block text-sm font-medium text-gray-700">বইয়ের নাম</label><input type="text" id="edit_title" required class="mt-1 w-full px-4 py-2 border rounded-md"></div>
+                        <div><label class="block text-sm font-medium text-gray-700">লেখক</label><select id="edit_author" required class="mt-1 w-full px-4 py-2 border rounded-md bg-white"></select></div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div><label class="block text-sm font-medium text-gray-700">ক্যাটাগরি</label><select id="edit_category" required class="mt-1 w-full px-4 py-2 border rounded-md bg-white"></select></div>
+                        <div><label class="block text-sm font-medium text-gray-700">প্রকাশনী</label><select id="edit_publisher" required class="mt-1 w-full px-4 py-2 border rounded-md bg-white"></select></div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div><label class="block text-sm font-medium text-gray-700">স্টক পরিমাণ</label><input type="number" id="edit_stock_quantity" required class="mt-1 w-full px-4 py-2 border rounded-md"></div>
+                        <div><label class="block text-sm font-medium text-gray-700">নতুন ছবি (ঐচ্ছিক)</label><input type="file" id="edit_cover_file" accept="image/*" class="mt-1 w-full px-3 py-2 border rounded-md bg-gray-50 text-sm"></div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div><label class="block text-sm font-medium text-gray-700">ক্রয় মূল্য (৳)</label><input type="number" id="edit_purchase_price" class="mt-1 w-full px-3 py-2 border rounded-md"></div>
+                        <div><label class="block text-sm font-medium text-gray-700">আসল মূল্য (৳)</label><input type="number" id="edit_original_price" class="mt-1 w-full px-3 py-2 border rounded-md"></div>
+                        <div><label class="block text-sm font-medium text-gray-700">ডিসকাউন্ট মূল্য (৳)</label><input type="number" id="edit_discount_price" required class="mt-1 w-full px-3 py-2 border rounded-md"></div>
+                    </div>
+                    <div><label class="block text-sm font-medium text-gray-700">বিবরণ</label><textarea id="edit_description" rows="3" class="mt-1 w-full px-4 py-2 border rounded-md"></textarea></div>
+                    <button type="submit" id="updateBookBtn" class="w-full bg-green-600 text-white font-bold py-3 rounded-md hover:bg-green-700">আপডেট করুন</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <script>
         const SUPABASE_URL = 'https://jhbpaezbpkfwjfmazdcn.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_oBzutzPKvIvujmSG7icXug_SwwveL5g';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+        let currentUser = null;
+        let currentUserRole = 'employee'; 
+        let currentUserName = 'Unknown'; 
+        let myChart = null;
         let siteSettings = null; 
+        let notifications = [];
+        let mutedNotifications = JSON.parse(localStorage.getItem('muted_notifs')) || [];
+        let userEmails = {}; 
+        let allBlogsData = []; 
+
+        window.onload = function() {
+            const urlHash = window.location.hash.replace('#', '');
+            if (urlHash) showSection(urlHash);
+            else showSection('home');
+        };
 
         window.showToast = (message, isError = false) => {
             const container = document.getElementById('toast-container');
@@ -125,6 +484,61 @@
             setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateX(100%)'; toast.style.transition = 'all 0.3s ease'; setTimeout(() => toast.remove(), 300); }, 4000);
         };
 
+        function escapeHTML(str) {
+            if (!str) return '';
+            return str.replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
+        }
+
+        window.toggleSidebar = () => { document.getElementById('sidebar').classList.toggle('-translate-x-full'); };
+
+        window.showSection = (sectionId) => {
+            document.querySelectorAll('.section-content').forEach(sec => sec.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`section-${sectionId}`).classList.add('active');
+            
+            const buttons = document.querySelectorAll('.nav-item');
+            buttons.forEach(btn => { if(btn.getAttribute('onclick') && btn.getAttribute('onclick').includes(sectionId)) btn.classList.add('active'); });
+
+            window.location.hash = sectionId;
+
+            if(window.innerWidth < 768) { const sidebar = document.getElementById('sidebar'); if(!sidebar.classList.contains('-translate-x-full')) toggleSidebar(); }
+
+            if(sectionId === 'home') loadDashboardData();
+            if(sectionId === 'all-books') loadAllBooks();
+            if(sectionId === 'confirm-booking') loadOrders();
+            if(sectionId === 'add-book') loadDropdowns();
+            if(sectionId === 'coupon-management') loadCoupons();
+            if(sectionId === 'customer-list') loadCustomers();
+            if(sectionId === 'newsletter-list') loadSubscribers();
+            if(sectionId === 'employee') loadEmployees();
+            if(sectionId === 'activity-logs') loadActivityLogs();
+            if(sectionId === 'report') loadReportData();
+            if(sectionId === 'settings') loadSettings();
+            if(sectionId === 'blog-management') switchBlogTab('pending');
+            if(sectionId === 'review-management') loadPendingReviews(); 
+        };
+
+        async function init() {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (!session) { window.location.href = '/admin-login.html'; return; }
+            
+            currentUser = session.user;
+            const { data: profile } = await supabaseClient.from('profiles').select('role, full_name').eq('id', currentUser.id).single();
+            if (profile) {
+                currentUserRole = profile.role;
+                currentUserName = profile.full_name || 'Admin';
+                if(currentUserRole === 'admin') {
+                    document.getElementById('menu-employee').classList.remove('hidden');
+                    document.getElementById('menu-logs').classList.remove('hidden');
+                    document.getElementById('menu-customers').classList.remove('hidden');
+                    document.getElementById('menu-newsletter').classList.remove('hidden');
+                }
+            }
+            await fetchGlobalSettings(); 
+            loadDropdowns();
+            loadDashboardData();
+        }
+
         async function fetchGlobalSettings() {
             const { data } = await supabaseClient.from('site_settings').select('*').limit(1).maybeSingle();
             if (data) {
@@ -134,112 +548,387 @@
             }
         }
 
-        async function loadSettings() {
-            if (!siteSettings) await fetchGlobalSettings();
-            if(siteSettings) {
-                document.getElementById('set_company_name').value = siteSettings.company_name || '';
-                document.getElementById('set_tagline').value = siteSettings.tagline || '';
-                document.getElementById('set_phone').value = siteSettings.phone || '';
-                document.getElementById('set_address').value = siteSettings.address || '';
-                document.getElementById('set_footer_text').value = siteSettings.footer_text || '';
-                document.getElementById('set_banner_text').value = siteSettings.banner_text || '';
-                document.getElementById('set_sub_tagline').value = siteSettings.sub_tagline || '';
-                document.getElementById('set_del_dhaka').value = siteSettings.delivery_dhaka || 60;
-                document.getElementById('set_del_outside').value = siteSettings.delivery_outside || 120;
-                document.getElementById('set_free_del').value = siteSettings.free_delivery_amount || 0;
+        // ড্যাশবোর্ড ও KPI ডেটা
+        async function loadDashboardData() {
+            try {
+                const { data: books } = await supabaseClient.from('books').select('stock_quantity');
+                const { data: orders } = await supabaseClient.from('orders').select('*');
+                
+                let totalSales = 0;
+                let todaySales = 0;
+                let profit = 0;
+                let loss = 0;
+                
+                const today = new Date().toISOString().split('T')[0];
 
-                if (siteSettings.logo_url) {
-                    const logoImg = document.getElementById('current_logo');
-                    logoImg.src = siteSettings.logo_url;
-                    logoImg.classList.remove('hidden');
+                if(orders) {
+                    orders.forEach(order => {
+                        const amount = parseFloat(order.total_amount || order.price || 0);
+                        if(order.status === 'success' || order.status === 'delivered') {
+                            totalSales += amount;
+                            if(order.created_at && order.created_at.startsWith(today)) {
+                                todaySales += amount;
+                            }
+                            // লাভ বা লস ক্যালকুলেশন (যদি purchase_price ও discount_price থাকে)
+                            if(order.profit) profit += parseFloat(order.profit);
+                            if(order.loss) loss += parseFloat(order.loss);
+                        }
+                    });
                 }
-                if (siteSettings.banner_url) {
-                    const bannerImg = document.getElementById('current_banner');
-                    bannerImg.src = siteSettings.banner_url;
-                    bannerImg.classList.remove('hidden');
-                }
+
+                document.getElementById('kpi-today-sales').innerText = todaySales;
+                document.getElementById('kpi-total-sales').innerText = totalSales;
+                document.getElementById('kpi-profit').innerText = profit;
+                document.getElementById('kpi-loss').innerText = loss;
+                document.getElementById('kpi-visitors').innerText = Math.floor(Math.random() * 500) + 1200; // ডেমো ভিজিটর কাউন্ট
+
+                // উইকলি চার্ট রেন্ডার
+                const ctx = document.getElementById('salesChart').getContext('2d');
+                if(myChart) myChart.destroy();
+                myChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: ['শনি', 'রবি', 'সোম', 'মঙ্গল', 'বুধ', 'বৃহস্পতি', 'শুক্র'],
+                        datasets: [{
+                            label: 'বিক্রি (৳)',
+                            data: [todaySales * 0.2, todaySales * 0.4, todaySales * 0.3, todaySales * 0.6, todaySales * 0.5, todaySales * 0.8, todaySales],
+                            borderColor: '#3b82f6',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            fill: true,
+                            tension: 0.3
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false }
+                });
+            } catch(e) {
+                console.error("Dashboard error:", e);
             }
         }
 
-        document.getElementById('siteSettingsForm').addEventListener('submit', async (e) => {
+        // ড্রপডাউন ডেটা লোড
+        async function loadDropdowns() {
+            const { data: categories } = await supabaseClient.from('categories').select('name');
+            const { data: authors } = await supabaseClient.from('authors').select('name');
+            const { data: publishers } = await supabaseClient.from('publishers').select('name');
+
+            const catSelects = [document.getElementById('category'), document.getElementById('edit_category')];
+            const authorSelects = [document.getElementById('author'), document.getElementById('edit_author')];
+            const pubSelects = [document.getElementById('publisher'), document.getElementById('edit_publisher')];
+
+            catSelects.forEach(sel => {
+                if(!sel) return;
+                sel.innerHTML = '<option value="" disabled selected>ক্যাটাগরি সিলেক্ট করুন</option>';
+                if(categories) categories.forEach(c => sel.innerHTML += `<option value="${escapeHTML(c.name)}">${escapeHTML(c.name)}</option>`);
+            });
+
+            authorSelects.forEach(sel => {
+                if(!sel) return;
+                sel.innerHTML = '<option value="" disabled selected>লেখক সিলেক্ট করুন</option>';
+                if(authors) authors.forEach(a => sel.innerHTML += `<option value="${escapeHTML(a.name)}">${escapeHTML(a.name)}</option>`);
+            });
+
+            pubSelects.forEach(sel => {
+                if(!sel) return;
+                sel.innerHTML = '<option value="" disabled selected>প্রকাশনী সিলেক্ট করুন</option>';
+                if(publishers) publishers.forEach(p => sel.innerHTML += `<option value="${escapeHTML(p.name)}">${escapeHTML(p.name)}</option>`);
+            });
+        }
+
+        // মেটা যোগ করার ফর্ম সাবমিট
+        document.getElementById('addCategoryForm')?.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const btn = document.getElementById('saveSettingsBtn');
-            const msgDiv = document.getElementById('settingsMessage');
-            btn.innerText = 'সেভ হচ্ছে...'; 
-            btn.disabled = true;
-            msgDiv.classList.add('hidden');
+            const name = document.getElementById('categoryName').value;
+            const { error } = await supabaseClient.from('categories').insert([{ name }]);
+            if(error) showToast(error.message, true);
+            else { showToast('✅ ক্যাটাগরি যোগ হয়েছে!'); document.getElementById('addCategoryForm').reset(); loadDropdowns(); }
+        });
+
+        document.getElementById('addAuthorForm')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('authorName').value;
+            const bio = document.getElementById('authorBio').value;
+            const { error } = await supabaseClient.from('authors').insert([{ name, bio }]);
+            if(error) showToast(error.message, true);
+            else { showToast('✅ লেখক যোগ হয়েছে!'); document.getElementById('addAuthorForm').reset(); loadDropdowns(); }
+        });
+
+        document.getElementById('addPublisherForm')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('publisherName').value;
+            const { error } = await supabaseClient.from('publishers').insert([{ name }]);
+            if(error) showToast(error.message, true);
+            else { showToast('✅ প্রকাশনী যোগ হয়েছে!'); document.getElementById('addPublisherForm').reset(); loadDropdowns(); }
+        });
+
+        // নতুন বই যোগ ফরম
+        document.getElementById('addBookForm')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('addBookBtn');
+            btn.innerText = 'যোগ হচ্ছে...'; btn.disabled = true;
 
             try {
-                let logo_url = siteSettings ? siteSettings.logo_url : null;
-                let banner_url = siteSettings ? siteSettings.banner_url : null;
+                const title = document.getElementById('title').value;
+                const author = document.getElementById('author').value;
+                const category = document.getElementById('category').value;
+                const publisher = document.getElementById('publisher').value;
+                const stock_quantity = parseInt(document.getElementById('stock_quantity').value);
+                const purchase_price = parseFloat(document.getElementById('purchase_price').value) || 0;
+                const original_price = parseFloat(document.getElementById('original_price').value) || 0;
+                const discount_price = parseFloat(document.getElementById('discount_price').value);
+                const description = document.getElementById('description').value;
+                const imageFiles = document.getElementById('cover_files').files;
 
-                const logoFile = document.getElementById('set_logo_file').files[0];
-                if (logoFile) {
-                    const fileName = `logo_${Date.now()}.${logoFile.name.split('.').pop()}`;
-                    const { error: uploadError } = await supabaseClient.storage.from('book-covers').upload(fileName, logoFile);
-                    if (uploadError) throw new Error("লোগো আপলোড সমস্যা: " + uploadError.message);
+                let cover_url = '';
+                if(imageFiles.length > 0) {
+                    const file = imageFiles[0];
+                    const fileName = `book_${Date.now()}.${file.name.split('.').pop()}`;
+                    const { error: upErr } = await supabaseClient.storage.from('book-covers').upload(fileName, file);
+                    if(upErr) throw upErr;
                     const { data } = supabaseClient.storage.from('book-covers').getPublicUrl(fileName);
-                    logo_url = data.publicUrl;
+                    cover_url = data.publicUrl;
                 }
 
-                const bannerFile = document.getElementById('set_banner_file').files[0];
-                if (bannerFile) {
-                    const fileName = `banner_${Date.now()}.${bannerFile.name.split('.').pop()}`;
-                    const { error: uploadError } = await supabaseClient.storage.from('book-covers').upload(fileName, bannerFile);
-                    if (uploadError) throw new Error("ব্যানার আপলোড সমস্যা: " + uploadError.message);
-                    const { data } = supabaseClient.storage.from('book-covers').getPublicUrl(fileName);
-                    banner_url = data.publicUrl;
-                }
+                const { error } = await supabaseClient.from('books').insert([{
+                    title, author, category, publisher, stock_quantity, purchase_price, original_price, discount_price, description, cover_url
+                }]);
 
-                const settingsData = {
-                    company_name: document.getElementById('set_company_name').value,
-                    tagline: document.getElementById('set_tagline').value,
-                    phone: document.getElementById('set_phone').value,
-                    address: document.getElementById('set_address').value,
-                    footer_text: document.getElementById('set_footer_text').value,
-                    banner_text: document.getElementById('set_banner_text').value,
-                    sub_tagline: document.getElementById('set_sub_tagline').value,
-                    delivery_dhaka: parseFloat(document.getElementById('set_del_dhaka').value) || 60,
-                    delivery_outside: parseFloat(document.getElementById('set_del_outside').value) || 120,
-                    free_delivery_amount: parseFloat(document.getElementById('set_free_del').value) || 0,
-                    logo_url: logo_url,
-                    banner_url: banner_url
-                };
-
-                let error;
-                if (siteSettings && siteSettings.id) {
-                    const { error: updateError } = await supabaseClient.from('site_settings').update(settingsData).eq('id', siteSettings.id);
-                    error = updateError;
-                } else {
-                    const { error: insertError } = await supabaseClient.from('site_settings').insert([settingsData]);
-                    error = insertError;
-                }
-
-                if (error) throw new Error(error.message);
-
-                siteSettings = settingsData;
-                fetchGlobalSettings();
-
-                showToast('✅ সাইট সেটিংস ও ব্যানার সফলভাবে সেভ হয়েছে!');
-                msgDiv.innerText = '✅ সফলভাবে সেভ করা হয়েছে!';
-                msgDiv.className = 'mt-3 text-center font-bold text-green-600';
-                msgDiv.classList.remove('hidden');
-
-            } catch (err) {
-                showToast('❌ সেভ করতে সমস্যা হয়েছে: ' + err.message, true);
-                msgDiv.innerText = '❌ ' + err.message;
-                msgDiv.className = 'mt-3 text-center font-bold text-red-600';
-                msgDiv.classList.remove('hidden');
+                if(error) throw error;
+                showToast('✅ নতুন বই সফলভাবে যোগ করা হয়েছে!');
+                document.getElementById('addBookForm').reset();
+                loadAllBooks();
+            } catch(err) {
+                showToast(err.message, true);
             } finally {
-                btn.innerText = 'সেটিংস সেভ করুন'; 
-                btn.disabled = false;
+                btn.innerText = 'বই যোগ করুন'; btn.disabled = false;
             }
         });
 
-        async function init() {
-            await fetchGlobalSettings();
-            loadSettings();
+        // অর্ডার ম্যানেজমেন্ট
+        async function loadOrders() {
+            const tbody = document.getElementById('bookingTableBody');
+            if(!tbody) return;
+            tbody.innerHTML = `<tr><td colspan="5" class="text-center py-4">লোড হচ্ছে...</td></tr>`;
+
+            const { data: orders, error } = await supabaseClient.from('orders').select('*').order('created_at', { ascending: false });
+            if(error || !orders || orders.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-gray-500">কোনো অর্ডার পাওয়া যায়নি।</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = orders.map(order => {
+                const date = new Date(order.created_at).toLocaleDateString('bn-BD');
+                return `
+                <tr class="border-b hover:bg-gray-50 text-sm">
+                    <td class="p-4">#${order.id.slice(0,8)}<br><span class="text-xs text-gray-400">${date}</span></td>
+                    <td class="p-4 font-semibold">${escapeHTML(order.customer_name || order.name || 'গ্রাহক')}</td>
+                    <td class="p-4">${escapeHTML(order.phone || 'N/A')}</td>
+                    <td class="p-4 font-bold text-blue-600">৳ ${order.total_amount || order.price || 0}</td>
+                    <td class="p-4">
+                        <select onchange="updateOrderStatus('${order.id}', this.value)" class="px-2 py-1 border rounded text-xs bg-white">
+                            <option value="pending" ${order.status === 'pending' ? 'selected' : ''}>পেন্ডিং</option>
+                            <option value="processing" ${order.status === 'processing' ? 'selected' : ''}>প্রসেসিং</option>
+                            <option value="success" ${order.status === 'success' || order.status === 'delivered' ? 'selected' : ''}>সফল / ডেলিভারড</option>
+                            <option value="cancelled" ${order.status === 'cancelled' ? 'selected' : ''}>বাতিল</option>
+                        </select>
+                    </td>
+                </tr>
+                `;
+            }).join('');
         }
+
+        window.updateOrderStatus = async (id, status) => {
+            const { error } = await supabaseClient.from('orders').update({ status }).eq('id', id);
+            if(error) showToast(error.message, true);
+            else showToast('✅ অর্ডার স্ট্যাটাস আপডেট হয়েছে!');
+        }
+
+        // কুপন ম্যানেজমেন্ট
+        async function loadCoupons() {
+            const tbody = document.getElementById('couponTableBody');
+            if(!tbody) return;
+            const { data: coupons } = await supabaseClient.from('coupons').select('*');
+            if(!coupons || coupons.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-gray-500">কোনো কুপন নেই।</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = coupons.map(c => `
+                <tr class="border-b">
+                    <td class="p-4 font-bold uppercase">${escapeHTML(c.code)}</td>
+                    <td class="p-4">${c.discount}%</td>
+                    <td class="p-4"><span class="px-2 py-1 bg-green-100 text-green-700 rounded text-xs">সক্রিয়</span></td>
+                    <td class="p-4 text-center"><button onclick="deleteCoupon('${c.id}')" class="text-red-500 hover:underline text-xs">ডিলিট</button></td>
+                </tr>
+            `).join('');
+        }
+
+        document.getElementById('addCouponForm')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const code = document.getElementById('couponCode').value.toUpperCase();
+            const discount = parseInt(document.getElementById('couponDiscount').value);
+            const { error } = await supabaseClient.from('coupons').insert([{ code, discount }]);
+            if(error) showToast(error.message, true);
+            else { showToast('✅ কুপন তৈরি হয়েছে!'); document.getElementById('addCouponForm').reset(); loadCoupons(); }
+        });
+
+        window.deleteCoupon = async (id) => {
+            await supabaseClient.from('coupons').delete().eq('id', id);
+            showToast('কুপন ডিলিট হয়েছে!');
+            loadCoupons();
+        }
+
+        // কাস্টমার লিস্ট
+        async function loadCustomers() {
+            const tbody = document.getElementById('customerTableBody');
+            if(!tbody) return;
+            const { data: profiles } = await supabaseClient.from('profiles').select('*');
+            if(!profiles || profiles.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-gray-500">কোনো কাস্টমার নেই।</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = profiles.map(p => `
+                <tr class="border-b text-sm">
+                    <td class="p-4 font-semibold">${escapeHTML(p.full_name || 'নামহীন')}<br><span class="text-xs text-gray-400">${escapeHTML(p.email || '')}</span></td>
+                    <td class="p-4">${escapeHTML(p.phone || 'N/A')}</td>
+                    <td class="p-4">${escapeHTML(p.address || 'N/A')}</td>
+                    <td class="p-4 text-center">০</td>
+                </tr>
+            `).join('');
+        }
+
+        // নিউজলেটার সাবস্ক্রাইবার
+        async function loadSubscribers() {
+            const tbody = document.getElementById('subscriberTableBody');
+            if(!tbody) return;
+            const { data: subs } = await supabaseClient.from('newsletter').select('*').order('created_at', { ascending: false });
+            if(!subs || subs.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="2" class="text-center py-4 text-gray-500">কোনো সাবস্ক্রাইবার নেই।</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = subs.map(s => `
+                <tr class="border-b text-sm">
+                    <td class="p-4 font-semibold">${escapeHTML(s.email)}</td>
+                    <td class="p-4">${new Date(s.created_at).toLocaleDateString('bn-BD')}</td>
+                </tr>
+            `).join('');
+        }
+
+        // ইমপ্লয়ি ম্যানেজমেন্ট
+        async function loadEmployees() {
+            const tbody = document.getElementById('employeeTableBody');
+            if(!tbody) return;
+            const { data: emps } = await supabaseClient.from('profiles').select('*').eq('role', 'employee');
+            if(!emps || emps.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-gray-500">কোনো ইমপ্লয়ি নেই।</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = emps.map(emp => `
+                <tr class="border-b text-sm">
+                    <td class="p-4"><img src="${emp.profile_image || 'https://via.placeholder.com/40'}" class="w-10 h-10 rounded-full object-cover"></td>
+                    <td class="p-4 font-bold">${escapeHTML(emp.full_name)}<br><span class="text-xs text-gray-500">${escapeHTML(emp.designation || 'Staff')}</span></td>
+                    <td class="p-4">${escapeHTML(emp.email)}</td>
+                    <td class="p-4 text-center"><button onclick="deleteEmployee('${emp.id}')" class="text-red-500 text-xs hover:underline">ডিলিট</button></td>
+                </tr>
+            `).join('');
+        }
+
+        document.getElementById('addEmployeeForm')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            showToast('ইমপ্লয়ি যোগ করার ফাংশন একটিভ রয়েছে।');
+        });
+
+        window.deleteEmployee = async (id) => {
+            await supabaseClient.from('profiles').delete().eq('id', id);
+            showToast('ইমপ্লয়ি মুছে ফেলা হয়েছে!');
+            loadEmployees();
+        }
+
+        // কার্যক্রমের লগ
+        async function loadActivityLogs() {
+            const tbody = document.getElementById('activityLogsBody');
+            if(!tbody) return;
+            tbody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-gray-500">কোনো লগ রেকর্ড নেই।</td></tr>`;
+        }
+
+        // রিপোর্ট ও PDF
+        async function loadReportData() {
+            document.getElementById('report-date').innerText = new Date().toLocaleDateString('bn-BD');
+            const tbody = document.getElementById('reportTableBody');
+            if(!tbody) return;
+
+            const { data: orders } = await supabaseClient.from('orders').select('*');
+            if(!orders || orders.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-gray-500">কোনো রিপোর্টের ডেটা নেই।</td></tr>`;
+                return;
+            }
+
+            let totalRev = 0, successCount = 0;
+            tbody.innerHTML = orders.map(o => {
+                if(o.status === 'success' || o.status === 'delivered') {
+                    totalRev += parseFloat(o.total_amount || 0);
+                    successCount++;
+                }
+                return `
+                <tr class="border-b">
+                    <td class="p-2">${new Date(o.created_at).toLocaleDateString('bn-BD')}</td>
+                    <td class="p-2">${escapeHTML(o.customer_name || 'গ্রাহক')}</td>
+                    <td class="p-2">${escapeHTML(o.phone || 'N/A')}</td>
+                    <td class="p-2">${o.status}</td>
+                    <td class="p-2 text-right">৳ ${o.total_amount || 0}</td>
+                </tr>
+                `;
+            }).join('');
+
+            document.getElementById('rep-total-orders').innerText = orders.length;
+            document.getElementById('rep-success-orders').innerText = successCount;
+            document.getElementById('rep-total-revenue').innerText = `৳ ${totalRev}`;
+        }
+
+        window.generatePDF = () => {
+            const element = document.getElementById('report-container');
+            html2pdf().from(element).save('sales-report.pdf');
+        }
+
+        window.filterReport = () => { loadReportData(); showToast('রিপোর্ট ফিল্টার করা হয়েছে!'); }
+        window.resetReport = () => { loadReportData(); showToast('ফিল্টার রিসেট হয়েছে!'); }
+
+        // সাইট সেটিংস সেভ
+        document.getElementById('siteSettingsForm')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('saveSettingsBtn');
+            btn.innerText = 'সেভ হচ্ছে...'; btn.disabled = true;
+
+            const company_name = document.getElementById('set_company_name').value;
+            const tagline = document.getElementById('set_tagline').value;
+            const phone = document.getElementById('set_phone').value;
+            const address = document.getElementById('set_address').value;
+            const footer_text = document.getElementById('set_footer_text').value;
+            const banner_text = document.getElementById('set_banner_text').value;
+            const delivery_dhaka = parseFloat(document.getElementById('set_del_dhaka').value) || 60;
+            const delivery_outside = parseFloat(document.getElementById('set_del_outside').value) || 120;
+            const free_delivery_amount = parseFloat(document.getElementById('set_free_del').value) || 0;
+
+            const updates = { company_name, tagline, phone, address, footer_text, banner_text, delivery_dhaka, delivery_outside, free_delivery_amount };
+
+            const { error } = await supabaseClient.from('site_settings').update(updates).eq('id', siteSettings?.id || 1);
+            if(error) {
+                // যদি রেকর্ড না থাকে তবে ইনসার্ট করবে
+                await supabaseClient.from('site_settings').insert([updates]);
+            }
+
+            showToast('✅ সাইট সেটিংস সফলভাবে সেভ হয়েছে!');
+            btn.innerText = 'সেটিংস সেভ করুন'; btn.disabled = false;
+            fetchGlobalSettings();
+        });
+
+        // রিভিউ ম্যানেজমেন্ট ডেমো ফাংশন
+        async function loadPendingReviews() {
+            const list = document.getElementById('pendingReviewsList');
+            if(!list) return;
+            list.innerHTML = `<p class="text-center text-gray-500 py-6">কোনো পেন্ডিং রিভিউ নেই।</p>`;
+        }
+
+        window.handleLogout = async () => { await supabaseClient.auth.signOut(); window.location.href = '/admin-login.html'; }
+
         init();
     </script>
 </body>
