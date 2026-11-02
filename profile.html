@@ -434,7 +434,7 @@
             btn.disabled = false;
         });
 
-        // কভার ছবি আপলোড উইথ নুড ডিটেকশন
+        // কভার ছবি আপলোড (অটো এপ্রুভ - সরাসরি প্রোফাইলে সেভ হবে)
         window.uploadCoverImage = async (event) => {
             const file = event.target.files[0];
             if(!file || !currentUser) return;
@@ -458,6 +458,7 @@
             let currentGal = currProf?.gallery_images || [];
             let newGallery = [newCoverUrl, ...currentGal];
 
+            // সরাসরি profiles টেবিল আপডেট (কোনো blogs টেবিলে পেন্ডিং ডেটা যাবে না)
             const { error: dbError } = await supabaseClient.from('profiles').upsert([{ 
                 id: currentUser.id,
                 cover_image: newCoverUrl,
@@ -467,21 +468,12 @@
             if(dbError) {
                 showToast('ডেটাবেসে সেভ হচ্ছে না: ' + dbError.message, true);
             } else {
-                await supabaseClient.from('blogs').insert([{
-                    author_id: currentUser.id,
-                    title: 'কভার ফটো আপডেট',
-                    content: 'আপনার কভার ফটো আপলোড হয়েছে',
-                    image_url: newCoverUrl,
-                    status: 'pending' // অ্যাডমিন এপ্রুভাল না পাওয়া পর্যন্ত পেন্ডিং
-                }]);
-
-                showToast('✅ কভার ফটো আপলোড হয়েছে (এপ্রুভালের অপেক্ষায়)!');
+                showToast('✅ কভার ছবি সফলভাবে আপডেট হয়েছে!');
                 loadProfileDetails();
-                loadMyBlogs();
             }
         }
 
-        // প্রোফাইল ছবি আপলোড উইথ নুড ডিটেকশন
+        // প্রোফাইল ছবি আপলোড (অটো এপ্রুভ - সরাসরি প্রোফাইলে সেভ হবে)
         window.uploadProfileImage = async (event) => {
             const file = event.target.files[0];
             if(!file || !currentUser) return;
@@ -505,6 +497,7 @@
             let currentGal = currProf?.gallery_images || [];
             let newGallery = [newProfileUrl, ...currentGal];
 
+            // সরাসরি profiles টেবিল আপডেট (কোনো blogs টেবিলে পেন্ডিং ডেটা যাবে না)
             const { error: dbError } = await supabaseClient.from('profiles').upsert([{ 
                 id: currentUser.id,
                 profile_image: newProfileUrl,
@@ -516,20 +509,11 @@
                 return; 
             }
             
-            await supabaseClient.from('blogs').insert([{
-                author_id: currentUser.id,
-                title: 'প্রোফাইল ছবি আপডেট',
-                content: 'আপনার প্রোফাইল ছবি আপলোড হয়েছে',
-                image_url: newProfileUrl,
-                status: 'pending' // পেন্ডিং
-            }]);
-
-            showToast('✅ প্রোফাইল ছবি আপলোড হয়েছে (এপ্রুভালের অপেক্ষায়)!');
+            showToast('✅ প্রোফাইল ছবি সফলভাবে আপডেট হয়েছে!');
             loadProfileDetails();
-            loadMyBlogs();
         }
 
-        // গ্যালারি ছবি আপলোড উইথ নুড ডিটেকশন
+        // গ্যালারি ছবি আপলোড
         window.uploadGalleryImages = async (event) => {
             const files = event.target.files;
             if(!files.length || !currentUser) return;
@@ -672,6 +656,7 @@
                 }
             }
 
+            // ব্লগ বা পোস্ট লেখার সময় pending হবে
             const { error: insertError } = await supabaseClient.from('blogs').insert([{
                 author_id: currentUser.id,
                 title: title,
