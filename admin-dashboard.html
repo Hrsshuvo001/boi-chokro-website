@@ -391,4 +391,518 @@
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div><label class="block text-xs font-medium text-gray-700 mb-1">স্টক পরিমাণ</label><input type="number" id="edit_stock_quantity" required class="w-full px-4 py-2 border rounded-md"></div>
-                    <div><label class="block text-xs font-medium text-gray-700 mb-1">কভার ছবি (নতুন দিতে চাইলে)</label><input type="file" id="edit_cover_file" accept="
+                    <div><label class="block text-xs font-medium text-gray-700 mb-1">কভার ছবি (নতুন দিতে চাইলে)</label><input type="file" id="edit_cover_file" accept="image/*" class="w-full px-3 py-1.5 border rounded-md bg-gray-50 text-sm"></div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 p-3 bg-gray-50 border rounded-md">
+                    <div><label class="block text-xs text-gray-500 mb-1">ক্রয় মূল্য (৳)</label><input type="number" id="edit_purchase_price" class="w-full px-3 py-2 border rounded-md"></div>
+                    <div><label class="block text-xs text-gray-500 mb-1">আসল মূল্য (MRP)</label><input type="number" id="edit_original_price" class="w-full px-3 py-2 border rounded-md"></div>
+                    <div><label class="block text-xs text-gray-500 mb-1">ডিসকাউন্ট মূল্য (৳)</label><input type="number" id="edit_discount_price" required class="w-full px-3 py-2 border rounded-md"></div>
+                </div>
+                <div><label class="block text-xs font-medium text-gray-700 mb-1">বইয়ের বিবরণ</label><textarea id="edit_description" rows="3" class="w-full px-4 py-2 border rounded-md"></textarea></div>
+                <button type="submit" class="w-full bg-green-600 text-white font-bold py-3 rounded-md hover:bg-green-700">বই আপডেট করুন</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://jhbpaezbpkfwjfmazdcn.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_oBzutzPKvIvujmSG7icXug_SwwveL5g';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        window.onload = function() {
+            const urlHash = window.location.hash.replace('#', '');
+            if (urlHash) showSection(urlHash);
+            else showSection('home');
+        };
+
+        window.showToast = (message, isError = false) => {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast-animate px-6 py-4 rounded-lg shadow-2xl text-white font-bold flex items-center gap-3 ${isError ? 'bg-red-600' : 'bg-green-600'}`;
+            toast.innerHTML = `<span>${isError ? '⚠️' : '✅'}</span><span>${message}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 4000);
+        };
+
+        function escapeHTML(str) {
+            if (!str) return '';
+            return str.replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
+        }
+
+        window.toggleSidebar = () => { document.getElementById('sidebar').classList.toggle('-translate-x-full'); };
+
+        window.showSection = (sectionId) => {
+            document.querySelectorAll('.section-content').forEach(sec => sec.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`section-${sectionId}`).classList.add('active');
+            window.location.hash = sectionId;
+
+            if(sectionId === 'all-books') loadAllBooks();
+            if(sectionId === 'add-book') loadDropdowns();
+            if(sectionId === 'add-meta') loadMetaLists();
+            if(sectionId === 'confirm-booking') loadOrders();
+            if(sectionId === 'blog-management') switchBlogTab('pending');
+            if(sectionId === 'review-management') loadPendingReviews();
+            if(sectionId === 'settings') loadSettings();
+        };
+
+        window.toggleAffiliateField = () => {
+            const bookType = document.getElementById('book_type').value;
+            const affiliateDiv = document.getElementById('affiliate_url_div');
+            if(bookType === 'affiliate') {
+                affiliateDiv.classList.remove('hidden');
+                document.getElementById('affiliate_url').required = true;
+            } else {
+                affiliateDiv.classList.add('hidden');
+                document.getElementById('affiliate_url').required = false;
+            }
+        };
+
+        window.toggleEditAffiliateField = () => {
+            const bookType = document.getElementById('edit_book_type').value;
+            const affiliateDiv = document.getElementById('edit_affiliate_url_div');
+            if(bookType === 'affiliate') {
+                affiliateDiv.classList.remove('hidden');
+                document.getElementById('edit_affiliate_url').required = true;
+            } else {
+                affiliateDiv.classList.add('hidden');
+                document.getElementById('edit_affiliate_url').required = false;
+            }
+        };
+
+        // ==========================================
+        // ব্লগ ম্যানেজমেন্ট লজিক (পেন্ডিং লিস্ট ফিক্স)
+        // ==========================================
+        window.switchBlogTab = (tab) => {
+            const btnPending = document.getElementById('tab-btn-pending');
+            const btnAll = document.getElementById('tab-btn-all');
+            const divPending = document.getElementById('blog-tab-pending');
+            const divAll = document.getElementById('blog-tab-all');
+
+            if(tab === 'pending') {
+                btnPending.className = "px-6 py-3 font-bold text-blue-600 border-b-2 border-blue-600 focus:outline-none";
+                btnAll.className = "px-6 py-3 font-bold text-gray-500 border-b-2 border-transparent focus:outline-none";
+                divPending.classList.remove('hidden');
+                divAll.classList.add('hidden');
+                loadPendingBlogs();
+            } else {
+                btnAll.className = "px-6 py-3 font-bold text-blue-600 border-b-2 border-blue-600 focus:outline-none";
+                btnPending.className = "px-6 py-3 font-bold text-gray-500 border-b-2 border-transparent focus:outline-none";
+                divAll.classList.remove('hidden');
+                divPending.classList.add('hidden');
+                loadAllBlogs();
+            }
+        };
+
+        async function loadPendingBlogs() {
+            const container = document.getElementById('blog-tab-pending');
+            container.innerHTML = '<p class="text-center text-gray-500 py-4">লোড হচ্ছে...</p>';
+            
+            const { data: blogs, error } = await supabaseClient
+                .from('blogs')
+                .select('*')
+                .eq('status', 'pending')
+                .order('created_at', { ascending: false });
+            
+            if(error) {
+                container.innerHTML = `<div class="bg-white p-6 rounded-xl shadow-sm text-center text-red-500">ত্রুটি: ${error.message}</div>`;
+                return;
+            }
+
+            if(!blogs || blogs.length === 0) {
+                container.innerHTML = '<div class="bg-white p-6 rounded-xl shadow-sm text-center text-gray-500">কোনো পেন্ডিং ব্লগ নেই।</div>';
+                return;
+            }
+
+            container.innerHTML = blogs.map(blog => {
+                return `
+                <div class="bg-white p-5 rounded-xl shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border">
+                    <div class="space-y-1">
+                        <h3 class="font-bold text-lg text-gray-800">${escapeHTML(blog.title || 'শিরোনামহীন')}</h3>
+                        <p class="text-sm text-gray-600 line-clamp-2">${escapeHTML(blog.content || '')}</p>
+                        <span class="text-xs text-gray-400">স্ট্যাটাস: ${blog.status} | তারিখ: ${blog.created_at ? new Date(blog.created_at).toLocaleDateString() : ''}</span>
+                    </div>
+                    <div class="flex gap-2 flex-shrink-0">
+                        <button onclick="approveBlog('${blog.id}')" class="bg-green-600 text-white px-4 py-2 rounded text-sm font-bold hover:bg-green-700">এপ্রুভ করুন</button>
+                        <button onclick="deleteBlog('${blog.id}')" class="bg-red-100 text-red-600 px-4 py-2 rounded text-sm font-bold hover:bg-red-200">ডিলিট</button>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        async function loadAllBlogs() {
+            const container = document.getElementById('allBlogsList');
+            container.innerHTML = '<p class="text-center text-gray-500 py-4">লোড হচ্ছে...</p>';
+            
+            const { data: blogs, error } = await supabaseClient.from('blogs').select('*').order('created_at', { ascending: false });
+            
+            if(error || !blogs || blogs.length === 0) {
+                container.innerHTML = '<div class="bg-white p-6 rounded-xl shadow-sm text-center text-gray-500">কোনো ব্লগ পাওয়া যায়নি।</div>';
+                return;
+            }
+
+            container.innerHTML = blogs.map(blog => {
+                const isApproved = blog.status === 'approved';
+                return `
+                <div class="bg-white p-5 rounded-xl shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border">
+                    <div class="space-y-1">
+                        <div class="flex items-center gap-2">
+                            <h3 class="font-bold text-lg text-gray-800">${escapeHTML(blog.title)}</h3>
+                            <span class="px-2 py-0.5 text-xs rounded ${isApproved ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">${blog.status}</span>
+                        </div>
+                        <p class="text-sm text-gray-600 line-clamp-2">${escapeHTML(blog.content)}</p>
+                    </div>
+                    <div class="flex gap-2 flex-shrink-0">
+                        ${!isApproved ? `<button onclick="approveBlog('${blog.id}')" class="bg-green-600 text-white px-4 py-2 rounded text-sm font-bold hover:bg-green-700">এপ্রুভ</button>` : ''}
+                        <button onclick="deleteBlog('${blog.id}')" class="bg-red-100 text-red-600 px-4 py-2 rounded text-sm font-bold hover:bg-red-200">ডিলিট</button>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        window.approveBlog = async (id) => {
+            const { error } = await supabaseClient.from('blogs').update({ status: 'approved' }).eq('id', id);
+            if(error) {
+                showToast('ত্রুটি: ' + error.message, true);
+                return;
+            }
+            showToast('✅ ব্লগ সফলভাবে এপ্রুভ করা হয়েছে!');
+            loadPendingBlogs();
+            loadAllBlogs();
+        };
+
+        window.deleteBlog = async (id) => {
+            if(!confirm('এই ব্লগটি ডিলিট করতে চান?')) return;
+            const { error } = await supabaseClient.from('blogs').delete().eq('id', id);
+            if(error) {
+                showToast('ত্রুটি: ' + error.message, true);
+                return;
+            }
+            showToast('🗑️ ব্লগটি ডিলিট করা হয়েছে!');
+            loadPendingBlogs();
+            loadAllBlogs();
+        };
+
+        // নতুন বই যোগ
+        document.getElementById('addBookForm')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('addBookBtn');
+            btn.innerText = 'বই যোগ হচ্ছে...'; 
+            btn.disabled = true;
+
+            try {
+                const title = document.getElementById('title').value;
+                const author = document.getElementById('author').value;
+                const category = document.getElementById('category').value;
+                const publisher = document.getElementById('publisher').value;
+                const book_type = document.getElementById('book_type').value;
+                const affiliate_url = book_type === 'affiliate' ? document.getElementById('affiliate_url').value : '';
+                const stock_quantity = parseInt(document.getElementById('stock_quantity').value) || 0;
+                const purchase_price = parseFloat(document.getElementById('purchase_price').value) || 0;
+                const original_price = parseFloat(document.getElementById('original_price').value) || 0;
+                const discount_price = parseFloat(document.getElementById('discount_price').value) || 0;
+                const description = document.getElementById('description').value;
+                
+                const imageFile = document.getElementById('cover_files').files[0];
+                let cover_url = '';
+
+                if (imageFile) {
+                    const fileExt = imageFile.name.split('.').pop();
+                    const fileName = `book_${Date.now()}.${fileExt}`;
+                    const { error: uploadError } = await supabaseClient.storage.from('book-covers').upload(fileName, imageFile);
+                    if (uploadError) throw uploadError;
+                    const { data: urlData } = supabaseClient.storage.from('book-covers').getPublicUrl(fileName);
+                    cover_url = urlData.publicUrl;
+                }
+
+                const bookData = { title, author, category, publisher, stock_quantity, purchase_price, original_price, discount_price, price: discount_price, description, cover_url, book_type, affiliate_url };
+
+                const { error: insertError } = await supabaseClient.from('books').insert([bookData]);
+                if (insertError) throw insertError;
+
+                showToast('✅ নতুন বই সফলভাবে যোগ হয়েছে!');
+                document.getElementById('addBookForm').reset();
+                toggleAffiliateField();
+                loadAllBooks();
+                showSection('all-books');
+            } catch (err) {
+                showToast('ত্রুটি: ' + (err.message || 'বই যোগ করা যায়নি!'), true);
+            } finally {
+                btn.innerText = 'বই যোগ করুন'; 
+                btn.disabled = false;
+            }
+        });
+
+        async function loadMetaLists() {
+            const catContainer = document.getElementById('categoryListContainer');
+            const { data: categories } = await supabaseClient.from('categories').select('*').order('name');
+            if(categories && categories.length > 0) {
+                catContainer.innerHTML = categories.map(c => `
+                    <div class="flex justify-between items-center bg-gray-50 p-2 rounded border text-sm">
+                        <span>${escapeHTML(c.name)}</span>
+                        <div class="flex gap-1">
+                            <button onclick="openEditMetaModal('categories', '${c.id}', '${escapeHTML(c.name)}')" class="bg-blue-100 text-blue-600 px-2 py-0.5 rounded text-xs">এডিট</button>
+                            <button onclick="deleteMeta('categories', '${c.id}')" class="bg-red-100 text-red-600 px-2 py-0.5 rounded text-xs">ডিলিট</button>
+                        </div>
+                    </div>
+                `).join('');
+            } else { catContainer.innerHTML = '<p class="text-xs text-gray-400">কোনো ক্যাটাগরি নেই।</p>'; }
+
+            const authorContainer = document.getElementById('authorListContainer');
+            const { data: authors } = await supabaseClient.from('authors').select('*').order('name');
+            if(authors && authors.length > 0) {
+                authorContainer.innerHTML = authors.map(a => `
+                    <div class="flex justify-between items-center bg-gray-50 p-2 rounded border text-sm gap-2">
+                        <div class="flex items-center gap-2">
+                            <img src="${a.image_url || 'https://via.placeholder.com/30'}" class="w-8 h-8 rounded-full object-cover">
+                            <span class="font-semibold">${escapeHTML(a.name)}</span>
+                        </div>
+                        <div class="flex gap-1">
+                            <button onclick="openEditMetaModal('authors', '${a.id}', '${escapeHTML(a.name)}', '${escapeHTML(a.bio || '')}')" class="bg-blue-100 text-blue-600 px-2 py-0.5 rounded text-xs">এডিট</button>
+                            <button onclick="deleteMeta('authors', '${a.id}')" class="bg-red-100 text-red-600 px-2 py-0.5 rounded text-xs">ডিলিট</button>
+                        </div>
+                    </div>
+                `).join('');
+            } else { authorContainer.innerHTML = '<p class="text-xs text-gray-400">কোনো লেখক নেই।</p>'; }
+
+            const pubContainer = document.getElementById('publisherListContainer');
+            const { data: publishers } = await supabaseClient.from('publishers').select('*').order('name');
+            if(publishers && publishers.length > 0) {
+                pubContainer.innerHTML = publishers.map(p => `
+                    <div class="flex justify-between items-center bg-gray-50 p-2 rounded border text-sm">
+                        <span>${escapeHTML(p.name)}</span>
+                        <div class="flex gap-1">
+                            <button onclick="openEditMetaModal('publishers', '${p.id}', '${escapeHTML(p.name)}')" class="bg-blue-100 text-blue-600 px-2 py-0.5 rounded text-xs">এডিট</button>
+                            <button onclick="deleteMeta('publishers', '${p.id}')" class="bg-red-100 text-red-600 px-2 py-0.5 rounded text-xs">ডিলিট</button>
+                        </div>
+                    </div>
+                `).join('');
+            } else { pubContainer.innerHTML = '<p class="text-xs text-gray-400">কোনো প্রকাশনী নেই।</p>'; }
+
+            loadDropdowns();
+        }
+
+        document.getElementById('addCategoryForm')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('categoryName').value;
+            const { error } = await supabaseClient.from('categories').insert([{ name }]);
+            if(error) showToast(error.message, true);
+            else { showToast('✅ ক্যাটাগরি যোগ হয়েছে!'); document.getElementById('addCategoryForm').reset(); loadMetaLists(); }
+        });
+
+        document.getElementById('addAuthorForm')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('authorName').value;
+            const bio = document.getElementById('authorBio').value;
+            const imageFile = document.getElementById('authorImage').files[0];
+            let image_url = '';
+
+            try {
+                if(imageFile) {
+                    const fileName = `author_${Date.now()}.${imageFile.name.split('.').pop()}`;
+                    const { error: upErr } = await supabaseClient.storage.from('book-covers').upload(fileName, imageFile);
+                    if(upErr) throw upErr;
+                    const { data } = supabaseClient.storage.from('book-covers').getPublicUrl(fileName);
+                    image_url = data.publicUrl;
+                }
+                const { error } = await supabaseClient.from('authors').insert([{ name, bio, image_url }]);
+                if(error) throw error;
+                showToast('✅ লেখক সফলভাবে যোগ হয়েছে!');
+                document.getElementById('addAuthorForm').reset();
+                loadMetaLists();
+            } catch(err) {
+                showToast(err.message, true);
+            }
+        });
+
+        document.getElementById('addPublisherForm')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('publisherName').value;
+            const { error } = await supabaseClient.from('publishers').insert([{ name }]);
+            if(error) showToast(error.message, true);
+            else { showToast('✅ প্রকাশনী যোগ হয়েছে!'); document.getElementById('addPublisherForm').reset(); loadMetaLists(); }
+        });
+
+        window.openEditMetaModal = (table, id, name, bio = '') => {
+            document.getElementById('edit_meta_table').value = table;
+            document.getElementById('edit_meta_id').value = id;
+            document.getElementById('edit_meta_name').value = name;
+            const authorFields = document.getElementById('edit_meta_author_fields');
+            if(table === 'authors') {
+                authorFields.classList.remove('hidden');
+                document.getElementById('edit_meta_bio').value = bio;
+            } else { authorFields.classList.add('hidden'); }
+            document.getElementById('editMetaModal').classList.remove('hidden');
+            document.getElementById('editMetaModal').classList.add('flex');
+        }
+
+        window.closeEditMetaModal = () => {
+            document.getElementById('editMetaModal').classList.add('hidden');
+            document.getElementById('editMetaModal').classList.remove('flex');
+        }
+
+        document.getElementById('editMetaForm')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const table = document.getElementById('edit_meta_table').value;
+            const id = document.getElementById('edit_meta_id').value;
+            const name = document.getElementById('edit_meta_name').value;
+            let updates = { name };
+            if(table === 'authors') {
+                updates.bio = document.getElementById('edit_meta_bio').value;
+                const imageFile = document.getElementById('edit_meta_image').files[0];
+                if(imageFile) {
+                    const fileName = `author_${Date.now()}.${imageFile.name.split('.').pop()}`;
+                    const { error: upErr } = await supabaseClient.storage.from('book-covers').upload(fileName, imageFile);
+                    if(!upErr) {
+                        const { data } = supabaseClient.storage.from('book-covers').getPublicUrl(fileName);
+                        updates.image_url = data.publicUrl;
+                    }
+                }
+            }
+            const { error } = await supabaseClient.from(table).update(updates).eq('id', id);
+            if(error) showToast(error.message, true);
+            else { showToast('✅ সফলভাবে আপডেট হয়েছে!'); closeEditMetaModal(); loadMetaLists(); }
+        });
+
+        window.deleteMeta = async (tableName, id) => {
+            if(!confirm('আপনি কি এটি ডিলিট করতে চান?')) return;
+            const { error } = await supabaseClient.from(tableName).delete().eq('id', id);
+            if(error) showToast(error.message, true);
+            else { showToast('🗑️ সফলভাবে ডিলিট করা হয়েছে!'); loadMetaLists(); }
+        }
+
+        async function loadDropdowns() {
+            const { data: categories } = await supabaseClient.from('categories').select('name');
+            const { data: authors } = await supabaseClient.from('authors').select('name');
+            const { data: publishers } = await supabaseClient.from('publishers').select('name');
+
+            const fillSelect = (elId, list, defaultText) => {
+                const el = document.getElementById(elId);
+                const editEl = document.getElementById('edit_' + elId);
+                const options = `<option value="" disabled selected>${defaultText}</option>` + (list ? list.map(x => `<option value="${escapeHTML(x.name)}">${escapeHTML(x.name)}</option>`).join('') : '');
+                if(el) el.innerHTML = options;
+                if(editEl) editEl.innerHTML = options;
+            };
+
+            fillSelect('category', categories, 'ক্যাটাগরি সিলেক্ট করুন');
+            fillSelect('author', authors, 'লেখক সিলেক্ট করুন');
+            fillSelect('publisher', publishers, 'প্রকাশনী সিলেক্ট করুন');
+        }
+
+        async function loadAllBooks() {
+            const tbody = document.getElementById('allBooksTableBody');
+            if(!tbody) return;
+            const { data: books } = await supabaseClient.from('books').select('*').order('created_at', { ascending: false });
+            if(!books || books.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-gray-500">কোনো বই নেই।</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = books.map(book => {
+                const bookId = book.id;
+                const isAffiliate = book.book_type === 'affiliate';
+                return `
+                <tr class="border-b">
+                    <td class="p-4"><img src="${book.cover_url || 'https://via.placeholder.com/40'}" class="w-10 h-14 object-cover rounded"></td>
+                    <td class="p-4"><p class="font-bold">${escapeHTML(book.title)}</p><p class="text-xs text-gray-500">${escapeHTML(book.author)}</p></td>
+                    <td class="p-4 text-sm">${escapeHTML(book.category)}</td>
+                    <td class="p-4">
+                        <span class="font-bold text-green-600">৳ ${book.discount_price || book.price || 0}</span>
+                        <div class="text-[10px] ${isAffiliate ? 'text-purple-600 font-bold' : 'text-gray-500'}">${isAffiliate ? '🔗 অ্যাফিলিয়েট' : '🛒 নিজের বই'}</div>
+                    </td>
+                    <td class="p-4 font-bold">${book.stock_quantity || 0}</td>
+                    <td class="p-4 text-center">
+                        <button onclick="editBook('${bookId}')" class="bg-blue-100 text-blue-600 px-3 py-1 rounded text-xs mr-1">এডিট</button>
+                        <button onclick="deleteBook('${bookId}')" class="bg-red-100 text-red-600 px-3 py-1 rounded text-xs">ডিলিট</button>
+                    </td>
+                </tr>`;
+            }).join('');
+        }
+
+        window.editBook = async (id) => {
+            await loadDropdowns();
+            let { data: book } = await supabaseClient.from('books').select('*').eq('id', id).maybeSingle();
+            if(!book) { showToast('বই পাওয়া যায়নি!', true); return; }
+
+            document.getElementById('edit_book_id').value = book.id;
+            document.getElementById('edit_title').value = book.title || '';
+            document.getElementById('edit_author').value = book.author || '';
+            document.getElementById('edit_category').value = book.category || '';
+            document.getElementById('edit_publisher').value = book.publisher || '';
+            document.getElementById('edit_book_type').value = book.book_type || 'own';
+            document.getElementById('edit_affiliate_url').value = book.affiliate_url || '';
+            document.getElementById('edit_stock_quantity').value = book.stock_quantity || 0;
+            document.getElementById('edit_purchase_price').value = book.purchase_price || 0;
+            document.getElementById('edit_original_price').value = book.original_price || 0;
+            document.getElementById('edit_discount_price').value = book.discount_price || book.price || 0;
+            document.getElementById('edit_description').value = book.description || '';
+
+            toggleEditAffiliateField();
+
+            document.getElementById('editBookModal').classList.remove('hidden');
+            document.getElementById('editBookModal').classList.add('flex');
+        }
+
+        window.closeEditModal = () => { 
+            document.getElementById('editBookModal').classList.add('hidden'); 
+            document.getElementById('editBookModal').classList.remove('flex'); 
+        }
+
+        document.getElementById('editBookForm')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('edit_book_id').value;
+            
+            try {
+                const updates = {
+                    title: document.getElementById('edit_title').value,
+                    author: document.getElementById('edit_author').value,
+                    category: document.getElementById('edit_category').value,
+                    publisher: document.getElementById('edit_publisher').value,
+                    book_type: document.getElementById('edit_book_type').value,
+                    affiliate_url: document.getElementById('edit_book_type').value === 'affiliate' ? document.getElementById('edit_affiliate_url').value : '',
+                    stock_quantity: parseInt(document.getElementById('edit_stock_quantity').value) || 0,
+                    purchase_price: parseFloat(document.getElementById('edit_purchase_price').value) || 0,
+                    original_price: parseFloat(document.getElementById('edit_original_price').value) || 0,
+                    discount_price: parseFloat(document.getElementById('edit_discount_price').value) || 0,
+                    price: parseFloat(document.getElementById('edit_discount_price').value) || 0,
+                    description: document.getElementById('edit_description').value
+                };
+
+                const imageFile = document.getElementById('edit_cover_file').files[0];
+                if (imageFile) {
+                    const fileExt = imageFile.name.split('.').pop();
+                    const fileName = `book_${Date.now()}.${fileExt}`;
+                    const { error: uploadError } = await supabaseClient.storage.from('book-covers').upload(fileName, imageFile);
+                    if (!uploadError) {
+                        const { data: urlData } = supabaseClient.storage.from('book-covers').getPublicUrl(fileName);
+                        updates.cover_url = urlData.publicUrl;
+                    }
+                }
+
+                const { error } = await supabaseClient.from('books').update(updates).eq('id', id);
+                if(error) throw error;
+
+                showToast('✅ বই সফলভাবে আপডেট হয়েছে!');
+                closeEditModal();
+                loadAllBooks();
+            } catch(err) {
+                showToast('ত্রুটি: ' + err.message, true);
+            }
+        });
+
+        window.deleteBook = async (id) => {
+            if(!confirm('ডিলিট করতে চান?')) return;
+            await supabaseClient.from('books').delete().eq('id', id);
+            showToast('🗑️ ডিলিট হয়েছে!');
+            loadAllBooks();
+        }
+
+        async function loadDashboardData() {}
+        async function loadOrders() {}
+        async function loadPendingReviews() {}
+        async function loadSettings() {}
+        async function handleLogout() { await supabaseClient.auth.signOut(); window.location.href = '/admin-login.html'; }
+
+        showSection('home');
+    </script>
+</body>
+</html>
