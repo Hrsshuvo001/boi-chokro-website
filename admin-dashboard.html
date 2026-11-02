@@ -239,7 +239,7 @@
             <section id="section-blog-management" class="section-content">
                 <h2 class="text-2xl font-bold text-gray-800 mb-6">ব্লগ ম্যানেজমেন্ট</h2>
                 <div class="flex border-b border-gray-200 mb-6 gap-4">
-                    <button onclick="switchBlogTab('pending')" id="tab-btn-pending" class="px-6 py-3 font-bold text-blue-600 border-b-2 border-blue-600 focus:outline-none">পেন্ডিং ব্লগ (সরাসরি শো)</button>
+                    <button onclick="switchBlogTab('pending')" id="tab-btn-pending" class="px-6 py-3 font-bold text-blue-600 border-b-2 border-blue-600 focus:outline-none">পেন্ডিং ব্লগ</button>
                     <button onclick="switchBlogTab('all')" id="tab-btn-all" class="px-6 py-3 font-bold text-gray-500 border-b-2 border-transparent focus:outline-none">সব ব্লগ</button>
                 </div>
                 <div id="blog-tab-pending" class="space-y-4"></div>
@@ -471,7 +471,7 @@
         };
 
         // ==========================================
-        // ব্লগ ম্যানেজমেন্ট লজিক (সরাসরি ডেটা রেন্ডার)
+        // ব্লগ ম্যানেজমেন্ট লজিক (নিরাপদ ও সুনির্দিষ্ট ফিল্টারিং)
         // ==========================================
         window.switchBlogTab = (tab) => {
             const btnPending = document.getElementById('tab-btn-pending');
@@ -497,7 +497,6 @@
         async function loadPendingBlogs() {
             const container = document.getElementById('blog-tab-pending');
             
-            // সরাসরি সব ব্লগ ফেচ করা হচ্ছে যাতে কোনো ফিল্টারিংয়ে ডেটা আটকে না যায়
             const { data: blogs, error } = await supabaseClient.from('blogs').select('*').order('created_at', { ascending: false });
             
             if(error || !blogs || blogs.length === 0) {
@@ -505,9 +504,17 @@
                 return;
             }
 
-            // এখানে শুধুমাত্র সেই পোস্টগুলো ফিল্টার করা হবে যেগুলোর স্ট্যাটাস অলরেডি 'approved' বা 'is_approved' ট্রু নয়
+            // ফিল্টারিং: প্রোফাইল/কভার ফটো আপডেট বাদ দেওয়া এবং যেগুলোর is_approved ট্রু নয় বা স্ট্যাটাস approved নয়, সেগুলো দেখানো
             const pendingBlogs = blogs.filter(b => {
+                const title = (b.title || '').trim();
+                const content = (b.content || b.body || b.description || '').trim();
                 const status = (b.status || '').toLowerCase();
+
+                // সিস্টেম প্রোফাইল বা কভার ফটো আপডেটের নোটিফিকেশন ফিল্টার করে বাদ দেওয়া
+                if (title === 'কভার ফটো আপডেট' || title === 'প্রোফাইল ছবি আপডেট' || content.includes('আপনার কভার ফটো আপলোড হয়েছে') || content.includes('আপনার প্রোফাইল ছবি আপলোড হয়েছে')) {
+                    return false;
+                }
+
                 const isApproved = b.is_approved === true || status === 'approved' || status === 'published';
                 return !isApproved;
             });
