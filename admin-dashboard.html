@@ -41,12 +41,12 @@
                 <button onclick="showSection('blog-management')" class="nav-item text-left px-4 py-3 rounded-md hover:bg-slate-700 transition flex items-center gap-3 w-full">📝 ব্লগ ম্যানেজমেন্ট</button>
                 <button onclick="showSection('review-management')" class="nav-item text-left px-4 py-3 rounded-md hover:bg-slate-700 transition flex items-center gap-3 w-full">⭐ রিভিউ ম্যানেজমেন্ট</button>
                 <button onclick="showSection('coupon-management')" class="nav-item text-left px-4 py-3 rounded-md hover:bg-slate-700 transition flex items-center gap-3 w-full">🎟️ কুপন ম্যানেজমেন্ট</button>
-                <button id="menu-customers" onclick="showSection('customer-list')" class="nav-item text-left px-4 py-3 rounded-md hover:bg-slate-700 transition flex items-center gap-3 w-full hidden">👥 কাস্টমার লিস্ট</button>
-                <button id="menu-newsletter" onclick="showSection('newsletter-list')" class="nav-item text-left px-4 py-3 rounded-md hover:bg-slate-700 transition flex items-center gap-3 w-full hidden">📧 নিউজলেটার লিস্ট</button>
+                <button id="menu-customers" onclick="showSection('customer-list')" class="nav-item text-left px-4 py-3 rounded-md hover:bg-slate-700 transition flex items-center gap-3 w-full">👥 কাস্টমার লিস্ট</button>
+                <button id="menu-newsletter" onclick="showSection('newsletter-list')" class="nav-item text-left px-4 py-3 rounded-md hover:bg-slate-700 transition flex items-center gap-3 w-full">📧 নিউজলেটার লিস্ট</button>
                 <button onclick="showSection('report')" class="nav-item text-left px-4 py-3 rounded-md hover:bg-slate-700 transition flex items-center gap-3 w-full">📄 রিপোর্ট</button>
                 <a href="/admin-chat.html" class="nav-item text-left px-4 py-3 rounded-md hover:bg-slate-700 transition flex items-center gap-3 w-full">💬 লাইভ চ্যাট</a>
-                <button id="menu-employee" onclick="showSection('employee')" class="nav-item text-left px-4 py-3 rounded-md hover:bg-slate-700 transition flex items-center gap-3 w-full hidden">⚙️ ইম্পলয়ি ম্যানেজমেন্ট</button>
-                <button id="menu-logs" onclick="showSection('activity-logs')" class="nav-item text-left px-4 py-3 rounded-md hover:bg-slate-700 transition flex items-center gap-3 w-full hidden">📋 কার্যক্রমের লগ</button>
+                <button id="menu-employee" onclick="showSection('employee')" class="nav-item text-left px-4 py-3 rounded-md hover:bg-slate-700 transition flex items-center gap-3 w-full">⚙️ ইম্পলয়ি ম্যানেজমেন্ট</button>
+                <button id="menu-logs" onclick="showSection('activity-logs')" class="nav-item text-left px-4 py-3 rounded-md hover:bg-slate-700 transition flex items-center gap-3 w-full">📋 কার্যক্রমের লগ</button>
                 <button onclick="showSection('settings')" class="nav-item text-left px-4 py-3 rounded-md hover:bg-slate-700 transition flex items-center gap-3 w-full">⚙️ সাইট সেটিংস</button>
                 
                 <div class="border-t border-slate-700 mt-2 pt-2">
@@ -63,13 +63,6 @@
             <div class="flex items-center gap-3">
                 <button onclick="toggleSidebar()" class="text-gray-700 text-2xl focus:outline-none md:hidden">☰</button>
                 <h1 class="text-xl font-bold text-blue-600 hidden md:block" id="mobile-header-title">ড্যাশবোর্ড</h1>
-            </div>
-            
-            <div class="relative">
-                <button onclick="toggleNotifications()" class="relative p-2 text-gray-600 hover:text-blue-600 focus:outline-none transition">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
-                    <span id="notif-count" class="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold rounded-full h-5 w-5 flex items-center justify-center border-2 border-white hidden">0</span>
-                </button>
             </div>
         </header>
 
@@ -192,33 +185,21 @@
                 </div>
             </section>
 
-            <!-- ৬. ব্লগ ম্যানেজমেন্ট (৩টি ট্যাব) -->
+            <!-- ৬. ব্লগ ম্যানেজমেন্ট -->
             <section id="section-blog-management" class="section-content">
                 <h2 class="text-2xl font-bold text-gray-800 mb-6">ব্লগ ম্যানেজমেন্ট</h2>
-                
                 <div class="flex border-b border-gray-200 mb-6">
                     <button onclick="switchBlogTab('pending')" id="tab-btn-pending" class="px-6 py-3 font-bold text-blue-600 border-b-2 border-blue-600 focus:outline-none">পেন্ডিং ব্লগ</button>
-                    <button onclick="switchBlogTab('all')" id="tab-btn-all" class="px-6 py-3 font-bold text-gray-500 hover:text-blue-600 border-b-2 border-transparent focus:outline-none">সব ব্লগ</button>
-                    <button onclick="switchBlogTab('add')" id="tab-btn-add" class="px-6 py-3 font-bold text-gray-500 hover:text-blue-600 border-b-2 border-transparent focus:outline-none">অ্যাডমিনের ব্লগ লিখুন</button>
+                    <button onclick="switchBlogTab('all')" id="tab-btn-all" class="px-6 py-3 font-bold text-gray-500 border-b-2 border-transparent focus:outline-none">সব ব্লগ</button>
+                    <button onclick="switchBlogTab('add')" id="tab-btn-add" class="px-6 py-3 font-bold text-gray-500 border-b-2 border-transparent focus:outline-none">অ্যাডমিনের ব্লগ লিখুন</button>
                 </div>
-
                 <div id="blog-tab-pending" class="space-y-4"></div>
-
-                <div id="blog-tab-all" class="hidden">
-                    <div class="mb-4">
-                        <input type="text" id="blogSearchInput" placeholder="ব্লগের টাইটেল বা লেখকের নাম দিয়ে খুঁজুন..." class="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none" oninput="searchBlogs()">
-                    </div>
-                    <div id="allBlogsList" class="space-y-4"></div>
-                </div>
-
+                <div id="blog-tab-all" class="hidden"><div id="allBlogsList" class="space-y-4"></div></div>
                 <div id="blog-tab-add" class="hidden bg-white p-6 rounded-xl shadow-sm border-t-4 border-blue-500 max-w-2xl">
                     <h3 class="text-xl font-bold mb-4 text-gray-800">নতুন ব্লগ লিখুন</h3>
                     <form id="addBlogForm" class="space-y-4">
                         <div><label class="block text-sm font-medium text-gray-700">ব্লগের শিরোনাম</label><input type="text" id="blogTitle" required class="mt-1 w-full px-4 py-2 border rounded-md"></div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">ব্লগের ছবি (ঐচ্ছিক)</label>
-                            <input type="file" id="blogImage" accept="image/*" class="mt-1 w-full px-4 py-2 border rounded-md bg-gray-50 text-sm">
-                        </div>
+                        <div><label class="block text-sm font-medium text-gray-700">ব্লগের ছবি (ঐচ্ছিক)</label><input type="file" id="blogImage" accept="image/*" class="mt-1 w-full px-4 py-2 border rounded-md bg-gray-50 text-sm"></div>
                         <div><label class="block text-sm font-medium text-gray-700">ব্লগের বিষয়বস্তু</label><textarea id="blogContent" required rows="5" class="mt-1 w-full px-4 py-2 border rounded-md"></textarea></div>
                         <button type="submit" id="submitBlogBtn" class="w-full bg-blue-600 text-white font-bold py-2 rounded hover:bg-blue-700 transition">ব্লগ পাবলিশ করুন</button>
                     </form>
@@ -270,12 +251,7 @@
                 <h2 class="text-2xl font-bold text-gray-800 mb-6">নিউজলেটার সাবস্ক্রাইবার লিস্ট</h2>
                 <div class="bg-white rounded-xl shadow-sm overflow-x-auto">
                     <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="bg-gray-100 text-gray-600 text-sm">
-                                <th class="p-4 border-b">ইমেইল</th>
-                                <th class="p-4 border-b">সাবস্ক্রাইব করার তারিখ</th>
-                            </tr>
-                        </thead>
+                        <thead><tr class="bg-gray-100 text-gray-600 text-sm"><th class="p-4 border-b">ইমেইল</th><th class="p-4 border-b">সাবস্ক্রাইব করার তারিখ</th></tr></thead>
                         <tbody id="subscriberTableBody"></tbody>
                     </table>
                 </div>
@@ -468,7 +444,7 @@
         }
 
         // ==========================================
-        // সব বই লোড (ফিক্সড)
+        // সব বই লোড (এডিট ও ডিলিট ফিক্সড)
         // ==========================================
         async function loadAllBooks() {
             const tbody = document.getElementById('allBooksTableBody');
@@ -483,6 +459,7 @@
             }
 
             tbody.innerHTML = books.map(book => {
+                const bookId = book.id || book.book_id;
                 const price = book.discount_price || book.price || book.original_price || 0;
                 let rawImg = book.cover_url || book.image_url || '';
                 let bookImage = rawImg.startsWith('http') ? rawImg : 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=100';
@@ -495,16 +472,138 @@
                     <td class="p-4 font-bold text-green-600">৳ ${price}</td>
                     <td class="p-4 font-bold ${book.stock_quantity > 0 ? 'text-blue-600' : 'text-red-600'}">${book.stock_quantity || 0}</td>
                     <td class="p-4 text-center">
-                        <button onclick="editBook('${book.id}')" class="bg-blue-100 text-blue-600 px-3 py-1 rounded text-sm hover:bg-blue-200 mr-2">এডিট</button>
-                        <button onclick="deleteBook('${book.id}')" class="bg-red-100 text-red-600 px-3 py-1 rounded text-sm hover:bg-red-200">ডিলিট</button>
+                        <button onclick="editBook('${bookId}')" class="bg-blue-100 text-blue-600 px-3 py-1 rounded text-sm hover:bg-blue-200 mr-2">এডিট</button>
+                        <button onclick="deleteBook('${bookId}')" class="bg-red-100 text-red-600 px-3 py-1 rounded text-sm hover:bg-red-200">ডিলিট</button>
                     </td>
                 </tr>
                 `;
             }).join('');
         }
 
+        window.editBook = async (bookId) => {
+            let { data: book } = await supabaseClient.from('books').select('*').eq('id', bookId).maybeSingle();
+            if (!book) {
+                const res = await supabaseClient.from('books').select('*').eq('book_id', bookId).maybeSingle();
+                book = res.data;
+            }
+
+            if (!book) {
+                showToast('বইয়ের তথ্য পাওয়া যায়নি!', true);
+                return;
+            }
+
+            document.getElementById('edit_book_id').value = book.id || book.book_id;
+            document.getElementById('edit_title').value = book.title || book.name || '';
+            document.getElementById('edit_stock_quantity').value = book.stock_quantity || 0;
+            document.getElementById('edit_discount_price').value = book.discount_price || book.price || 0;
+            document.getElementById('edit_description').value = book.description || '';
+
+            if(document.getElementById('edit_author')) document.getElementById('edit_author').value = book.author || '';
+            if(document.getElementById('edit_category')) document.getElementById('edit_category').value = book.category || '';
+            if(document.getElementById('edit_publisher')) document.getElementById('edit_publisher').value = book.publisher || '';
+
+            const modal = document.getElementById('editBookModal');
+            if(modal) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            }
+        }
+
+        window.closeEditModal = () => { 
+            const modal = document.getElementById('editBookModal');
+            if(modal) {
+                modal.classList.add('hidden'); 
+                modal.classList.remove('flex'); 
+            }
+        };
+
+        document.getElementById('editBookForm')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('updateBookBtn');
+            btn.innerText = 'আপডেট হচ্ছে...'; btn.disabled = true;
+
+            const id = document.getElementById('edit_book_id').value;
+            const updates = {
+                title: document.getElementById('edit_title').value,
+                stock_quantity: parseInt(document.getElementById('edit_stock_quantity').value) || 0,
+                discount_price: parseFloat(document.getElementById('edit_discount_price').value) || 0,
+                description: document.getElementById('edit_description').value
+            };
+
+            const authorEl = document.getElementById('edit_author');
+            const categoryEl = document.getElementById('edit_category');
+            const publisherEl = document.getElementById('edit_publisher');
+
+            if(authorEl && authorEl.value) updates.author = authorEl.value;
+            if(categoryEl && categoryEl.value) updates.category = categoryEl.value;
+            if(publisherEl && publisherEl.value) updates.publisher = publisherEl.value;
+
+            let { error } = await supabaseClient.from('books').update(updates).eq('id', id);
+            if (error) {
+                const res = await supabaseClient.from('books').update(updates).eq('book_id', id);
+                error = res.error;
+            }
+
+            if (error) {
+                showToast('আপডেট ব্যর্থ: ' + error.message, true);
+            } else {
+                showToast('✅ বই সফলভাবে আপডেট হয়েছে!');
+                closeEditModal();
+                loadAllBooks();
+            }
+            btn.innerText = 'আপডেট করুন'; btn.disabled = false;
+        });
+
+        window.deleteBook = async (bookId) => {
+            if(!confirm('আপনি কি নিশ্চিতভাবে এই বইটি ডিলিট করতে চান?')) return;
+
+            let { error } = await supabaseClient.from('books').delete().eq('id', bookId);
+            if (error) {
+                const res = await supabaseClient.from('books').delete().eq('book_id', bookId);
+                error = res.error;
+            }
+
+            if (error) {
+                showToast('ডিলিট ব্যর্থ: ' + error.message, true);
+            } else {
+                showToast('🗑️ বইটি সফলভাবে ডিলিট করা হয়েছে!');
+                loadAllBooks();
+            }
+        }
+
         // ==========================================
-        // পেন্ডিং ব্লগ ম্যানেজমেন্ট (ফিক্সড)
+        // ড্রপডাউন ডেটা লোড
+        // ==========================================
+        async function loadDropdowns() {
+            const { data: categories } = await supabaseClient.from('categories').select('name');
+            const { data: authors } = await supabaseClient.from('authors').select('name');
+            const { data: publishers } = await supabaseClient.from('publishers').select('name');
+
+            const catSelects = [document.getElementById('category'), document.getElementById('edit_category')];
+            const authorSelects = [document.getElementById('author'), document.getElementById('edit_author')];
+            const pubSelects = [document.getElementById('publisher'), document.getElementById('edit_publisher')];
+
+            catSelects.forEach(sel => {
+                if(!sel) return;
+                sel.innerHTML = '<option value="" disabled selected>ক্যাটাগরি সিলেক্ট করুন</option>';
+                if(categories) categories.forEach(c => sel.innerHTML += `<option value="${escapeHTML(c.name)}">${escapeHTML(c.name)}</option>`);
+            });
+
+            authorSelects.forEach(sel => {
+                if(!sel) return;
+                sel.innerHTML = '<option value="" disabled selected>লেখক সিলেক্ট করুন</option>';
+                if(authors) authors.forEach(a => sel.innerHTML += `<option value="${escapeHTML(a.name)}">${escapeHTML(a.name)}</option>`);
+            });
+
+            pubSelects.forEach(sel => {
+                if(!sel) return;
+                sel.innerHTML = '<option value="" disabled selected>প্রকাশনী সিলেক্ট করুন</option>';
+                if(publishers) publishers.forEach(p => sel.innerHTML += `<option value="${escapeHTML(p.name)}">${escapeHTML(p.name)}</option>`);
+            });
+        }
+
+        // ==========================================
+        // ব্লগ ম্যানেজমেন্ট
         // ==========================================
         window.switchBlogTab = (tabName) => {
             document.getElementById('blog-tab-pending').classList.add('hidden');
@@ -540,38 +639,27 @@
                 return;
             }
 
-            list.innerHTML = blogs.map(blog => {
-                const date = new Date(blog.created_at).toLocaleDateString('bn-BD');
-                return `
-                <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 mb-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            list.innerHTML = blogs.map(blog => `
+                <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 mb-4 flex justify-between items-center">
                     <div>
-                        <h3 class="font-bold text-gray-800 text-lg mb-1">${escapeHTML(blog.title)}</h3>
-                        <p class="text-xs text-gray-500 mb-2">তারিখ: ${date}</p>
-                        <p class="text-gray-600 text-sm line-clamp-2">${escapeHTML(blog.content)}</p>
+                        <h3 class="font-bold text-gray-800 text-lg">${escapeHTML(blog.title)}</h3>
+                        <p class="text-xs text-gray-500">${new Date(blog.created_at).toLocaleDateString('bn-BD')}</p>
                     </div>
-                    <div class="flex gap-2 w-full md:w-auto mt-2 md:mt-0">
-                        <button onclick="approveBlog('${blog.id}')" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-bold transition">অ্যাপ্রুভ করুন</button>
-                        <button onclick="deleteBlog('${blog.id}')" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-bold transition">ডিলিট করুন</button>
+                    <div class="flex gap-2">
+                        <button onclick="approveBlog('${blog.id}')" class="bg-green-500 text-white px-3 py-1 rounded text-sm">অ্যাপ্রুভ</button>
+                        <button onclick="deleteBlog('${blog.id}')" class="bg-red-500 text-white px-3 py-1 rounded text-sm">ডিলিট</button>
                     </div>
                 </div>
-                `;
-            }).join('');
+            `).join('');
         }
 
         async function loadAllBlogs() {
             const list = document.getElementById('allBlogsList');
-            list.innerHTML = `<p class="text-center text-gray-500 py-6">লোড হচ্ছে...</p>`;
             const { data: blogs } = await supabaseClient.from('blogs').select('*').order('created_at', { ascending: false });
             if (!blogs || blogs.length === 0) {
                 list.innerHTML = `<p class="text-center text-gray-500 py-6">কোনো ব্লগ নেই।</p>`;
                 return;
             }
-            allBlogsData = blogs;
-            renderAllBlogs(blogs);
-        }
-
-        function renderAllBlogs(blogs) {
-            const list = document.getElementById('allBlogsList');
             list.innerHTML = blogs.map(blog => `
                 <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 mb-4 flex justify-between items-center">
                     <div>
@@ -584,9 +672,9 @@
         }
 
         window.approveBlog = async (id) => {
-            const { error } = await supabaseClient.from('blogs').update({ status: 'approved' }).eq('id', id);
-            if(error) showToast(error.message, true);
-            else { showToast('✅ ব্লগ অ্যাপ্রুভ হয়েছে!'); loadPendingBlogs(); }
+            await supabaseClient.from('blogs').update({ status: 'approved' }).eq('id', id);
+            showToast('✅ ব্লগ অ্যাপ্রুভ হয়েছে!');
+            loadPendingBlogs();
         }
 
         window.deleteBlog = async (id) => {
@@ -597,17 +685,14 @@
         }
 
         // ==========================================
-        // রিভিউ ম্যানেজমেন্ট (ফিক্সড)
+        // রিভিউ ম্যানেজমেন্ট
         // ==========================================
         async function loadPendingReviews() {
             const list = document.getElementById('pendingReviewsList');
             if(!list) return;
-            list.innerHTML = `<p class="text-center text-gray-500 py-6">রিভিউ লোড হচ্ছে...</p>`;
+            const { data: reviews } = await supabaseClient.from('reviews').select('*').eq('status', 'pending');
 
-            // reviews বা book_reviews টেবিল থেকে ডেটা ফেচ করা
-            const { data: reviews, error } = await supabaseClient.from('reviews').select('*').eq('status', 'pending');
-
-            if (error || !reviews || reviews.length === 0) {
+            if (!reviews || reviews.length === 0) {
                 list.innerHTML = `<div class="bg-white p-6 rounded-xl shadow-sm text-center text-gray-500 font-bold">কোনো পেন্ডিং রিভিউ নেই।</div>`;
                 return;
             }
@@ -638,9 +723,8 @@
             loadPendingReviews();
         }
 
-        // অন্যান্য সাধারণ ফাংশন
+        // ডেমো বা সাধারণ লোডার ফাংশনসমূহ
         async function loadDashboardData() {}
-        async function loadDropdowns() {}
         async function loadOrders() {}
         async function loadCoupons() {}
         async function loadCustomers() {}
@@ -653,4 +737,4 @@
         init();
     </script>
 </body>
-                                                                                                                  </html>
+</html>
