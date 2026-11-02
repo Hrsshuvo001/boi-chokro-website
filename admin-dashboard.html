@@ -471,7 +471,7 @@
         };
 
         // ==========================================
-        // ব্লগ ম্যানেজমেন্ট লজিক (লোডিং ছাড়া সরাসরি ডেটা প্রদর্শন)
+        // ব্লগ ম্যানেজমেন্ট লজিক (সরাসরি ডেটা রেন্ডার)
         // ==========================================
         window.switchBlogTab = (tab) => {
             const btnPending = document.getElementById('tab-btn-pending');
@@ -497,7 +497,7 @@
         async function loadPendingBlogs() {
             const container = document.getElementById('blog-tab-pending');
             
-            // কোনো 'লোড হচ্ছে...' টেক্সট বা ডিলে রাখা হয়নি, সরাসরি ডেটা ফেচ করা হবে
+            // সরাসরি সব ব্লগ ফেচ করা হচ্ছে যাতে কোনো ফিল্টারিংয়ে ডেটা আটকে না যায়
             const { data: blogs, error } = await supabaseClient.from('blogs').select('*').order('created_at', { ascending: false });
             
             if(error || !blogs || blogs.length === 0) {
@@ -505,20 +505,9 @@
                 return;
             }
 
-            // একদম নিখুঁত ফিল্টারিং:
-            // ১. কভার ফটো বা প্রোফাইল পিকচার আপডেটের অটোমেটিক সিস্টেম নোটিফিকেশনগুলো পুরোপুরি বাদ দেওয়া হলো।
-            // ২. শুধু সেইসব পোস্ট দেখাবে যেগুলোর স্ট্যাটাস বা অ্যাপ্রুভাল এপ্রুভড/পাবলিশড নয়।
+            // এখানে শুধুমাত্র সেই পোস্টগুলো ফিল্টার করা হবে যেগুলোর স্ট্যাটাস অলরেডি 'approved' বা 'is_approved' ট্রু নয়
             const pendingBlogs = blogs.filter(b => {
-                const title = (b.title || '').trim();
-                const content = (b.content || b.body || b.description || '').trim();
                 const status = (b.status || '').toLowerCase();
-
-                // সিস্টেম প্রোফাইল বা কভার ফটো আপডেটের নোটিফিকেশন ফিল্টার করে বাদ দেওয়া
-                if (title === 'কভার ফটো আপডেট' || title === 'প্রোফাইল ছবি আপডেট' || content.includes('আপনার কভার ফটো আপলোড হয়েছে') || content.includes('আপনার প্রোফাইল ছবি আপলোড হয়েছে')) {
-                    return false;
-                }
-
-                // যেগুলো ইতিমধ্যে এপ্রুভড বা পাবলিশড সেগুলোকে বাদ দেওয়া
                 const isApproved = b.is_approved === true || status === 'approved' || status === 'published';
                 return !isApproved;
             });
