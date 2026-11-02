@@ -418,16 +418,23 @@
         const SUPABASE_ANON_KEY = 'sb_publishable_oBzutzPKvIvujmSG7icXug_SwwveL5g';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+        // ==========================================
+        // পেজ রিফ্রেশ ফিক্স (LocalStorage ব্যবহার করে)
+        // ==========================================
         window.onload = function() {
-            const urlHash = window.location.hash.replace('#', '');
-            if (urlHash) {
-                showSection(urlHash);
-                // যদি রিভিউ ট্যাব হয়, তবে ডিফল্টভাবে পেন্ডিং রিভিউ দেখাবে
-                if(urlHash === 'review-management') {
-                    switchReviewTab('pending');
-                }
-            } else {
-                showSection('home');
+            // LocalStorage থেকে শেষ ভিজিট করা সেকশনটি নেওয়া
+            const savedSection = localStorage.getItem('admin_active_section') || 'home';
+            
+            // সেই সেকশনটি ওপেন করা
+            showSection(savedSection);
+
+            // যদি রিভিউ ট্যাব হয়, তবে ডিফল্টভাবে পেন্ডিং রিভিউ দেখাবে
+            if(savedSection === 'review-management') {
+                switchReviewTab('pending');
+            }
+            // যদি ব্লগ ট্যাব হয়, তবে ডিফল্টভাবে পেন্ডিং ব্লগ দেখাবে
+            if(savedSection === 'blog-management') {
+                switchBlogTab('pending');
             }
         };
 
@@ -448,11 +455,28 @@
         window.toggleSidebar = () => { document.getElementById('sidebar').classList.toggle('-translate-x-full'); };
 
         window.showSection = (sectionId) => {
+            // সব সেকশন হাইড করা
             document.querySelectorAll('.section-content').forEach(sec => sec.classList.remove('active'));
+            // সব নেভিগেশন বাটন থেকে active ক্লাস রিমুভ করা
             document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
-            document.getElementById(`section-${sectionId}`).classList.add('active');
-            window.location.hash = sectionId;
+            
+            // নতুন সেকশন দেখানো
+            const targetSection = document.getElementById(`section-${sectionId}`);
+            if(targetSection) targetSection.classList.add('active');
+            
+            // LocalStorage-এ সেভ করা
+            localStorage.setItem('admin_active_section', sectionId);
 
+            // নেভিগেশন বাটন হাইলাইট করা
+            const buttons = document.querySelectorAll('.nav-item');
+            buttons.forEach(btn => { 
+                if(btn.getAttribute('onclick') && btn.getAttribute('onclick').includes(sectionId)) {
+                    btn.classList.add('active'); 
+                }
+            });
+
+            // সেকশন অনুযায়ী ডেটা লোড করা
+            if(sectionId === 'home') loadDashboardData();
             if(sectionId === 'all-books') loadAllBooks();
             if(sectionId === 'add-book') loadDropdowns();
             if(sectionId === 'add-meta') loadMetaLists();
