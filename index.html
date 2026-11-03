@@ -315,7 +315,7 @@
                 if(authBtnMobile) {
                     authBtnMobile.innerHTML = `<a href="/profile.html" class="bg-blue-600 text-white px-2.5 py-1 rounded-md font-bold text-xs shadow">প্রোফাইল</a>`;
                 }
-                loadNotificationsAndMessages();
+                loadNotificationsAndUnreadMessages();
             } else {
                 currentUser = null;
                 if(authBtnDesktop) authBtnDesktop.innerHTML = `<a href="/login.html" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition">লগইন</a>`;
@@ -330,12 +330,12 @@
         }
 
         // ==========================================
-        // নোটিফিকেশন এবং মেসেজ লোড করার ফাংশন
+        // ১. আনসিন মেসেজ ও নোটিফিকেশন লোড করার ফাংশন
         // ==========================================
-        async function loadNotificationsAndMessages() {
+        async function loadNotificationsAndUnreadMessages() {
             if(!currentUser) return;
             
-            // ১. নোটিফিকেশন লোড
+            // নোটিফিকেশন লোড
             const { data: notifs } = await supabaseClient.from('notifications')
                 .select('*')
                 .eq('user_id', currentUser.id)
@@ -367,8 +367,8 @@
                 if(badgeMob) badgeMob.classList.add('hidden');
             }
 
-            // ২. ইনবক্সের মোট মেসেজ কাউন্ট (শুধু আনরিড মেসেজ)
-            const { count: totalMsgs } = await supabaseClient.from('messages')
+            // আনসিন মেসেজ গণনা (is_read = false)
+            const { count: unreadMsgsCount } = await supabaseClient.from('messages')
                 .select('*', { count: 'exact', head: true })
                 .eq('receiver_id', currentUser.id)
                 .eq('is_read', false);
@@ -376,9 +376,9 @@
             const msgBadge = document.getElementById('msgBadge');
             const msgBadgeMob = document.getElementById('msgBadgeMobile');
 
-            if(totalMsgs && totalMsgs > 0) {
-                if(msgBadge) { msgBadge.innerText = totalMsgs; msgBadge.classList.remove('hidden'); }
-                if(msgBadgeMob) { msgBadgeMob.innerText = totalMsgs; msgBadgeMob.classList.remove('hidden'); }
+            if(unreadMsgsCount && unreadMsgsCount > 0) {
+                if(msgBadge) { msgBadge.innerText = unreadMsgsCount; msgBadge.classList.remove('hidden'); }
+                if(msgBadgeMob) { msgBadgeMob.innerText = unreadMsgsCount; msgBadgeMob.classList.remove('hidden'); }
             } else {
                 if(msgBadge) msgBadge.classList.add('hidden');
                 if(msgBadgeMob) msgBadgeMob.classList.add('hidden');
@@ -391,7 +391,7 @@
 
         window.handleNotificationClick = async (notifId, link) => {
             await supabaseClient.from('notifications').update({ is_read: true }).eq('id', notifId);
-            loadNotificationsAndMessages();
+            loadNotificationsAndUnreadMessages();
             document.getElementById('notifDropdown').classList.add('hidden');
             if(link && link.trim() !== '') {
                 window.location.href = link;
@@ -437,12 +437,13 @@
             const wishlist = JSON.parse(localStorage.getItem('boiChokroWishlist')) || [];
             const isWishlisted = wishlist.includes(bookId);
 
-            // স্টক চেক
-            const isOutOfStock = (book.stock_quantity !== undefined && book.stock_quantity !== null) ? book.stock_quantity <= 0 : false;
+            // ২. স্টক চেক এবং টেক্সট প্রদর্শন
+            const stockQty = (book.stock_quantity !== undefined && book.stock_quantity !== null) ? Number(book.stock_quantity) : 1;
+            const isOutOfStock = stockQty <= 0;
 
-            // উইশলিস্টের লাল লাভ নিশ্চিত করার জন্য কন্ডিশনাল ডিজাইন
+            // ৩. উইশলিস্ট লাভ আইকন (লাল বা সাদা/ডালিম রঙ)
             const heartIcon = isWishlisted 
-                ? `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-500" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>`
+                ? `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-500 fill-current" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>`
                 : `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 dark:text-gray-300 hover:text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>`;
 
             return `
@@ -462,7 +463,12 @@
                         <a href="/book-details.html?id=${bookId}">
                             <h3 class="font-bold text-sm text-gray-900 dark:text-white leading-snug line-clamp-2 mb-1 hover:text-blue-600 transition">${escapeHTML(bookTitle)}</h3>
                         </a>
-                        <p class="text-xs text-gray-500 mb-3">${escapeHTML(bookAuthor)}</p>
+                        <p class="text-xs text-gray-500 mb-2">${escapeHTML(bookAuthor)}</p>
+                        
+                        <!-- স্টকের স্ট্যাটাস টেক্সট -->
+                        <div class="mb-2">
+                            ${isOutOfStock ? '<span class="text-[11px] font-bold text-red-500 bg-red-50 dark:bg-red-900/30 px-2 py-0.5 rounded">আউট অফ স্টক</span>' : '<span class="text-[11px] font-bold text-green-600 bg-green-50 dark:bg-green-900/30 px-2 py-0.5 rounded">স্টকে বইটি আছে</span>'}
+                        </div>
                     </div>
                     <div class="flex items-center gap-2">
                         <span class="text-lg font-bold text-blue-600 dark:text-blue-400">৳ ${currentPrice}</span>
@@ -613,7 +619,6 @@
                 await supabaseClient.from('blog_likes').delete().eq('id', existing.id);
             } else {
                 await supabaseClient.from('blog_likes').insert([{ blog_id: blogId, user_id: currentUser.id }]);
-                // নোটিফিকেশন তৈরি (পোস্টের মালিকের জন্য)
                 const { data: blogData } = await supabaseClient.from('blogs').select('author_id').eq('id', blogId).single();
                 if(blogData && blogData.author_id !== currentUser.id) {
                     await supabaseClient.from('notifications').insert([{
@@ -898,7 +903,6 @@
 
             if(!error) {
                 showToast('✅ কমেন্ট সফলভাবে পোস্ট হয়েছে!');
-                // নোটিফিকেশন তৈরি (পোস্টের মালিকের জন্য)
                 const { data: blogData } = await supabaseClient.from('blogs').select('author_id').eq('id', blogId).single();
                 if(blogData && blogData.author_id !== currentUser.id) {
                     await supabaseClient.from('notifications').insert([{
@@ -954,7 +958,6 @@
             }
         }
 
-        // পেজ লোড হওয়ার সময় URL-এ post প্যারামিটার থাকলে সেই পোস্টটি ওপেন করা
         async function checkUrlForPost() {
             const urlParams = new URLSearchParams(window.location.search);
             const postId = urlParams.get('post');
