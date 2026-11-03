@@ -419,11 +419,12 @@
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         // ==========================================
-        // পেজ রিফ্রেশ ফিক্স (LocalStorage ব্যবহার করে)
+        // পেজ রিফ্রেশ ফিক্স (URL Search Params ব্যবহার করে)
         // ==========================================
         window.onload = function() {
-            // LocalStorage থেকে শেষ ভিজিট করা সেকশনটি নেওয়া
-            const savedSection = localStorage.getItem('admin_active_section') || 'home';
+            // URL থেকে ?page= প্যারামিটার চেক করা
+            const urlParams = new URLSearchParams(window.location.search);
+            const savedSection = urlParams.get('page') || 'home';
             
             // সেই সেকশনটি ওপেন করা
             showSection(savedSection);
@@ -463,9 +464,11 @@
             // নতুন সেকশন দেখানো
             const targetSection = document.getElementById(`section-${sectionId}`);
             if(targetSection) targetSection.classList.add('active');
-            
-            // LocalStorage-এ সেভ করা
-            localStorage.setItem('admin_active_section', sectionId);
+
+            // URL-এ page প্যারামিটার সেট করা (রিফ্রেশের জন্য)
+            const currentUrl = new URL(window.location.href);
+            currentUrl.searchParams.set('page', sectionId);
+            window.history.pushState({}, '', currentUrl);
 
             // নেভিগেশন বাটন হাইলাইট করা
             const buttons = document.querySelectorAll('.nav-item');
@@ -1080,7 +1083,8 @@
         async function loadSettings() {}
         async function handleLogout() { await supabaseClient.auth.signOut(); window.location.href = '/admin-login.html'; }
 
-        showSection('home');
+        // শেষে showSection কল করা (যদি রিফ্রেশ না হয়ে থাকে)
+        // showSection('home'); // এটি সরানো হয়েছে, কারণ window.onload এ হ্যান্ডেল করা হয়েছে
     </script>
 </body>
 </html>
