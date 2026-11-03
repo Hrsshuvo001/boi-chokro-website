@@ -367,10 +367,11 @@
                 if(badgeMob) badgeMob.classList.add('hidden');
             }
 
-            // ২. ইনবক্সের মোট মেসেজ কাউন্ট (আনরিড বা আনসিন)
+            // ২. ইনবক্সের মোট মেসেজ কাউন্ট (শুধু আনরিড মেসেজ)
             const { count: totalMsgs } = await supabaseClient.from('messages')
                 .select('*', { count: 'exact', head: true })
-                .eq('receiver_id', currentUser.id);
+                .eq('receiver_id', currentUser.id)
+                .eq('is_read', false);
 
             const msgBadge = document.getElementById('msgBadge');
             const msgBadgeMob = document.getElementById('msgBadgeMobile');
@@ -439,13 +440,16 @@
             // স্টক চেক
             const isOutOfStock = (book.stock_quantity !== undefined && book.stock_quantity !== null) ? book.stock_quantity <= 0 : false;
 
+            // উইশলিস্টের লাল লাভ নিশ্চিত করার জন্য কন্ডিশনাল ডিজাইন
+            const heartIcon = isWishlisted 
+                ? `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-500" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>`
+                : `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 dark:text-gray-300 hover:text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>`;
+
             return `
             <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col overflow-hidden relative group">
-                <!-- উইশলিস্ট লাভ বাটন (সাদা/লাল করা হয়েছে) -->
+                <!-- উইশলিস্ট লাভ বাটন -->
                 <button onclick="toggleWishlist('${bookId}', event)" class="absolute top-2 right-2 z-20 bg-white/80 dark:bg-gray-800/80 backdrop-blur-md p-2 rounded-full shadow hover:scale-110 transition">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 transition-colors duration-200 ${isWishlisted ? 'text-red-500' : 'text-gray-400 dark:text-gray-300'}" fill="${isWishlisted ? '#ef4444' : 'none'}" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                    </svg>
+                    ${heartIcon}
                 </button>
 
                 <a href="/book-details.html?id=${bookId}" class="block w-full aspect-[3/4] bg-gray-100 dark:bg-gray-700 overflow-hidden relative">
@@ -956,8 +960,6 @@
             const postId = urlParams.get('post');
             if (postId) {
                 await openPostDetails(postId);
-                // URL থেকে প্যারামিটার মুছে ফেলা (ঐচ্ছিক, যাতে রিফ্রেশে আবার না খোলে)
-                // window.history.replaceState({}, document.title, window.location.pathname);
             }
         }
 
