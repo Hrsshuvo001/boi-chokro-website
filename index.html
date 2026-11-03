@@ -330,7 +330,7 @@
         }
 
         // ==========================================
-        // ১. আনসিন মেসেজ ও নোটিফিকেশন লোড করার ফাংশন
+        // ১. আনসিন মেসেজ ও নোটিফিকেশন লোড করার ফাংশন (সিন করা মেসেজ কাউন্টে আসবে না)
         // ==========================================
         async function loadNotificationsAndUnreadMessages() {
             if(!currentUser) return;
@@ -367,7 +367,7 @@
                 if(badgeMob) badgeMob.classList.add('hidden');
             }
 
-            // আনসিন মেসেজ গণনা (is_read = false)
+            // শুধুমাত্র আনসিন মেসেজ গণনা (is_read = false)
             const { count: unreadMsgsCount } = await supabaseClient.from('messages')
                 .select('*', { count: 'exact', head: true })
                 .eq('receiver_id', currentUser.id)
@@ -441,15 +441,15 @@
             const stockQty = (book.stock_quantity !== undefined && book.stock_quantity !== null) ? Number(book.stock_quantity) : 1;
             const isOutOfStock = stockQty <= 0;
 
-            // ৩. উইশলিস্ট লাভ আইকন (লাল বা সাদা/ডালিম রঙ)
+            // ৩. উইশলিস্ট লাভ আইকন (যোগ করা থাকলে সম্পূর্ণ লাল, না থাকলে সাদা/আউটলাইন)
             const heartIcon = isWishlisted 
-                ? `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-500 fill-current" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>`
-                : `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 dark:text-gray-300 hover:text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>`;
+                ? `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-600 fill-current" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>`
+                : `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 dark:text-gray-300 hover:text-red-500 fill-none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>`;
 
             return `
             <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col overflow-hidden relative group">
                 <!-- উইশলিস্ট লাভ বাটন -->
-                <button onclick="toggleWishlist('${bookId}', event)" class="absolute top-2 right-2 z-20 bg-white/80 dark:bg-gray-800/80 backdrop-blur-md p-2 rounded-full shadow hover:scale-110 transition">
+                <button onclick="toggleWishlist('${bookId}', event)" class="absolute top-2 right-2 z-20 bg-white/90 dark:bg-gray-800/90 backdrop-blur-md p-2 rounded-full shadow hover:scale-110 transition">
                     ${heartIcon}
                 </button>
 
