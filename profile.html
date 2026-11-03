@@ -13,6 +13,8 @@
         .line-clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
         @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         .toast-animate { animation: slideInRight 0.3s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        .modal-animate { animation: fadeIn 0.25s ease-out forwards; }
     </style>
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 transition-colors min-h-screen flex flex-col">
@@ -113,7 +115,6 @@
                         <div><label class="block text-sm font-semibold mb-1">বায়ো (Bio)</label><input type="text" id="profBio" placeholder="নিজের সম্পর্কে কিছু লিখুন..." class="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 outline-none"></div>
                         <div><label class="block text-sm font-semibold mb-1">পেশা</label><input type="text" id="profOccupation" placeholder="আপনার পেশা..." class="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 outline-none"></div>
                         
-                        <!-- মডার্ন ড্রপডাউন ডেট পিকার -->
                         <div>
                             <label class="block text-sm font-semibold mb-1">জন্মদিন</label>
                             <div class="grid grid-cols-3 gap-2">
@@ -138,7 +139,7 @@
         </div>
     </main>
 
-    <!-- ফেসবুক স্টাইল পোস্ট ক্রিয়েট মডাল -->
+    <!-- পোস্ট ক্রিয়েট মডাল -->
     <div id="postModal" class="fixed inset-0 bg-black/60 flex items-center justify-center z-50 hidden p-4">
         <div class="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-lg p-6 shadow-2xl relative">
             <div class="flex justify-between items-center border-b pb-3 dark:border-gray-700 mb-4">
@@ -163,6 +164,14 @@
         </div>
     </div>
 
+    <!-- ফুল পোস্ট ভিউ, ভিউ কাউন্ট, কমেন্ট, রিপ্লাই, এডিট ও ডিলিট মডাল -->
+    <div id="postDetailsModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl relative modal-animate">
+            <button onclick="closePostModal()" class="absolute top-4 right-4 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-red-500 hover:text-white h-8 w-8 rounded-full flex items-center justify-center font-bold transition">✕</button>
+            <div id="modalBodyContent" class="p-6 space-y-4"></div>
+        </div>
+    </div>
+
     <script>
         const SUPABASE_URL = 'https://jhbpaezbpkfwjfmazdcn.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_oBzutzPKvIvujmSG7icXug_SwwveL5g';
@@ -175,7 +184,6 @@
         let viewingUserId = null;
         let currentGallery = [];
 
-        // ড্রপডাউন ডেট পিকার অপশন পপুলেট করা
         function populateDobDropdowns() {
             const daySelect = document.getElementById('dobDay');
             const yearSelect = document.getElementById('dobYear');
@@ -209,18 +217,24 @@
             return str.replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
         }
 
-        // সেন্সরশিপ / নুড ও সেক্সুয়াল ছবি ডিটেকশন ফাংশন
+        function containsForbiddenContent(text) {
+            const forbiddenKeywords = [
+                'বাল', 'মাদারচোদ', 'মাগী', 'বেশ্যা', 'শালা', 'শুয়োর', 'কুত্তা', 'বট', 'bastard', 'shit', 'fuck', 'bitch', 'asshole',
+                'বটম', 'যৌন', 'সেক্স', 'sex', 'porn', 'xxx', 'naked', 'nude', 'chod', 'chodai', 'boob', 'vagina', 'penis', 'rape', 'ধর্ষণ', 'হ্যারাস', 'লুচ্চা'
+            ];
+            const lowerText = text.toLowerCase();
+            return forbiddenKeywords.some(word => lowerText.includes(word));
+        }
+
         async function checkNudeOrExplicitImage(file) {
             return new Promise((resolve) => {
                 const img = new Image();
                 const reader = new FileReader();
-                reader.onload = (e) => {
-                    img.src = e.target.result;
-                };
+                reader.onload = (e) => { img.src = e.target.result; };
                 img.onload = () => {
                     const canvas = document.createElement('canvas');
                     const ctx = canvas.getContext('2d');
-                    canvas.width = 100; // ফাস্ট চেকের জন্য ছোট সাইজ
+                    canvas.width = 100;
                     canvas.height = 100;
                     ctx.drawImage(img, 0, 0, 100, 100);
                     
@@ -233,7 +247,6 @@
                         const g = imgData.data[i + 1];
                         const b = imgData.data[i + 2];
 
-                        // কালার হিউম্যান স্কিন টোন রেঞ্জ ডিটেকশন ফর্মুলা
                         if ((r > 95 && g > 40 && b > 20 && Math.max(r, g, b) - Math.min(r, g, b) > 15 && Math.abs(r - g) > 15 && r > g && r > b) ||
                             (r > 220 && g > 210 && b > 170 && Math.abs(r - g) <= 15 && r > b && g > b)) {
                             skinPixelCount++;
@@ -241,12 +254,8 @@
                     }
 
                     const skinPercentage = (skinPixelCount / totalPixels) * 100;
-                    // যদি ছবির ৬০% এর বেশি অংশ স্কিন টোন বা নুড হিউম্যান বডি কালার হয়, তবে ব্লক করবে
-                    if (skinPercentage > 60) {
-                        resolve(true); // নুড বা আপত্তিকর শনাক্ত হয়েছে
-                    } else {
-                        resolve(false); // নিরাপদ
-                    }
+                    if (skinPercentage > 60) resolve(true);
+                    else resolve(false);
                 };
                 reader.readAsDataURL(file);
             });
@@ -434,7 +443,6 @@
             btn.disabled = false;
         });
 
-        // কভার ছবি আপলোড (অটো এপ্রুভড পোস্ট তৈরি হবে)
         window.uploadCoverImage = async (event) => {
             const file = event.target.files[0];
             if(!file || !currentUser) return;
@@ -458,7 +466,6 @@
             let currentGal = currProf?.gallery_images || [];
             let newGallery = [newCoverUrl, ...currentGal];
 
-            // ১. প্রোফাইল আপডেট
             const { error: dbError } = await supabaseClient.from('profiles').upsert([{ 
                 id: currentUser.id,
                 cover_image: newCoverUrl,
@@ -467,24 +474,12 @@
 
             if(dbError) {
                 showToast('ডেটাবেসে সেভ হচ্ছে না: ' + dbError.message, true);
-                return;
+            } else {
+                showToast('✅ কভার ছবি সফলভাবে আপডেট হয়েছে!');
+                loadProfileDetails();
             }
-
-            // ২. পোস্ট তৈরি করা (সরাসরি অ্যাপ্রুভড স্ট্যাটাসে)
-            await supabaseClient.from('blogs').insert([{
-                author_id: currentUser.id,
-                title: 'কভার ছবি আপডেট',
-                content: 'কভার ফটো আপডেট হয়েছে',
-                image_url: newCoverUrl,
-                status: 'approved' // সরাসরি অ্যাপ্রুভড
-            }]);
-
-            showToast('✅ কভার ছবি আপডেট এবং পোস্ট তৈরি হয়েছে!');
-            loadProfileDetails();
-            loadMyBlogs(); // পোস্ট লিস্ট রিফ্রেশ
         }
 
-        // প্রোফাইল ছবি আপলোড (অটো এপ্রুভড পোস্ট তৈরি হবে)
         window.uploadProfileImage = async (event) => {
             const file = event.target.files[0];
             if(!file || !currentUser) return;
@@ -508,7 +503,6 @@
             let currentGal = currProf?.gallery_images || [];
             let newGallery = [newProfileUrl, ...currentGal];
 
-            // ১. প্রোফাইল আপডেট
             const { error: dbError } = await supabaseClient.from('profiles').upsert([{ 
                 id: currentUser.id,
                 profile_image: newProfileUrl,
@@ -520,21 +514,10 @@
                 return; 
             }
             
-            // ২. পোস্ট তৈরি করা (সরাসরি অ্যাপ্রুভড স্ট্যাটাসে)
-            await supabaseClient.from('blogs').insert([{
-                author_id: currentUser.id,
-                title: 'প্রোফাইল ছবি আপডেট',
-                content: 'প্রোফাইল ছবি আপডেট হয়েছে',
-                image_url: newProfileUrl,
-                status: 'approved' // সরাসরি অ্যাপ্রুভড
-            }]);
-
-            showToast('✅ প্রোফাইল ছবি আপডেট এবং পোস্ট তৈরি হয়েছে!');
+            showToast('✅ প্রোফাইল ছবি সফলভাবে আপডেট হয়েছে!');
             loadProfileDetails();
-            loadMyBlogs(); // পোস্ট লিস্ট রিফ্রেশ
         }
 
-        // গ্যালারি ছবি আপলোড
         window.uploadGalleryImages = async (event) => {
             const files = event.target.files;
             if(!files.length || !currentUser) return;
@@ -644,11 +627,9 @@
             }
         }
 
-        // নতুন পোস্ট ক্রিয়েট মডাল ওপেন/ক্লোজ
         window.openCreatePostModal = () => document.getElementById('postModal').classList.remove('hidden');
         window.closeCreatePostModal = () => document.getElementById('postModal').classList.add('hidden');
 
-        // ফেসবুক স্টাইল পোস্ট সাবমিট (স্ট্যাটাস pending থাকবে)
         document.getElementById('createPostForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('publishPostBtn');
@@ -677,13 +658,13 @@
                 }
             }
 
-            // ব্লগ বা পোস্ট লেখার সময় pending হবে
             const { error: insertError } = await supabaseClient.from('blogs').insert([{
                 author_id: currentUser.id,
                 title: title,
                 content: content,
                 image_url: imageUrl,
-                status: 'pending' // অ্যাডমিন এপ্রুভ না করা পর্যন্ত পেন্ডিং থাকবে
+                status: 'pending',
+                views: 0
             }]);
 
             if (insertError) {
@@ -712,91 +693,325 @@
                 return;
             }
 
-            list.innerHTML = blogs.map(blog => {
+            const blogHTML = await Promise.all(blogs.map(async (blog) => {
                 const isApproved = blog.status === 'approved';
                 const statusColor = isApproved ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700';
                 const statusText = isApproved ? 'প্রকাশিত' : 'অ্যাপ্রুভালের অপেক্ষায় (Pending)';
+
+                const { count: likeCount } = await supabaseClient.from('blog_likes').select('*', { count: 'exact', head: true }).eq('blog_id', blog.id);
+                const { count: commentCount } = await supabaseClient.from('blog_comments').select('*', { count: 'exact', head: true }).eq('blog_id', blog.id);
+
                 return `
-                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-4">
-                    ${blog.image_url ? `<img src="${blog.image_url}" class="w-full h-48 object-cover rounded-lg mb-3">` : ''}
-                    <div class="flex justify-between items-start mb-2">
-                        <h4 class="text-lg font-bold text-gray-900 dark:text-white">${escapeHTML(blog.title)}</h4>
-                        <span class="text-xs font-bold px-2.5 py-1 rounded-full ${statusColor}">${statusText}</span>
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col h-full overflow-hidden hover:shadow-md transition">
+                    <div>
+                        ${blog.image_url ? `<div class="max-h-60 overflow-hidden bg-gray-100 cursor-pointer" onclick="openPostDetails('${blog.id}')"><img src="${blog.image_url}" class="w-full h-full object-cover hover:scale-105 transition duration-300"></div>` : ''}
+                        
+                        <div class="p-4 space-y-2">
+                            <div class="flex justify-between items-start">
+                                <h3 class="text-lg font-bold text-gray-900 dark:text-white cursor-pointer hover:text-blue-600 transition line-clamp-2" onclick="openPostDetails('${blog.id}')">${escapeHTML(blog.title)}</h3>
+                                ${isOwnProfile ? `<span class="text-xs font-bold px-2 py-1 rounded ${statusColor}">${statusText}</span>` : ''}
+                            </div>
+                            <p class="text-sm text-gray-600 dark:text-gray-300 line-clamp-3">${escapeHTML(blog.content)}</p>
+                        </div>
                     </div>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">${escapeHTML(blog.content)}</p>
+
+                    <div class="p-4 mt-auto border-t border-gray-100 dark:border-gray-700 flex items-center justify-between">
+                        <div class="flex items-center gap-4">
+                            <button onclick="likeBlog('${blog.id}')" class="flex items-center gap-1 text-gray-500 hover:text-red-500 transition text-sm">
+                                🌹 <span id="like-count-${blog.id}">${likeCount || 0}</span>
+                            </button>
+                            <button onclick="openPostDetails('${blog.id}')" class="flex items-center gap-1 text-gray-500 hover:text-blue-500 transition text-sm">
+                                💬 <span id="comment-count-${blog.id}">${commentCount || 0}</span>
+                            </button>
+                            <span class="flex items-center gap-1 text-gray-400 text-xs">👁️ ${blog.views || 0}</span>
+                        </div>
+                        <button onclick="openPostDetails('${blog.id}')" class="text-xs font-bold text-blue-600 hover:underline">বিস্তারিত</button>
+                    </div>
                 </div>
                 `;
-            }).join('');
+            }));
+
+            list.innerHTML = blogHTML.join('');
         }
 
-        async function loadFriends() {
-            const list = document.getElementById('friendsList');
-            if(!list) return;
-            const { data: friends } = await supabaseClient.from('friends')
-                .select('*')
-                .or(`sender_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`)
-                .eq('status', 'accepted');
-
-            if (!friends || friends.length === 0) {
-                list.innerHTML = `<p class="text-gray-500 col-span-full">আপনার কোনো বন্ধু নেই।</p>`;
-                return;
-            }
-
-            const friendIds = friends.map(f => f.sender_id === currentUser.id ? f.receiver_id : f.sender_id);
-            const { data: profiles } = await supabaseClient.from('profiles').select('id, full_name, profile_image').in('id', friendIds);
-
-            list.innerHTML = profiles.map(p => `
-                <div class="flex items-center gap-3 p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-100 dark:border-gray-700">
-                    <img src="${p.profile_image || 'https://via.placeholder.com/40'}" class="w-10 h-10 rounded-full object-cover">
-                    <a href="/profile.html?id=${p.id}" class="font-bold text-sm text-gray-800 dark:text-white hover:text-blue-600">${escapeHTML(p.full_name)}</a>
-                </div>
-            `).join('');
-        }
-
-        async function loadFriendRequests() {
-            const list = document.getElementById('requestsList');
-            if(!list) return;
-            const { data: requests } = await supabaseClient.from('friends')
-                .select('*')
-                .eq('receiver_id', currentUser.id)
-                .eq('status', 'pending');
-
-            if (!requests || requests.length === 0) {
-                list.innerHTML = `<p class="text-gray-500">আপনার কোনো নতুন ফ্রেন্ড রিকোয়েস্ট নেই।</p>`;
-                return;
-            }
-
-            const senderIds = requests.map(r => r.sender_id);
-            const { data: profiles } = await supabaseClient.from('profiles').select('id, full_name, profile_image').in('id', senderIds);
-
-            list.innerHTML = profiles.map(p => `
-                <div class="flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-100 dark:border-gray-700">
-                    <div class="flex items-center gap-3">
-                        <img src="${p.profile_image || 'https://via.placeholder.com/40'}" class="w-10 h-10 rounded-full object-cover">
-                        <span class="font-bold text-sm text-gray-800 dark:text-white">${escapeHTML(p.full_name)}</span>
-                    </div>
-                    <button onclick="acceptFriendRequest('${p.id}')" class="bg-green-500 hover:bg-green-600 text-white px-4 py-1.5 rounded-lg text-xs font-bold transition">একসেপ্ট</button>
-                </div>
-            `).join('');
-        }
-
-        window.sendFriendRequest = async () => {
-            if (!currentUser) return;
-            const { error } = await supabaseClient.from('friends').insert([{ sender_id: currentUser.id, receiver_id: viewingUserId, status: 'pending' }]);
-            if (error) showToast('সমস্যা: ' + error.message, true);
-            else { showToast('রিকোয়েস্ট পাঠানো হয়েছে!'); loadProfileDetails(); }
-        }
-
-        window.acceptFriendRequest = async (senderId = null) => {
-            if (!currentUser) return;
-            const targetId = senderId || viewingUserId;
-            const { error } = await supabaseClient.from('friends')
-                .update({ status: 'accepted' })
-                .eq('sender_id', targetId)
-                .eq('receiver_id', currentUser.id);
+        window.likeBlog = async (blogId) => {
+            if(!currentUser) { showToast('গোলাপ দিতে লগইন করুন!', true); return; }
+            const { data: existing } = await supabaseClient.from('blog_likes').select('id').eq('blog_id', blogId).eq('user_id', currentUser.id).maybeSingle();
             
-            if (error) showToast('সমস্যা: ' + error.message, true);
-            else { showToast('বন্ধু হয়েছেন!'); loadProfileDetails(); }
+            if(existing) {
+                await supabaseClient.from('blog_likes').delete().eq('id', existing.id);
+            } else {
+                await supabaseClient.from('blog_likes').insert([{ blog_id: blogId, user_id: currentUser.id }]);
+            }
+            loadMyBlogs(viewingUserId);
+        }
+
+        window.openPostDetails = async (blogId) => {
+            const modal = document.getElementById('postDetailsModal');
+            const contentDiv = document.getElementById('modalBodyContent');
+            modal.classList.remove('hidden');
+            contentDiv.innerHTML = '<p class="text-center py-10 text-gray-500">লোড হচ্ছে...</p>';
+
+            try {
+                const { data: currentBlog } = await supabaseClient.from('blogs').select('views').eq('id', blogId).single();
+                const newViews = ((currentBlog?.views) || 0) + 1;
+                await supabaseClient.from('blogs').update({ views: newViews }).eq('id', blogId);
+            } catch(e) { console.log('View count update error:', e); }
+
+            const { data: blog } = await supabaseClient.from('blogs').select('*').eq('id', blogId).single();
+            if(!blog) { contentDiv.innerHTML = '<p class="text-red-500 text-center">পোস্ট পাওয়া যায়নি।</p>'; return; }
+
+            const { data: author } = await supabaseClient.from('profiles').select('id, full_name, profile_image').eq('id', blog.author_id).maybeSingle();
+            const authorName = author?.full_name || 'নামহীন লেখক';
+            const authorImg = author?.profile_image || `https://ui-avatars.com/api/?name=${encodeURIComponent(authorName)}&background=random`;
+
+            const { data: likes } = await supabaseClient.from('blog_likes').select('user_id').eq('blog_id', blogId);
+            const totalLikes = likes ? likes.length : 0;
+            const hasLiked = currentUser ? likes?.some(l => l.user_id === currentUser.id) : false;
+
+            let likerNamesText = '';
+            if (totalLikes > 0 && likes) {
+                const likerIds = likes.slice(0, 3).map(l => l.user_id);
+                const { data: likerProfiles } = await supabaseClient.from('profiles').select('full_name').in('id', likerIds);
+                if (likerProfiles && likerProfiles.length > 0) {
+                    const names = likerProfiles.map(p => p.full_name);
+                    if (totalLikes === 1) likerNamesText = `${names[0]} এটিতে গোলাপ দিয়েছেন`;
+                    else if (totalLikes === 2) likerNamesText = `${names[0]} এবং ${names[1]} এটিতে গোলাপ দিয়েছেন`;
+                    else likerNamesText = `${names[0]}, ${names[1]} এবং আরও ${totalLikes - 2} জন এটিতে গোলাপ দিয়েছেন`;
+                }
+            }
+
+            const { data: comments } = await supabaseClient.from('blog_comments').select('*').eq('blog_id', blogId).order('created_at', { ascending: true });
+            
+            let commentProfiles = {};
+            if(comments && comments.length > 0) {
+                const cUserIds = [...new Set(comments.map(c => c.user_id))];
+                const { data: cProfiles } = await supabaseClient.from('profiles').select('id, full_name, profile_image').in('id', cUserIds);
+                if(cProfiles) cProfiles.forEach(p => commentProfiles[p.id] = p);
+            }
+
+            const mainComments = comments ? comments.filter(c => !c.parent_id) : [];
+            const replies = comments ? comments.filter(c => c.parent_id) : [];
+
+            contentDiv.innerHTML = `
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-3 cursor-pointer hover:opacity-80 transition" onclick="window.location.href='/profile.html?id=${blog.author_id}'">
+                        <img src="${authorImg}" class="w-12 h-12 rounded-full object-cover border">
+                        <div>
+                            <h3 class="font-bold text-base text-gray-900 dark:text-white hover:text-blue-600">${escapeHTML(authorName)}</h3>
+                            <p class="text-xs text-gray-400">${new Date(blog.created_at).toLocaleString('bn-BD')}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-1 text-xs font-bold bg-blue-50 dark:bg-gray-700 text-blue-600 dark:text-blue-300 px-3 py-1 rounded-full border border-blue-100 dark:border-gray-600">
+                        👁️ <span>${blog.views || 1} ভিউ</span>
+                    </div>
+                </div>
+
+                <h2 class="text-2xl font-extrabold text-gray-900 dark:text-white mb-2">${escapeHTML(blog.title)}</h2>
+                ${blog.image_url ? `<img src="${blog.image_url}" class="w-full max-h-96 object-cover rounded-xl mb-4 shadow-sm">` : ''}
+                <div class="text-gray-700 dark:text-gray-200 text-base leading-relaxed whitespace-pre-line mb-4">${escapeHTML(blog.content)}</div>
+
+                <div class="flex items-center justify-between text-xs sm:text-sm text-gray-500 dark:text-gray-400 border-y dark:border-gray-700 py-2.5 my-3">
+                    <div class="flex items-center gap-1.5">
+                        <span class="p-1 rounded-full text-sm">🌹</span>
+                        <span>${totalLikes} জন গোলাপ দিয়েছেন</span>
+                    </div>
+                    <div>${totalLikes > 0 ? `<span class="italic text-xs">${escapeHTML(likerNamesText)}</span>` : 'প্রথমে গোলাপ দিন'}</div>
+                </div>
+
+                <div class="flex items-center justify-around border-b dark:border-gray-700 pb-2 mb-4">
+                    <button onclick="toggleModalLike('${blog.id}')" class="flex items-center justify-center gap-2 flex-1 py-1.5 rounded-lg font-bold text-sm transition ${hasLiked ? 'text-pink-600 bg-pink-50 dark:bg-gray-700' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'}">
+                        <span>${hasLiked ? '🌹 গোলাপ দেওয়া হয়েছে' : '🌹 গোলাপ দিন'}</span>
+                    </button>
+                    <button onclick="document.getElementById('commentInput_${blog.id}').focus()" class="flex items-center justify-center gap-2 flex-1 py-1.5 rounded-lg font-bold text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition">
+                        <span>💬 কমেন্ট করুন</span>
+                    </button>
+                </div>
+
+                <h4 class="font-bold text-lg mb-3 text-gray-900 dark:text-white">💬 কমেন্টসমূহ (${comments ? comments.length : 0})</h4>
+                
+                <div class="space-y-4 max-h-72 overflow-y-auto mb-4 pr-2">
+                    ${(mainComments.length === 0) ? '<p class="text-sm text-gray-400 text-center py-4">এখনো কোনো কমেন্ট নেই। প্রথম কমেন্ট করুন!</p>' : 
+                        mainComments.map(c => {
+                            const commenter = commentProfiles[c.user_id] || { full_name: 'ব্যবহারকারী', profile_image: '' };
+                            const cImg = commenter.profile_image || `https://ui-avatars.com/api/?name=${encodeURIComponent(commenter.full_name)}&background=random`;
+                            const childReplies = replies.filter(r => r.parent_id === c.id);
+                            const isMyComment = currentUser && currentUser.id === c.user_id;
+
+                            return `
+                            <div class="space-y-2">
+                                <div class="flex items-start gap-2.5 bg-gray-50 dark:bg-gray-700 p-3 rounded-xl relative group">
+                                    <img src="${cImg}" class="w-8 h-8 rounded-full object-cover mt-0.5">
+                                    <div class="flex-1">
+                                        <div class="flex justify-between items-center">
+                                            <span class="font-bold text-xs text-gray-900 dark:text-white">${escapeHTML(commenter.full_name)}</span>
+                                            <span class="text-[10px] text-gray-400">${new Date(c.created_at).toLocaleTimeString('bn-BD', {hour: '2-digit', minute:'2-digit'})}</span>
+                                        </div>
+                                        <p id="commentText_${c.id}" class="text-sm text-gray-700 dark:text-gray-200 mt-1">${escapeHTML(c.comment)}</p>
+                                        
+                                        <div id="editBox_${c.id}" class="hidden mt-2">
+                                            <input type="text" id="editInput_${c.id}" value="${escapeHTML(c.comment)}" class="w-full px-2 py-1 text-xs border rounded dark:bg-gray-800 dark:border-gray-600 mb-1">
+                                            <div class="flex gap-2">
+                                                <button onclick="saveEditedComment('${c.id}', '${blog.id}')" class="bg-green-600 text-white px-2 py-0.5 rounded text-[10px] font-bold">সেভ</button>
+                                                <button onclick="toggleEditBox('${c.id}')" class="bg-gray-400 text-white px-2 py-0.5 rounded text-[10px]">বাতিল</button>
+                                            </div>
+                                        </div>
+
+                                        <div class="flex items-center gap-3 mt-1">
+                                            <button onclick="toggleReplyBox('${c.id}')" class="text-xs text-blue-600 font-bold hover:underline">রিপ্লাই দিন</button>
+                                            ${isMyComment ? `
+                                                <button onclick="toggleEditBox('${c.id}')" class="text-xs text-amber-600 font-semibold hover:underline">এডিট</button>
+                                                <button onclick="deleteComment('${c.id}', '${blog.id}')" class="text-xs text-red-500 font-semibold hover:underline">ডিলিট</button>
+                                            ` : ''}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                ${childReplies.length > 0 ? `
+                                    <div class="pl-8 space-y-2 border-l-2 border-gray-200 dark:border-gray-600 ml-4">
+                                        ${childReplies.map(r => {
+                                            const replier = commentProfiles[r.user_id] || { full_name: 'ব্যবহারকারী', profile_image: '' };
+                                            const rImg = replier.profile_image || `https://ui-avatars.com/api/?name=${encodeURIComponent(replier.full_name)}&background=random`;
+                                            const isMyReply = currentUser && currentUser.id === r.user_id;
+
+                                            return `
+                                            <div class="flex items-start gap-2 bg-gray-100 dark:bg-gray-800 p-2.5 rounded-xl text-xs">
+                                                <img src="${rImg}" class="w-6 h-6 rounded-full object-cover mt-0.5">
+                                                <div class="flex-1">
+                                                    <div class="flex justify-between items-center">
+                                                        <span class="font-bold text-gray-900 dark:text-white">${escapeHTML(replier.full_name)}</span>
+                                                        <span class="text-[9px] text-gray-400">${new Date(r.created_at).toLocaleTimeString('bn-BD', {hour: '2-digit', minute:'2-digit'})}</span>
+                                                    </div>
+                                                    <p id="commentText_${r.id}" class="text-gray-700 dark:text-gray-200 mt-0.5">${escapeHTML(r.comment)}</p>
+
+                                                    <div id="editBox_${r.id}" class="hidden mt-1">
+                                                        <input type="text" id="editInput_${r.id}" value="${escapeHTML(r.comment)}" class="w-full px-2 py-1 text-[10px] border rounded dark:bg-gray-700 mb-1">
+                                                        <div class="flex gap-2">
+                                                            <button onclick="saveEditedComment('${r.id}', '${blog.id}')" class="bg-green-600 text-white px-2 py-0.5 rounded text-[9px] font-bold">সেভ</button>
+                                                            <button onclick="toggleEditBox('${r.id}')" class="bg-gray-400 text-white px-2 py-0.5 rounded text-[9px]">বাতিল</button>
+                                                        </div>
+                                                    </div>
+
+                                                    ${isMyReply ? `
+                                                        <div class="flex gap-2 mt-1">
+                                                            <button onclick="toggleEditBox('${r.id}')" class="text-[10px] text-amber-600 font-semibold hover:underline">এডিট</button>
+                                                            <button onclick="deleteComment('${r.id}', '${blog.id}')" class="text-[10px] text-red-500 font-semibold hover:underline">ডিলিট</button>
+                                                        </div>
+                                                    ` : ''}
+                                                </div>
+                                            </div>
+                                            `;
+                                        }).join('')}
+                                    </div>
+                                ` : ''}
+
+                                <div id="replyBox_${c.id}" class="hidden pl-8 ml-4">
+                                    <form onsubmit="submitComment(event, '${blog.id}', '${c.id}')" class="flex gap-2">
+                                        <input type="text" id="replyInput_${c.id}" required placeholder="${escapeHTML(commenter.full_name)}-কে রিপ্লাই দিন..." class="flex-1 px-3 py-1.5 border rounded-lg dark:bg-gray-800 dark:border-gray-600 text-xs outline-none focus:ring-1 focus:ring-blue-500">
+                                        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition">রিপ্লাই</button>
+                                    </form>
+                                </div>
+                            </div>
+                            `;
+                        }).join('')
+                    }
+                </div>
+
+                ${currentUser ? `
+                <form onsubmit="submitComment(event, '${blog.id}', null)" class="flex gap-2">
+                    <input type="text" id="commentInput_${blog.id}" required placeholder="একটি সুন্দর কমেন্ট লিখুন..." class="flex-1 px-4 py-2 border rounded-xl dark:bg-gray-700 dark:border-gray-600 text-sm outline-none focus:ring-2 focus:ring-blue-500">
+                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-5 py-2 rounded-xl text-sm transition">পাঠান</button>
+                </form>
+                ` : `
+                <p class="text-center text-sm py-2 bg-gray-50 dark:bg-gray-700 rounded-xl text-gray-500">কমেন্ট করতে অনুগ্রহ করে <a href="/login.html" class="text-blue-600 font-bold underline">লগইন করুন</a>।</p>
+                `}
+            `;
+        }
+
+        window.toggleReplyBox = (commentId) => {
+            const box = document.getElementById(`replyBox_${commentId}`);
+            if(box) box.classList.toggle('hidden');
+        }
+
+        window.toggleEditBox = (commentId) => {
+            const box = document.getElementById(`editBox_${commentId}`);
+            if(box) box.classList.toggle('hidden');
+        }
+
+        window.saveEditedComment = async (commentId, blogId) => {
+            const input = document.getElementById(`editInput_${commentId}`);
+            const newText = input ? input.value.trim() : '';
+
+            if(!newText) { showToast('কমেন্ট খালি রাখা যাবে না!', true); return; }
+
+            if (containsForbiddenContent(newText)) {
+                showToast('⚠️ আপনার কমেন্টে গালি, অ্যাডাল্ট বা অনুপযুক্ত শব্দ থাকায় এটি এডিট করা বাতিল করা হয়েছে!', true);
+                return;
+            }
+
+            const { error } = await supabaseClient.from('blog_comments').update({ comment: newText }).eq('id', commentId);
+            if(!error) {
+                showToast('✅ কমেন্ট সফলভাবে এডিট করা হয়েছে!');
+                openPostDetails(blogId);
+            } else {
+                showToast('এডিট করতে সমস্যা হয়েছে: ' + error.message, true);
+            }
+        }
+
+        window.deleteComment = async (commentId, blogId) => {
+            if(!confirm('আপনি কি নিশ্চিতভাবে এই কমেন্টটি ডিলিট করতে চান?')) return;
+
+            const { error } = await supabaseClient.from('blog_comments').delete().eq('id', commentId);
+            if(!error) {
+                showToast('🗑️ কমেন্ট সফলভাবে ডিলিট করা হয়েছে!');
+                openPostDetails(blogId);
+            } else {
+                showToast('ডিলিট করতে সমস্যা হয়েছে: ' + error.message, true);
+            }
+        }
+
+        window.toggleModalLike = async (blogId) => {
+            await likeBlog(blogId);
+            openPostDetails(blogId);
+        }
+
+        window.closePostModal = () => document.getElementById('postDetailsModal').classList.add('hidden');
+
+        window.submitComment = async (e, blogId, parentId = null) => {
+            e.preventDefault();
+            if(!currentUser) { showToast('লগইন করুন', true); return; }
+
+            let text = '';
+            if (parentId) {
+                const replyInput = document.getElementById(`replyInput_${parentId}`);
+                text = replyInput ? replyInput.value.trim() : '';
+            } else {
+                const mainInput = document.getElementById(`commentInput_${blogId}`);
+                text = mainInput ? mainInput.value.trim() : '';
+            }
+
+            if(!text) return;
+
+            if (containsForbiddenContent(text)) {
+                showToast('🚫 সতর্কতা: আপনার কমেন্টে গালিগালাজ, অ্যাডাল্ট বা হ্যারেসমেন্টমূলক শব্দ শনাক্ত হয়েছে। এই কমেন্টটি ব্লক ও রিজেক্ট করা হলো!', true);
+                return;
+            }
+
+            const insertData = {
+                blog_id: blogId,
+                user_id: currentUser.id,
+                comment: text
+            };
+            if(parentId) insertData.parent_id = parentId;
+
+            const { error } = await supabaseClient.from('blog_comments').insert([insertData]);
+
+            if(!error) {
+                showToast('✅ কমেন্ট সফলভাবে পোস্ট হয়েছে!');
+                openPostDetails(blogId);
+            } else {
+                showToast('কমেন্ট সাবমিট সমস্যা: ' + error.message, true);
+            }
         }
 
         init();
