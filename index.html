@@ -21,6 +21,16 @@
         .toast-animate { animation: slideInRight 0.3s ease-out forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
         .modal-animate { animation: fadeIn 0.25s ease-out forwards; }
+        
+        /* উইশলিস্ট লাভ আইকন ফিক্সড স্টাইল */
+        .wishlist-btn svg path {
+            transition: all 0.2s ease;
+        }
+        .wishlist-active svg {
+            fill: #dc2626 !important;
+            color: #dc2626 !important;
+            stroke: #dc2626 !important;
+        }
     </style>
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 transition-colors duration-300 min-h-screen flex flex-col">
@@ -437,20 +447,20 @@
             const wishlist = JSON.parse(localStorage.getItem('boiChokroWishlist')) || [];
             const isWishlisted = wishlist.includes(bookId);
 
-            // ২. স্টক চেক এবং টেক্সট প্রদর্শন
+            // স্টক চেক এবং টেক্সট প্রদর্শন
             const stockQty = (book.stock_quantity !== undefined && book.stock_quantity !== null) ? Number(book.stock_quantity) : 1;
             const isOutOfStock = stockQty <= 0;
 
-            // ৩. উইশলিস্ট লাভ আইকন (যোগ করা থাকলে সম্পূর্ণ লাল, না থাকলে সাদা/আউটলাইন)
-            const heartIcon = isWishlisted 
-                ? `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-600 fill-current" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>`
-                : `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 dark:text-gray-300 hover:text-red-500 fill-none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>`;
+            // উইশলিস্ট লাভ আইকন ক্লাস ও এসভিজি হ্যান্ডলিং
+            const wishlistClass = isWishlisted ? 'wishlist-btn wishlist-active' : 'wishlist-btn';
 
             return `
             <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col overflow-hidden relative group">
                 <!-- উইশলিস্ট লাভ বাটন -->
-                <button onclick="toggleWishlist('${bookId}', event)" class="absolute top-2 right-2 z-20 bg-white/90 dark:bg-gray-800/90 backdrop-blur-md p-2 rounded-full shadow hover:scale-110 transition">
-                    ${heartIcon}
+                <button onclick="toggleWishlist('${bookId}', event)" class="absolute top-2 right-2 z-20 bg-white/90 dark:bg-gray-800/90 backdrop-blur-md p-2 rounded-full shadow hover:scale-110 transition ${wishlistClass}">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="${isWishlisted ? '#dc2626' : 'none'}" stroke="${isWishlisted ? '#dc2626' : 'currentColor'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                    </svg>
                 </button>
 
                 <a href="/book-details.html?id=${bookId}" class="block w-full aspect-[3/4] bg-gray-100 dark:bg-gray-700 overflow-hidden relative">
