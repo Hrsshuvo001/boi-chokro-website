@@ -93,7 +93,7 @@ body{font-family:'Hind Siliguri',sans-serif}
         <!-- CART -->
         <a href="/cart.html" aria-label="কার্ট" class="relative flex items-center gap-1.5 bg-blue-50 dark:bg-gray-700 text-blue-600 dark:text-blue-400 px-2 sm:px-4 py-2 rounded-lg border border-blue-100 dark:border-gray-600">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13L5.4 15.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
             </svg>
             <span class="hidden sm:inline text-sm font-semibold">কার্ট</span>
             <span id="cartCountDesktop" class="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center border border-white">0</span>
@@ -125,9 +125,21 @@ body{font-family:'Hind Siliguri',sans-serif}
         <a href="#allBooksSection" onclick="closeMainMenu()" class="menu-link">📚 <span>সব বই</span></a>
         <a href="#categoryButtons" onclick="closeMainMenu()" class="menu-link">🗂️ <span>বইয়ের ক্যাটাগরি</span></a>
         <a href="#blogSection" onclick="closeMainMenu()" class="menu-link">✍️ <span>ব্লগ ও পোস্ট</span></a>
-        <a href="/wishlist.html" class="menu-link">❤️ <span>উইশলিস্ট</span><span id="wishlistCountBadge" class="ml-auto bg-red-500 text-white text-xs rounded-full px-2 py-0.5 hidden">0</span></a>
-        <a href="/cart.html" class="menu-link">🛒 <span>আমার কার্ট</span></a>
-        <a href="/inbox.html" class="menu-link">💬 <span>সব মেসেজ দেখুন</span></a>
+        <a href="/wishlist.html" onclick="closeMainMenu()" class="menu-link">❤️ <span>উইশলিস্ট</span><span id="wishlistCountBadge" class="ml-auto bg-red-500 text-white text-xs rounded-full px-2 py-0.5 hidden">0</span></a>
+        <a href="/cart.html" onclick="closeMainMenu()" class="menu-link">🛒 <span>আমার কার্ট</span></a>
+        <a href="/inbox.html" onclick="closeMainMenu()" class="menu-link">💬 <span>সব মেসেজ দেখুন</span></a>
+
+        <!-- NEW: AI CHAT -->
+        <a href="/ai-chat.html" onclick="closeMainMenu()" class="menu-link">
+            🤖 <span>AI Chat</span>
+            <span class="ml-auto text-[10px] bg-purple-100 text-purple-700 px-2 py-1 rounded-full">AI</span>
+        </a>
+
+        <!-- NEW: LIVE CUSTOMER SUPPORT -->
+        <a href="/live-chat.html" onclick="closeMainMenu()" class="menu-link">
+            🎧 <span>Live Chat — কাস্টমার সাপোর্ট</span>
+            <span class="ml-auto text-[10px] bg-green-100 text-green-700 px-2 py-1 rounded-full">Live</span>
+        </a>
 
         <button onclick="toggleDarkMode();closeMainMenu()" class="menu-link w-full text-left">🌙 <span>ডার্ক / লাইট মোড</span></button>
 
