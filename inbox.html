@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="bn">
 <head>
@@ -9,8 +10,10 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap');
         body { font-family: 'Hind Siliguri', sans-serif; }
+        .chat-message { overflow-wrap: anywhere; white-space: pre-wrap; }
     </style>
 </head>
+
 <body class="bg-gray-100 h-screen flex flex-col">
 
     <nav class="bg-white shadow-sm p-4 flex justify-between items-center flex-shrink-0">
@@ -18,24 +21,53 @@
         <h1 class="text-lg font-bold text-gray-800">আমার ইনবক্স</h1>
     </nav>
 
-    <div class="flex-grow flex overflow-hidden max-w-6xl mx-auto w-full">
-        <!-- বাম দিক: বন্ধুদের লিস্ট -->
-        <div class="w-1/3 border-r bg-white overflow-y-auto">
-            <div class="p-3 bg-gray-50 border-b font-bold text-sm">বন্ধুদের তালিকা</div>
+    <div class="flex-grow flex overflow-hidden max-w-6xl mx-auto w-full bg-white">
+
+        <!-- বন্ধুদের তালিকা -->
+        <div id="friendsPanel" class="w-full md:w-1/3 border-r bg-white overflow-y-auto flex-shrink-0">
+            <div class="p-3 bg-gray-50 border-b font-bold text-sm">
+                বন্ধুদের তালিকা
+            </div>
+
             <div id="friendList">
                 <p class="p-4 text-center text-gray-500 text-sm">লোড হচ্ছে...</p>
             </div>
         </div>
 
-        <!-- ডান দিক: চ্যাট বক্স -->
-        <div class="w-2/3 flex flex-col bg-white">
-            <div class="p-3 border-b bg-gray-50 font-bold text-sm" id="chatHeader">একজন বন্ধু সিলেক্ট করুন</div>
-            <div id="chatBox" class="flex-grow p-4 overflow-y-auto space-y-3 bg-gray-50">
-                <!-- মেসেজগুলো এখানে আসবে -->
+        <!-- চ্যাট বক্স -->
+        <div id="chatPanel" class="hidden md:flex w-full md:w-2/3 flex-col bg-white">
+
+            <div class="p-3 border-b bg-gray-50 font-bold text-sm flex items-center gap-3">
+                <button id="backToFriends"
+                    onclick="backToFriends()"
+                    class="md:hidden text-blue-600 text-xl font-bold">
+                    &larr;
+                </button>
+
+                <span id="chatHeader">একজন বন্ধু সিলেক্ট করুন</span>
             </div>
+
+            <div id="chatBox"
+                class="flex-grow p-4 overflow-y-auto space-y-3 bg-gray-50">
+                <p class="text-center text-gray-400 text-sm mt-10">
+                    চ্যাট শুরু করতে একজন বন্ধু নির্বাচন করুন।
+                </p>
+            </div>
+
             <div class="p-3 border-t flex gap-2">
-                <input type="text" id="messageInput" placeholder="মেসেজ লিখুন..." class="flex-grow px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" disabled>
-                <button onclick="sendMessage()" id="sendBtn" class="bg-blue-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-700 disabled:opacity-50" disabled>পাঠান</button>
+                <input type="text"
+                    id="messageInput"
+                    placeholder="মেসেজ লিখুন..."
+                    maxlength="5000"
+                    class="flex-grow min-w-0 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    disabled>
+
+                <button onclick="sendMessage()"
+                    id="sendBtn"
+                    class="bg-blue-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-700 disabled:opacity-50"
+                    disabled>
+                    পাঠান
+                </button>
             </div>
         </div>
     </div>
@@ -43,85 +75,360 @@
     <script>
         const SUPABASE_URL = 'https://jhbpaezbpkfwjfmazdcn.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_oBzutzPKvIvujmSG7icXug_SwwveL5g';
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        const supabaseClient = supabase.createClient(
+            SUPABASE_URL,
+            SUPABASE_ANON_KEY
+        );
 
         let currentUser = null;
         let selectedFriendId = null;
+        let selectedFriendName = '';
+        let friendsData = [];
+        let inboxRealtimeChannel = null;
+        let loadingMessages = false;
+
+        function escapeHTML(value) {
+            return String(value ?? '').replace(/[&<>'"]/g, char => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                "'": '&#39;',
+                '"': '&quot;'
+            }[char]));
+        }
+
+        function getAvatar(profile) {
+            return profile.profile_image ||
+                `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.full_name || 'User')}&background=random`;
+        }
 
         async function init() {
-            const { data: { session } } = await supabaseClient.auth.getSession();
-            if (!session) { window.location.href = '/login.html'; return; }
+            const { data: { session }, error } =
+                await supabaseClient.auth.getSession();
+
+            if (error || !session) {
+                window.location.href = '/login.html';
+                return;
+            }
+
             currentUser = session.user;
-            loadFriends();
+
+            await loadFriends();
+
+            subscribeToChatRealtime();
         }
 
         async function loadFriends() {
             const list = document.getElementById('friendList');
-            
-            // যাদের সাথে আমি বন্ধু (accepted) তাদের খোঁজা
+
             const { data: friends, error } = await supabaseClient
                 .from('friends')
                 .select('*')
                 .or(`sender_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`)
                 .eq('status', 'accepted');
 
-            if (error || !friends || friends.length === 0) {
-                list.innerHTML = `<p class="p-4 text-center text-gray-500 text-sm">আপনার কোনো বন্ধু নেই। ব্লগারদের প্রোফাইলে গিয়ে ফ্রেন্ড রিকোয়েস্ট পাঠান।</p>`;
+            if (error) {
+                console.error('Friends loading error:', error);
+                list.innerHTML = `
+                    <p class="p-4 text-center text-red-500 text-sm">
+                        বন্ধুদের তালিকা লোড করা যায়নি।
+                    </p>`;
                 return;
             }
 
-            const friendIds = friends.map(f => f.sender_id === currentUser.id ? f.receiver_id : f.sender_id);
+            if (!friends || friends.length === 0) {
+                list.innerHTML = `
+                    <p class="p-4 text-center text-gray-500 text-sm">
+                        আপনার কোনো বন্ধু নেই। ব্লগারদের প্রোফাইলে গিয়ে ফ্রেন্ড রিকোয়েস্ট পাঠান।
+                    </p>`;
+                return;
+            }
 
-            const { data: profiles } = await supabaseClient.from('profiles').select('*').in('id', friendIds);
+            const friendIds = [
+                ...new Set(
+                    friends.map(f =>
+                        f.sender_id === currentUser.id
+                            ? f.receiver_id
+                            : f.sender_id
+                    )
+                )
+            ];
 
-            list.innerHTML = profiles.map(p => `
-                <div onclick="selectFriend('${p.id}', '${p.full_name}')" class="p-3 border-b hover:bg-blue-50 cursor-pointer flex items-center gap-3">
-                    <img src="${p.profile_image || 'https://via.placeholder.com/40'}" class="w-10 h-10 rounded-full object-cover">
-                    <span class="font-bold text-sm text-gray-800">${p.full_name}</span>
-                </div>
-            `).join('');
-        }
+            const { data: profiles, error: profileError } =
+                await supabaseClient
+                    .from('profiles')
+                    .select('id, full_name, profile_image')
+                    .in('id', friendIds);
 
-        window.selectFriend = (id, name) => {
-            selectedFriendId = id;
-            document.getElementById('chatHeader').innerText = name;
-            document.getElementById('messageInput').disabled = false;
-            document.getElementById('sendBtn').disabled = false;
-            loadMessages();
-        }
+            if (profileError || !profiles) {
+                list.innerHTML = `
+                    <p class="p-4 text-center text-red-500 text-sm">
+                        প্রোফাইল লোড করা যায়নি।
+                    </p>`;
+                return;
+            }
 
-        async function loadMessages() {
-            if (!selectedFriendId) return;
-            const box = document.getElementById('chatBox');
-            
-            const { data: messages } = await supabaseClient.from('messages')
-                .select('*')
-                .or(`and(sender_id.eq.${currentUser.id},receiver_id.eq.${selectedFriendId}),and(sender_id.eq.${selectedFriendId},receiver_id.eq.${currentUser.id})`)
-                .order('created_at', { ascending: true });
+            friendsData = profiles;
 
-            box.innerHTML = messages.map(m => {
-                const isMe = m.sender_id === currentUser.id;
+            list.innerHTML = profiles.map(profile => {
+                const name = profile.full_name || 'ব্যবহারকারী';
+                const image = getAvatar(profile);
+
                 return `
-                <div class="flex ${isMe ? 'justify-end' : 'justify-start'}">
-                    <div class="max-w-[75%] px-4 py-2 rounded-xl text-sm ${isMe ? 'bg-blue-600 text-white rounded-tr-none' : 'bg-gray-200 text-gray-800 rounded-tl-none'}">
-                        ${m.message}
-                    </div>
-                </div>
+                    <button type="button"
+                        onclick="selectFriend('${profile.id}')"
+                        id="friend-${profile.id}"
+                        class="w-full text-left p-3 border-b hover:bg-blue-50 transition flex items-center gap-3">
+
+                        <img src="${escapeHTML(image)}"
+                            onerror="this.src='https://via.placeholder.com/40'"
+                            class="w-10 h-10 rounded-full object-cover flex-shrink-0">
+
+                        <span class="font-bold text-sm text-gray-800">
+                            ${escapeHTML(name)}
+                        </span>
+                    </button>
                 `;
             }).join('');
-            
-            box.scrollTop = box.scrollHeight;
+
+            // URL-এ user ID থাকলে সেই বন্ধুর চ্যাট খুলবে
+            const urlParams = new URLSearchParams(window.location.search);
+            const targetUserId = urlParams.get('user');
+
+            if (targetUserId) {
+                const targetFriend = profiles.find(
+                    p => p.id === targetUserId
+                );
+
+                if (targetFriend) {
+                    await selectFriend(targetFriend.id);
+                } else {
+                    document.getElementById('chatBox').innerHTML = `
+                        <p class="text-center text-red-500 mt-10">
+                            এই ব্যবহারকারী আপনার বন্ধু তালিকায় নেই।
+                        </p>`;
+                    showChatPanel();
+                }
+            }
+        }
+
+        window.selectFriend = async (id) => {
+            const friend = friendsData.find(p => p.id === id);
+            if (!friend) return;
+
+            selectedFriendId = id;
+            selectedFriendName = friend.full_name || 'ব্যবহারকারী';
+
+            document.getElementById('chatHeader').innerText =
+                selectedFriendName;
+
+            document.getElementById('messageInput').disabled = false;
+            document.getElementById('sendBtn').disabled = false;
+
+            document.querySelectorAll('[id^="friend-"]').forEach(el => {
+                el.classList.remove('bg-blue-100');
+            });
+
+            document.getElementById('friend-' + id)
+                ?.classList.add('bg-blue-100');
+
+            showChatPanel();
+
+            await loadMessages();
+
+            // URL আপডেট, যাতে নির্দিষ্ট চ্যাটের লিংক ব্যবহার করা যায়
+            const newUrl = '/inbox.html?user=' + encodeURIComponent(id);
+            window.history.replaceState({}, '', newUrl);
+        };
+
+        function showChatPanel() {
+            const friendsPanel = document.getElementById('friendsPanel');
+            const chatPanel = document.getElementById('chatPanel');
+
+            friendsPanel.classList.add('hidden', 'md:block');
+            chatPanel.classList.remove('hidden');
+            chatPanel.classList.add('flex');
+        }
+
+        window.backToFriends = () => {
+            document.getElementById('friendsPanel')
+                .classList.remove('hidden');
+
+            document.getElementById('chatPanel')
+                .classList.add('hidden');
+
+            selectedFriendId = null;
+
+            document.getElementById('messageInput').disabled = true;
+            document.getElementById('sendBtn').disabled = true;
+
+            const newUrl = '/inbox.html';
+            window.history.replaceState({}, '', newUrl);
+        };
+
+        async function loadMessages() {
+            if (!selectedFriendId || !currentUser || loadingMessages) return;
+
+            loadingMessages = true;
+
+            const box = document.getElementById('chatBox');
+
+            try {
+                const friendId = selectedFriendId;
+
+                const { data: messages, error } = await supabaseClient
+                    .from('messages')
+                    .select('*')
+                    .or(
+                        `and(sender_id.eq.${currentUser.id},receiver_id.eq.${friendId}),and(sender_id.eq.${friendId},receiver_id.eq.${currentUser.id})`
+                    )
+                    .order('created_at', { ascending: true });
+
+                if (error) throw error;
+
+                if (friendId !== selectedFriendId) return;
+
+                if (!messages || messages.length === 0) {
+                    box.innerHTML = `
+                        <p class="text-center text-gray-400 text-sm mt-10">
+                            এখনো কোনো মেসেজ নেই। প্রথম মেসেজ পাঠান।
+                        </p>`;
+                } else {
+                    box.innerHTML = messages.map(message => {
+                        const isMe = message.sender_id === currentUser.id;
+
+                        return `
+                            <div class="flex ${isMe ? 'justify-end' : 'justify-start'}">
+                                <div class="max-w-[85%] md:max-w-[75%] px-4 py-2 rounded-xl text-sm chat-message ${
+                                    isMe
+                                        ? 'bg-blue-600 text-white rounded-tr-none'
+                                        : 'bg-gray-200 text-gray-800 rounded-tl-none'
+                                }">
+                                    ${escapeHTML(message.message)}
+                                    <div class="text-[10px] mt-1 ${
+                                        isMe ? 'text-blue-100' : 'text-gray-500'
+                                    }">
+                                        ${new Date(message.created_at).toLocaleTimeString(
+                                            'bn-BD',
+                                            { hour: '2-digit', minute: '2-digit' }
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                }
+
+                box.scrollTop = box.scrollHeight;
+
+                // নির্বাচিত বন্ধুর অপঠিত মেসেজ Read করা
+                const { error: readError } = await supabaseClient
+                    .from('messages')
+                    .update({ is_read: true })
+                    .eq('sender_id', friendId)
+                    .eq('receiver_id', currentUser.id)
+                    .eq('is_read', false);
+
+                if (readError) {
+                    console.error('Read status update error:', readError);
+                }
+
+            } catch (error) {
+                console.error('Message loading error:', error);
+
+                box.innerHTML = `
+                    <p class="text-center text-red-500 text-sm mt-10">
+                        মেসেজ লোড করা যায়নি।
+                    </p>`;
+            } finally {
+                loadingMessages = false;
+            }
         }
 
         window.sendMessage = async () => {
             const input = document.getElementById('messageInput');
+            const btn = document.getElementById('sendBtn');
+
             const msg = input.value.trim();
+
             if (!msg || !selectedFriendId) return;
 
+            const receiverId = selectedFriendId;
+
+            input.disabled = true;
+            btn.disabled = true;
+
+            const { error } = await supabaseClient
+                .from('messages')
+                .insert([{
+                    sender_id: currentUser.id,
+                    receiver_id: receiverId,
+                    message: msg
+                }]);
+
+            input.disabled = false;
+            btn.disabled = false;
+
+            if (error) {
+                alert('মেসেজ পাঠানো যায়নি: ' + error.message);
+                return;
+            }
+
             input.value = '';
-            await supabaseClient.from('messages').insert([{ sender_id: currentUser.id, receiver_id: selectedFriendId, message: msg }]);
-            loadMessages();
+            input.focus();
+
+            await loadMessages();
+        };
+
+        // Enter চাপলে মেসেজ পাঠানো
+        document.getElementById('messageInput')
+            .addEventListener('keydown', event => {
+                if (event.key === 'Enter' && !event.shiftKey) {
+                    event.preventDefault();
+                    sendMessage();
+                }
+            });
+
+        // Realtime: নতুন মেসেজ এলে চ্যাট আপডেট
+        function subscribeToChatRealtime() {
+            if (!currentUser) return;
+
+            if (inboxRealtimeChannel) {
+                supabaseClient.removeChannel(inboxRealtimeChannel);
+            }
+
+            inboxRealtimeChannel = supabaseClient
+                .channel('chat-realtime-' + currentUser.id)
+                .on(
+                    'postgres_changes',
+                    {
+                        event: '*',
+                        schema: 'public',
+                        table: 'messages',
+                        filter: 'receiver_id=eq.' + currentUser.id
+                    },
+                    async payload => {
+                        const message = payload.new;
+
+                        if (
+                            selectedFriendId &&
+                            message &&
+                            message.sender_id === selectedFriendId
+                        ) {
+                            await loadMessages();
+                        }
+                    }
+                )
+                .subscribe();
         }
+
+        // পেজ ছাড়ার আগে Realtime বন্ধ
+        window.addEventListener('beforeunload', () => {
+            if (inboxRealtimeChannel) {
+                supabaseClient.removeChannel(inboxRealtimeChannel);
+            }
+        });
 
         init();
     </script>
