@@ -2,55 +2,50 @@
 <html lang="bn">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ডেটাবেজ কানেকশন টেস্ট</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- সুপাবেইস সিডিএন -->
+    <title>Test Page</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body class="bg-gray-100 p-8">
-    <div class="max-w-2xl mx-auto bg-white p-6 rounded-xl shadow-md">
-        <h1 class="text-2xl font-bold text-blue-600 mb-4">সুপাবেইস ব্লগ ডেটা টেস্ট</h1>
-        <button onclick="testDatabase()" class="bg-blue-600 text-white px-4 py-2 rounded font-bold hover:bg-blue-700 mb-4">ডেটা ফেচ করে দেখুন</button>
-        <div id="result" class="p-4 bg-gray-50 border rounded text-sm font-mono whitespace-pre-wrap">ফলাফল এখানে দেখা যাবে...</div>
-    </div>
+<body style="font-family: sans-serif; padding: 20px; background: #f0f0f0;">
+    <h1>ডেটাবেস টেস্ট</h1>
+    <div id="output" style="background: white; padding: 15px; border-radius: 8px; white-space: pre-wrap;">লোড হচ্ছে...</div>
 
     <script>
         const SUPABASE_URL = 'https://jhbpaezbpkfwjfmazdcn.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_oBzutzPKvIvujmSG7icXug_SwwveL5g';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        async function testDatabase() {
-            const resultDiv = document.getElementById('result');
-            resultDiv.innerText = "ডেটা লোড হচ্ছে...";
-
-            try {
-                // সরাসরি blogs টেবিল থেকে সমস্ত ডেটা কোয়েরি করা
-                const { data, error } = await supabaseClient
-                    .from('blogs')
-                    .select('*')
-                    .order('created_at', { ascending: false });
-
-                if (error) {
-                    throw error;
-                }
-
-                if (!data || data.length === 0) {
-                    resultDiv.innerText = "ডেটাবেজে কোনো ব্লগ বা ডেটা পাওয়া যায়নি!";
-                    return;
-                }
-
-                console.log("Fetched Blogs Data:", data);
-                resultDiv.innerText = `সফলভাবে ডেটা পাওয়া গেছে! মোট রো (Rows): ${data.length}\n\n` + JSON.stringify(data, null, 2);
-
-            } catch (err) {
-                console.error("Database Error:", err);
-                resultDiv.innerText = "ত্রুটি ঘটেছে: " + (err.message || JSON.stringify(err));
+        async function runTest() {
+            let output = "";
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            
+            if (!session) {
+                output += "❌ আপনি লগইন করা নেই!\n\n";
+            } else {
+                output += `✅ আপনি লগইন আছেন (ID: ${session.user.id})\n\n`;
             }
+
+            // ১. মেসেজ চেক
+            const { data: messages, error: msgErr } = await supabaseClient.from('messages').select('*');
+            if (msgErr) {
+                output += `❌ মেসেজ টেবিল এরর: ${msgErr.message}\n\n`;
+            } else {
+                output += `✅ মোট মেসেজ পাওয়া গেছে: ${messages.length} টি\n`;
+                output += `মেসেজ ডেটা: ${JSON.stringify(messages, null, 2)}\n\n`;
+            }
+
+            // ২. বই চেক
+            const { data: books, error: bookErr } = await supabaseClient.from('books').select('id, title, stock_quantity');
+            if (bookErr) {
+                output += `❌ বই টেবিল এরর: ${bookErr.message}\n\n`;
+            } else {
+                output += `✅ মোট বই পাওয়া গেছে: ${books.length} টি\n`;
+                output += `বইয়ের স্টক ডেটা: ${JSON.stringify(books, null, 2)}\n\n`;
+            }
+
+            document.getElementById('output').innerText = output;
         }
 
-        // পেজ লোড হওয়ামাত্র অটো টেস্ট রান করবে
-        window.onload = testDatabase;
+        runTest();
     </script>
 </body>
 </html>
