@@ -1,212 +1,151 @@
-
 <!DOCTYPE html>
 <html lang="bn" class="scroll-smooth">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title id="pageTitle">Boi Chokro - অনলাইন বইঘর</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>tailwind.config = { darkMode: 'class' }</script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title id="pageTitle">Boi Chokro - অনলাইন বইঘর</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config={darkMode:'class'}</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap');
-        body { font-family: 'Hind Siliguri', sans-serif; }
-        .hide-scrollbar::-webkit-scrollbar { display: none; }
-        .line-clamp-2 {
-            display: -webkit-box; -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical; overflow: hidden;
-        }
-        .line-clamp-3 {
-            display: -webkit-box; -webkit-line-clamp: 3;
-            -webkit-box-orient: vertical; overflow: hidden;
-        }
-        .card-shadow { box-shadow: 0 4px 20px rgba(0,0,0,.05); transition: all .3s ease; }
-        .dark .card-shadow { box-shadow: 0 4px 20px rgba(0,0,0,.3); }
-        .card-shadow:hover { transform: translateY(-4px); box-shadow: 0 10px 35px rgba(0,0,0,.12); }
-        .search-dropdown-custom {
-            z-index: 99999 !important; position: absolute; top: 100%;
-            left: 0; width: 100%; margin-top: .5rem;
-        }
-        @keyframes slideInRight {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-        .toast-animate { animation: slideInRight .3s ease-out forwards; }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: scale(.95); }
-            to { opacity: 1; transform: scale(1); }
-        }
-        .modal-animate { animation: fadeIn .25s ease-out forwards; }
-        .wishlist-btn { color: #6b7280; transition: transform .2s ease, color .2s ease; }
-        .wishlist-btn svg { width: 20px; height: 20px; display: block; transition: all .2s ease; }
-        .wishlist-btn svg path { transition: fill .2s ease, stroke .2s ease; }
-        .wishlist-btn.wishlist-active { color: #dc2626 !important; }
-        .wishlist-btn.wishlist-active svg path { fill: #dc2626 !important; stroke: #dc2626 !important; }
-
-        .inbox-wrapper { position: relative; }
-        .inbox-dropdown {
-            position: absolute; right: 0; top: calc(100% + 12px);
-            width: min(340px, 88vw); max-height: 430px; overflow-y: auto;
-            z-index: 99999;
-        }
-        .inbox-item { display: flex; gap: 10px; padding: 12px; cursor: pointer; }
-        .inbox-item:hover { background: rgba(59,130,246,.08); }
-        .inbox-item img { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
-
-        @media (max-width: 767px) {
-            .inbox-dropdown {
-                position: fixed !important;
-                top: 68px !important;
-                left: 8px !important;
-                right: 8px !important;
-                width: auto !important;
-                max-width: 500px;
-                max-height: 70vh !important;
-                margin-left: auto;
-                margin-right: auto;
-            }
-            #notifDropdown, #notifDropdownMobile {
-                position: fixed !important;
-                top: 68px !important;
-                left: 8px !important;
-                right: 8px !important;
-                width: auto !important;
-                max-width: 500px;
-                max-height: 70vh !important;
-                overflow-y: auto;
-                z-index: 999999 !important;
-            }
-        }
-    </style>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap');
+body{font-family:'Hind Siliguri',sans-serif}
+.hide-scrollbar::-webkit-scrollbar{display:none}
+.line-clamp-2{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.line-clamp-3{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.card-shadow{box-shadow:0 4px 20px rgba(0,0,0,.05);transition:all .3s ease}
+.dark .card-shadow{box-shadow:0 4px 20px rgba(0,0,0,.3)}
+.card-shadow:hover{transform:translateY(-4px);box-shadow:0 10px 35px rgba(0,0,0,.12)}
+.search-dropdown-custom{z-index:99999!important;position:absolute;top:100%;left:0;width:100%;margin-top:.5rem}
+@keyframes slideInRight{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+.toast-animate{animation:slideInRight .3s ease-out forwards}
+@keyframes fadeIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
+.modal-animate{animation:fadeIn .25s ease-out forwards}
+.wishlist-btn{color:#6b7280;transition:transform .2s ease,color .2s ease}
+.wishlist-btn svg{width:20px;height:20px;display:block}
+.wishlist-btn.wishlist-active{color:#dc2626!important}
+.wishlist-btn.wishlist-active svg path{fill:#dc2626!important;stroke:#dc2626!important}
+.inbox-wrapper{position:relative}
+.inbox-dropdown{position:absolute;right:0;top:calc(100% + 12px);width:min(340px,88vw);max-height:430px;overflow-y:auto;z-index:99999}
+.inbox-item{display:flex;gap:10px;padding:12px;cursor:pointer}
+.inbox-item:hover{background:rgba(59,130,246,.08)}
+.inbox-item img{width:42px;height:42px;border-radius:50%;object-fit:cover;flex-shrink:0}
+#mainMenuDropdown{position:absolute;right:12px;top:calc(100% + 8px);width:min(340px,calc(100vw - 24px));max-height:calc(100vh - 90px);overflow-y:auto;z-index:999999}
+.menu-link{display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:9px;font-size:14px;font-weight:600;color:#374151}
+.dark .menu-link{color:#e5e7eb}
+.menu-link:hover{background:#eff6ff;color:#2563eb}
+.dark .menu-link:hover{background:#374151;color:#93c5fd}
+@media(max-width:767px){
+.inbox-dropdown{position:fixed!important;top:68px!important;left:8px!important;right:8px!important;width:auto!important;max-width:500px;max-height:70vh!important;margin:auto}
+#notifDropdown,#notifDropdownMobile{position:fixed!important;top:68px!important;left:8px!important;right:8px!important;width:auto!important;max-width:500px;max-height:70vh!important;overflow-y:auto;z-index:999999!important}
+#mainMenuDropdown{position:fixed;top:65px;right:8px;max-height:calc(100vh - 80px)}
+}
+</style>
 </head>
 
 <body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 transition-colors duration-300 min-h-screen flex flex-col">
 
 <div id="toast-container" class="fixed top-20 right-4 md:right-10 z-[100] flex flex-col gap-3 pointer-events-none"></div>
 
-<!-- NAVIGATION -->
+<!-- HEADER -->
 <nav class="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-50 transition-colors duration-300 no-print">
-    <div class="max-w-7xl mx-auto px-3 sm:px-4 py-3 flex flex-col md:flex-row justify-between items-center gap-3 md:gap-0">
+<div class="max-w-7xl mx-auto px-3 sm:px-4 py-3 flex justify-between items-center relative">
 
-        <div class="flex justify-between items-center w-full md:w-auto">
-            <a href="/" class="flex items-center gap-2 group">
-                <img id="web_header_logo" src="" class="hidden h-8 sm:h-10 w-auto max-w-[40px] object-contain">
-                <span id="web_header_name" class="text-xl sm:text-2xl font-extrabold text-blue-600 dark:text-blue-400 tracking-tight">Boi Chokro</span>
-            </a>
+    <a href="/" class="flex items-center gap-2 group min-w-0">
+        <img id="web_header_logo" src="" class="hidden h-8 sm:h-10 w-auto max-w-[40px] object-contain">
+        <span id="web_header_name" class="text-xl sm:text-2xl font-extrabold text-blue-600 dark:text-blue-400 tracking-tight">Boi Chokro</span>
+    </a>
 
-            <div class="flex items-center gap-2 md:hidden">
-                <div id="authButtonsMobile" class="flex items-center gap-1 text-xs"></div>
+    <div class="flex items-center gap-2 sm:gap-4">
 
-                <!-- MOBILE INBOX -->
-                <div class="inbox-wrapper">
-                    <button type="button" onclick="toggleInboxDropdown('mobile')" class="relative text-gray-500 p-1.5">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
-                        </svg>
-                        <span id="msgBadgeMobile" class="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold rounded-full h-4 min-w-4 px-1 flex items-center justify-center hidden">0</span>
-                    </button>
-                    <div id="msgDropdownMobile" class="inbox-dropdown hidden bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700">
-                        <div class="p-3 flex justify-between items-center border-b dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
-                            <strong class="text-sm">নতুন মেসেজ</strong>
-                            <a href="/inbox.html" class="text-xs text-blue-600 font-bold">সব দেখুন</a>
-                        </div>
-                        <div id="msgListMobile">
-                            <div class="p-5 text-center text-sm text-gray-500">লোড হচ্ছে...</div>
-                        </div>
-                    </div>
-                </div>
-
-                <button onclick="toggleNotifications()" class="relative text-gray-500 p-1.5">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
-                    </svg>
-                    <span id="notifBadgeMobile" class="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center hidden">0</span>
-                </button>
-
-                <button onclick="toggleDarkMode()" class="text-gray-500 p-1.5">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
-                    </svg>
-                </button>
-
-                <a href="/cart.html" class="relative flex items-center bg-blue-50 dark:bg-gray-700 text-blue-600 dark:text-blue-400 px-2 py-1 rounded-lg border border-blue-100 dark:border-gray-600">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
-                    </svg>
-                    <span id="cartCountMobile" class="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center border border-white">0</span>
-                </a>
+        <!-- NOTIFICATION -->
+        <div class="relative">
+            <button type="button" onclick="toggleNotifications()" aria-label="নোটিফিকেশন" class="relative p-2 text-gray-600 dark:text-gray-300 hover:text-blue-600 transition">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                </svg>
+                <span id="notifBadge" class="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold rounded-full h-4 min-w-4 px-1 flex items-center justify-center hidden">0</span>
+            </button>
+            <div id="notifDropdown" class="hidden absolute right-0 mt-2 w-72 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-50 max-h-80 overflow-y-auto">
+                <div class="p-3 bg-gray-50 dark:bg-gray-900 border-b dark:border-gray-700 font-bold text-sm">নোটিফিকেশন</div>
+                <div id="notifList" class="divide-y divide-gray-100 dark:divide-gray-700"></div>
             </div>
         </div>
 
-        <div class="hidden md:block w-full md:w-1/3 relative group">
-            <input type="text" id="searchInput" placeholder="বই, লেখক বা প্রকাশনী খুঁজুন..." class="w-full pl-10 pr-4 py-2.5 bg-gray-100 dark:bg-gray-700 border-transparent rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-white transition shadow-inner text-sm" oninput="handleSearch('desktop')">
-            <svg xmlns="http://www.w3.org/2000/svg" class="absolute left-3.5 top-3 h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <!-- INBOX -->
+        <div class="inbox-wrapper">
+            <button type="button" onclick="toggleInboxDropdown('desktop')" aria-label="ইনবক্স" class="relative p-2 text-gray-600 dark:text-gray-300 hover:text-blue-600 transition">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
+                </svg>
+                <span id="msgBadge" class="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold rounded-full h-4 min-w-4 px-1 flex items-center justify-center hidden">0</span>
+            </button>
+            <div id="msgDropdown" class="inbox-dropdown hidden bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700">
+                <div class="p-3 flex justify-between items-center border-b dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+                    <strong class="text-sm">নতুন মেসেজ</strong>
+                    <a href="/inbox.html" class="text-xs text-blue-600 font-bold">সব দেখুন</a>
+                </div>
+                <div id="msgList"><div class="p-5 text-center text-sm text-gray-500">লোড হচ্ছে...</div></div>
+            </div>
+        </div>
+
+        <!-- CART -->
+        <a href="/cart.html" aria-label="কার্ট" class="relative flex items-center gap-1.5 bg-blue-50 dark:bg-gray-700 text-blue-600 dark:text-blue-400 px-2 sm:px-4 py-2 rounded-lg border border-blue-100 dark:border-gray-600">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+            </svg>
+            <span class="hidden sm:inline text-sm font-semibold">কার্ট</span>
+            <span id="cartCountDesktop" class="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center border border-white">0</span>
+        </a>
+
+        <!-- HAMBURGER -->
+        <button type="button" onclick="toggleMainMenu()" aria-label="মেনু" aria-expanded="false" id="mainMenuButton" class="p-2 rounded-lg text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition">
+            <svg id="menuIcon" xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+            </svg>
+        </button>
+    </div>
+
+    <!-- HAMBURGER MENU -->
+    <div id="mainMenuDropdown" class="hidden bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 p-3">
+        <div class="px-2 pt-1 pb-3 border-b border-gray-100 dark:border-gray-700 mb-2">
+            <p class="font-bold text-gray-900 dark:text-white">Boi Chokro মেনু</p>
+            <p id="menuUserInfo" class="text-xs text-gray-500 mt-1">বইয়ের জগতে স্বাগতম</p>
+        </div>
+
+        <div class="relative mb-3">
+            <input type="text" id="searchInput" placeholder="বই, লেখক বা প্রকাশনী খুঁজুন..." class="w-full pl-10 pr-3 py-2.5 bg-gray-100 dark:bg-gray-700 border-transparent rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-white text-sm" oninput="handleSearch('menu')">
+            <svg xmlns="http://www.w3.org/2000/svg" class="absolute left-3 top-3 h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
             </svg>
-            <div id="searchResultsDropdown" class="hidden search-dropdown-custom bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-100 dark:border-gray-700 max-h-96 overflow-y-auto"></div>
+            <div id="searchResultsDropdown" class="hidden search-dropdown-custom bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-100 dark:border-gray-700 max-h-72 overflow-y-auto"></div>
         </div>
 
-        <div class="hidden md:flex items-center gap-4">
-            <div class="relative">
-                <button onclick="toggleNotifications()" class="relative p-2 text-gray-600 dark:text-gray-300 hover:text-blue-600 transition">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
-                    </svg>
-                    <span id="notifBadge" class="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center hidden">0</span>
-                </button>
-                <div id="notifDropdown" class="hidden absolute right-0 mt-2 w-72 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-50 max-h-80 overflow-y-auto">
-                    <div class="p-3 bg-gray-50 dark:bg-gray-900 border-b dark:border-gray-700 font-bold text-sm rounded-t-lg">নোটিফিকেশন</div>
-                    <div id="notifList" class="divide-y divide-gray-100 dark:divide-gray-700"></div>
-                </div>
-            </div>
+        <a href="#allBooksSection" onclick="closeMainMenu()" class="menu-link">📚 <span>সব বই</span></a>
+        <a href="#categoryButtons" onclick="closeMainMenu()" class="menu-link">🗂️ <span>বইয়ের ক্যাটাগরি</span></a>
+        <a href="#blogSection" onclick="closeMainMenu()" class="menu-link">✍️ <span>ব্লগ ও পোস্ট</span></a>
+        <a href="/wishlist.html" class="menu-link">❤️ <span>উইশলিস্ট</span><span id="wishlistCountBadge" class="ml-auto bg-red-500 text-white text-xs rounded-full px-2 py-0.5 hidden">0</span></a>
+        <a href="/cart.html" class="menu-link">🛒 <span>আমার কার্ট</span></a>
+        <a href="/inbox.html" class="menu-link">💬 <span>সব মেসেজ দেখুন</span></a>
 
-            <!-- DESKTOP INBOX -->
-            <div class="inbox-wrapper">
-                <button type="button" onclick="toggleInboxDropdown('desktop')" class="relative p-2 text-gray-600 dark:text-gray-300 hover:text-blue-600 transition">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
-                    </svg>
-                    <span id="msgBadge" class="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold rounded-full h-4 min-w-4 px-1 flex items-center justify-center hidden">0</span>
-                </button>
-                <div id="msgDropdown" class="inbox-dropdown hidden bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700">
-                    <div class="p-3 flex justify-between items-center border-b dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
-                        <strong class="text-sm">নতুন মেসেজ</strong>
-                        <a href="/inbox.html" class="text-xs text-blue-600 font-bold">সব দেখুন</a>
-                    </div>
-                    <div id="msgList">
-                        <div class="p-5 text-center text-sm text-gray-500">লোড হচ্ছে...</div>
-                    </div>
-                </div>
-            </div>
+        <button onclick="toggleDarkMode();closeMainMenu()" class="menu-link w-full text-left">🌙 <span>ডার্ক / লাইট মোড</span></button>
 
-            <a href="/wishlist.html" class="relative text-red-500 hover:text-red-600 p-2" title="উইশলিস্ট">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
-                </svg>
-                <span id="wishlistCountBadge" class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center hidden">0</span>
-            </a>
-
-            <button onclick="toggleDarkMode()" class="text-gray-500 dark:text-gray-400 hover:text-blue-600 transition p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
-                </svg>
-            </button>
-
-            <a href="/cart.html" class="relative flex items-center gap-1.5 bg-blue-50 dark:bg-gray-700 text-blue-600 dark:text-blue-400 hover:bg-blue-100 px-4 py-2 rounded-lg font-semibold transition border border-blue-100 dark:border-gray-600">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
-                </svg>
-                <span class="text-sm">কার্ট</span>
-                <span id="cartCountDesktop" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center border-2 border-white">0</span>
-            </a>
-
-            <div id="authButtonsDesktop" class="flex items-center gap-2 text-sm"></div>
-        </div>
+        <div id="authButtonsDesktop" class="border-t border-gray-100 dark:border-gray-700 mt-2 pt-2"></div>
     </div>
+</div>
 </nav>
 
-<!-- MOBILE NOTIFICATION DROPDOWN -->
+<!-- MOBILE INBOX -->
+<div id="msgDropdownMobile" class="inbox-dropdown hidden bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700">
+    <div class="p-3 flex justify-between items-center border-b dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+        <strong class="text-sm">নতুন মেসেজ</strong>
+        <a href="/inbox.html" class="text-xs text-blue-600 font-bold">সব দেখুন</a>
+    </div>
+    <div id="msgListMobile"><div class="p-5 text-center text-sm text-gray-500">লোড হচ্ছে...</div></div>
+</div>
+
+<!-- MOBILE NOTIFICATION -->
 <div id="notifDropdownMobile" class="hidden bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700">
     <div class="p-3 bg-gray-50 dark:bg-gray-900 border-b dark:border-gray-700 font-bold text-sm">নোটিফিকেশন</div>
     <div id="notifListMobile" class="divide-y divide-gray-100 dark:divide-gray-700"></div>
@@ -219,7 +158,6 @@
     <div class="relative z-50 text-center px-4 w-full max-w-4xl mx-auto py-8">
         <h1 id="web_tagline" class="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-4 tracking-tight drop-shadow-lg">আপনার পছন্দের বই, এক জায়গায়</h1>
         <p id="web_sub_tagline" class="text-sm sm:text-base md:text-lg text-gray-200 max-w-2xl mx-auto mb-8 drop-shadow">সেরা লেখকদের বইয়ের বিশাল সংগ্রহ। আজই আপনার প্রিয় বইটি খুঁজে নিন।</p>
-
         <div class="md:hidden max-w-md mx-auto relative group z-[99999]">
             <input type="text" id="searchInputMobile" placeholder="বই খুঁজুন..." class="w-full pl-10 pr-4 py-3 bg-white/20 backdrop-blur-md border border-white/30 text-white placeholder-gray-200 rounded-full focus:outline-none focus:bg-white focus:text-gray-800 transition shadow-lg text-sm" oninput="handleSearch('mobile')">
             <svg xmlns="http://www.w3.org/2000/svg" class="absolute left-3.5 top-3.5 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -243,9 +181,9 @@
     </section>
 
     <section id="blogSection" class="mt-16 mb-12">
-        <div class="flex justify-between items-center mb-6">
-            <h2 class="text-3xl font-bold text-gray-900 dark:text-white border-l-4 border-blue-600 pl-3">ব্লগ ও পোস্ট সমূহ</h2>
-            <button onclick="document.getElementById('writeBlogForm').classList.toggle('hidden')" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-700 transition">✍️ নতুন পোস্ট লিখুন</button>
+        <div class="flex justify-between items-center mb-6 gap-2">
+            <h2 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white border-l-4 border-blue-600 pl-3">ব্লগ ও পোস্ট সমূহ</h2>
+            <button onclick="document.getElementById('writeBlogForm').classList.toggle('hidden')" class="bg-blue-600 text-white px-3 sm:px-4 py-2 rounded-lg font-bold hover:bg-blue-700 transition text-sm whitespace-nowrap">✍️ নতুন পোস্ট</button>
         </div>
 
         <div id="writeBlogForm" class="hidden bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md mb-8 border border-gray-100 dark:border-gray-700">
@@ -260,7 +198,6 @@
                 <button onclick="submitBlog()" id="submitBlogBtn" class="bg-green-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-green-700 transition">সাবমিট করুন</button>
             </div>
         </div>
-
         <div id="blogList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <p class="text-gray-500 col-span-full text-center">পোস্ট লোড হচ্ছে...</p>
         </div>
@@ -268,9 +205,9 @@
 </main>
 
 <!-- POST MODAL -->
-<div id="postDetailsModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+<div id="postDetailsModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[100000] flex items-center justify-center hidden p-4">
     <div class="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl relative modal-animate">
-        <button onclick="closePostModal()" class="absolute top-4 right-4 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-red-500 hover:text-white h-8 w-8 rounded-full flex items-center justify-center font-bold transition">✕</button>
+        <button onclick="closePostModal()" class="absolute top-4 right-4 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-red-500 hover:text-white h-8 w-8 rounded-full flex items-center justify-center font-bold transition z-10">✕</button>
         <div id="modalBodyContent" class="p-6 space-y-4"></div>
     </div>
 </div>
@@ -283,1201 +220,736 @@
 </footer>
 
 <script>
-const SUPABASE_URL = 'https://jhbpaezbpkfwjfmazdcn.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_oBzutzPKvIvujmSG7icXug_SwwveL5g';
-const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const SUPABASE_URL='https://jhbpaezbpkfwjfmazdcn.supabase.co';
+const SUPABASE_ANON_KEY='sb_publishable_oBzutzPKvIvujmSG7icXug_SwwveL5g';
+const supabaseClient=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
 
-let currentUser = null;
-let allBooksData = [];
-let filteredBooksData = [];
-let messageRealtimeChannel = null;
-let notificationRealtimeChannel = null;
+let currentUser=null;
+let allBooksData=[];
+let filteredBooksData=[];
+let messageRealtimeChannel=null;
+let notificationRealtimeChannel=null;
 
 /* COMMON */
-window.showToast = (message, isError = false) => {
-    const container = document.getElementById('toast-container');
-    const toast = document.createElement('div');
-    toast.className = `toast-animate px-5 py-4 rounded-lg shadow-2xl text-white font-bold flex items-center gap-3 ${isError ? 'bg-red-600 border-l-4 border-red-800' : 'bg-green-600 border-l-4 border-green-800'}`;
-    toast.innerHTML = `<span class="text-2xl">${isError ? '⚠️' : '✅'}</span><span class="text-sm md:text-base pr-2">${escapeHTML(message)}</span>`;
+window.showToast=(message,isError=false)=>{
+    const container=document.getElementById('toast-container');
+    const toast=document.createElement('div');
+    toast.className=`toast-animate px-5 py-4 rounded-lg shadow-2xl text-white font-bold flex items-center gap-3 ${isError?'bg-red-600 border-l-4 border-red-800':'bg-green-600 border-l-4 border-green-800'}`;
+    toast.innerHTML=`<span class="text-2xl">${isError?'⚠️':'✅'}</span><span class="text-sm md:text-base pr-2">${escapeHTML(message)}</span>`;
     container.appendChild(toast);
-    setTimeout(() => {
-        toast.style.opacity = '0';
-        toast.style.transform = 'translateX(100%)';
-        toast.style.transition = 'all 0.3s ease';
-        setTimeout(() => toast.remove(), 300);
-    }, 4000);
+    setTimeout(()=>{toast.style.opacity='0';toast.style.transform='translateX(100%)';toast.style.transition='all .3s ease';setTimeout(()=>toast.remove(),300)},4000);
 };
 
-function escapeHTML(str) {
-    if (str === null || str === undefined) return '';
-    return String(str).replace(/[&<>'"]/g, tag => ({
-        '&': '&amp;', '<': '&lt;', '>': '&gt;',
-        "'": '&#39;', '"': '&quot;'
-    }[tag] || tag));
+function escapeHTML(str){
+    if(str===null||str===undefined)return '';
+    return String(str).replace(/[&<>'"]/g,tag=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[tag]||tag));
 }
+function sanitizeSearchQuery(query){return query.replace(/[<>]/g,'').trim()}
 
-function sanitizeSearchQuery(query) {
-    return query.replace(/[<>]/g, '').trim();
-}
+if(localStorage.getItem('theme')==='dark')document.documentElement.classList.add('dark');
 
-if (localStorage.getItem('theme') === 'dark') {
-    document.documentElement.classList.add('dark');
-}
-
-window.toggleDarkMode = () => {
+window.toggleDarkMode=()=>{
     document.documentElement.classList.toggle('dark');
-    localStorage.setItem('theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
+    localStorage.setItem('theme',document.documentElement.classList.contains('dark')?'dark':'light');
 };
 
-function updateCartCount() {
-    const cart = JSON.parse(localStorage.getItem('boiChokroCart')) || [];
-    const mobEl = document.getElementById('cartCountMobile');
-    const deskEl = document.getElementById('cartCountDesktop');
-    if (mobEl) mobEl.innerText = cart.length;
-    if (deskEl) deskEl.innerText = cart.length;
-}
+/* MAIN MENU */
+window.toggleMainMenu=()=>{
+    const menu=document.getElementById('mainMenuDropdown');
+    const button=document.getElementById('mainMenuButton');
+    if(!menu)return;
+    menu.classList.toggle('hidden');
+    button?.setAttribute('aria-expanded',String(!menu.classList.contains('hidden')));
+};
+window.closeMainMenu=()=>{
+    document.getElementById('mainMenuDropdown')?.classList.add('hidden');
+    document.getElementById('mainMenuButton')?.setAttribute('aria-expanded','false');
+};
+document.addEventListener('click',e=>{
+    const menu=document.getElementById('mainMenuDropdown');
+    const button=document.getElementById('mainMenuButton');
+    if(menu&&!menu.contains(e.target)&&button&&!button.contains(e.target))closeMainMenu();
+});
 
-function updateWishlistCount() {
-    const wishlist = JSON.parse(localStorage.getItem('boiChokroWishlist')) || [];
-    const badge = document.getElementById('wishlistCountBadge');
-    if (badge) {
-        if (wishlist.length > 0) {
-            badge.innerText = wishlist.length;
-            badge.classList.remove('hidden');
-        } else badge.classList.add('hidden');
+/* CART AND WISHLIST */
+function updateCartCount(){
+    let cart=[];
+    try{cart=JSON.parse(localStorage.getItem('boiChokroCart'))||[]}catch(e){}
+    const el=document.getElementById('cartCountDesktop');
+    if(el)el.innerText=cart.length;
+}
+function updateWishlistCount(){
+    let wishlist=[];
+    try{wishlist=JSON.parse(localStorage.getItem('boiChokroWishlist'))||[]}catch(e){}
+    const badge=document.getElementById('wishlistCountBadge');
+    if(badge){
+        badge.innerText=wishlist.length;
+        badge.classList.toggle('hidden',wishlist.length===0);
     }
 }
-
-/* WISHLIST */
-window.toggleWishlist = (bookId, event) => {
-    if (event) { event.preventDefault(); event.stopPropagation(); }
-    let wishlist = JSON.parse(localStorage.getItem('boiChokroWishlist')) || [];
-    const index = wishlist.findIndex(id => String(id) === String(bookId));
-    if (index > -1) {
-        wishlist.splice(index, 1);
-        showToast('💔 উইশলিস্ট থেকে বইটি সরিয়ে ফেলা হয়েছে!');
-    } else {
-        wishlist.push(bookId);
-        showToast('💖 আপনার উইশলিস্টে বইটি যোগ করা হয়েছে!');
-    }
-    localStorage.setItem('boiChokroWishlist', JSON.stringify(wishlist));
+window.toggleWishlist=(bookId,event)=>{
+    if(event){event.preventDefault();event.stopPropagation()}
+    let wishlist=[];
+    try{wishlist=JSON.parse(localStorage.getItem('boiChokroWishlist'))||[]}catch(e){}
+    const index=wishlist.findIndex(id=>String(id)===String(bookId));
+    if(index>-1){wishlist.splice(index,1);showToast('💔 উইশলিস্ট থেকে বইটি সরানো হয়েছে!')}
+    else{wishlist.push(bookId);showToast('💖 উইশলিস্টে বইটি যোগ করা হয়েছে!')}
+    localStorage.setItem('boiChokroWishlist',JSON.stringify(wishlist));
     updateWishlistCount();
     renderBooks(filteredBooksData);
 };
 
 /* ADMIN SETTINGS */
-async function loadAdminSettings() {
-    try {
-        const { data: settings, error } = await supabaseClient
-            .from('site_settings').select('*').limit(1).maybeSingle();
-
-        if (settings && !error) {
-            const companyName = settings.company_name || 'Boi Chokro';
-            document.getElementById('pageTitle').innerText = companyName + ' - অনলাইন বইঘর';
-
-            const headerName = document.getElementById('web_header_name');
-            if (headerName) headerName.innerText = companyName;
-
-            const logoUrl = settings.logo_url || settings.logo || '';
-            if (logoUrl) {
-                const logoEl = document.getElementById('web_header_logo');
-                if (logoEl) {
-                    logoEl.src = logoUrl;
-                    logoEl.classList.remove('hidden');
-                }
+async function loadAdminSettings(){
+    try{
+        const {data:settings,error}=await supabaseClient.from('site_settings').select('*').limit(1).maybeSingle();
+        if(settings&&!error){
+            const companyName=settings.company_name||'Boi Chokro';
+            document.getElementById('pageTitle').innerText=companyName+' - অনলাইন বইঘর';
+            document.getElementById('web_header_name').innerText=companyName;
+            const logoUrl=settings.logo_url||settings.logo||'';
+            if(logoUrl){
+                const logo=document.getElementById('web_header_logo');
+                logo.src=logoUrl;logo.classList.remove('hidden');
             }
-
-            const taglineText = settings.banner_text || settings.tagline || '';
-            if (taglineText) document.getElementById('web_tagline').innerText = taglineText;
-            if (settings.sub_tagline) document.getElementById('web_sub_tagline').innerText = settings.sub_tagline;
-            if (settings.banner_url) {
-                document.getElementById('heroBannerImage').style.backgroundImage = `url('${settings.banner_url}')`;
-            }
-
-            const phone = settings.phone || '';
-            const address = settings.address || '';
-            const footerContact = document.getElementById('web_footer_contact');
-            if (footerContact) {
-                let contactHTML = '';
-                if (phone) contactHTML += `📞 ফোন: ${escapeHTML(phone)} `;
-                if (address) contactHTML += ` | 📍 ঠিকানা: ${escapeHTML(address)}`;
-                footerContact.innerHTML = contactHTML;
-            }
-            if (settings.footer_text) document.getElementById('web_footer_text').innerHTML = settings.footer_text;
+            const tagline=settings.banner_text||settings.tagline||'';
+            if(tagline)document.getElementById('web_tagline').innerText=tagline;
+            if(settings.sub_tagline)document.getElementById('web_sub_tagline').innerText=settings.sub_tagline;
+            if(settings.banner_url)document.getElementById('heroBannerImage').style.backgroundImage=`url('${settings.banner_url}')`;
+            let contact='';
+            if(settings.phone)contact+='📞 ফোন: '+escapeHTML(settings.phone)+' ';
+            if(settings.address)contact+=' | 📍 ঠিকানা: '+escapeHTML(settings.address);
+            document.getElementById('web_footer_contact').innerHTML=contact;
+            if(settings.footer_text)document.getElementById('web_footer_text').innerHTML=settings.footer_text;
         }
-    } catch (e) {
-        console.log('site_settings table fetch error:', e);
-    }
+    }catch(e){console.log('Settings error:',e)}
 }
 
 /* AUTH */
-async function checkAuth() {
-    const { data: { session }, error } = await supabaseClient.auth.getSession();
-    const authBtnDesktop = document.getElementById('authButtonsDesktop');
-    const authBtnMobile = document.getElementById('authButtonsMobile');
+async function checkAuth(){
+    const {data:{session},error}=await supabaseClient.auth.getSession();
+    if(error)console.error('Session error:',error);
 
-    if (error) console.error('Session error:', error);
+    const authMenu=document.getElementById('authButtonsDesktop');
+    const menuInfo=document.getElementById('menuUserInfo');
 
-    if (session) {
-        currentUser = session.user;
-
-        if (authBtnDesktop) {
-            authBtnDesktop.innerHTML = `
-                <a href="/profile.html" class="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-white px-3 py-1.5 rounded-lg font-semibold hover:bg-gray-200 transition">প্রোফাইল</a>
-                <button onclick="handleLogout()" class="bg-red-50 text-red-600 px-3 py-1.5 rounded-lg font-semibold border border-red-200 hover:bg-red-100 transition">লগআউট</button>`;
-        }
-
-        if (authBtnMobile) {
-            authBtnMobile.innerHTML = `
-                <a href="/profile.html" class="bg-blue-600 text-white px-2.5 py-1 rounded-md font-bold text-xs shadow">প্রোফাইল</a>
-                <button onclick="handleLogout()" class="bg-red-50 text-red-600 border border-red-200 px-2 py-1 rounded-md font-bold text-xs">লগআউট</button>`;
-        }
-
+    if(session){
+        currentUser=session.user;
+        const displayName=currentUser.user_metadata?.full_name||currentUser.user_metadata?.name||currentUser.email||'ব্যবহারকারী';
+        if(menuInfo)menuInfo.innerText=displayName;
+        if(authMenu)authMenu.innerHTML=`
+            <a href="/profile.html" class="menu-link">👤 <span>আমার প্রোফাইল</span></a>
+            <button onclick="handleLogout()" class="menu-link w-full text-left text-red-600 dark:text-red-400">🚪 <span>লগআউট</span></button>`;
         await loadNotificationsAndUnreadMessages();
         setupMessageRealtime();
         setupNotificationRealtime();
-    } else {
-        currentUser = null;
+    }else{
+        currentUser=null;
         stopMessageRealtime();
         stopNotificationRealtime();
         clearInboxUI();
         clearNotificationUI();
-
-        if (authBtnDesktop) {
-            authBtnDesktop.innerHTML = `<a href="/login.html" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition">লগইন</a>`;
-        }
-        if (authBtnMobile) {
-            authBtnMobile.innerHTML = `<a href="/login.html" class="bg-blue-600 text-white px-2.5 py-1 rounded-md font-bold text-xs">লগইন</a>`;
-        }
+        if(menuInfo)menuInfo.innerText='বইয়ের জগতে স্বাগতম';
+        if(authMenu)authMenu.innerHTML=`<a href="/login.html" class="menu-link text-blue-600">🔐 <span>লগইন / অ্যাকাউন্ট তৈরি</span></a>`;
     }
 }
-
-window.handleLogout = async () => {
-    stopMessageRealtime();
-    stopNotificationRealtime();
-
-    const { error } = await supabaseClient.auth.signOut();
-    if (error) {
-        showToast('লগআউট সমস্যা: ' + error.message, true);
-        return;
-    }
+window.handleLogout=async()=>{
+    stopMessageRealtime();stopNotificationRealtime();
+    const {error}=await supabaseClient.auth.signOut();
+    if(error){showToast('লগআউট সমস্যা: '+error.message,true);return}
+    closeMainMenu();
     await checkAuth();
-    showToast('লগআউট হয়েছে।', false);
+    showToast('লগআউট হয়েছে।');
 };
 
-/* INBOX PREVIEW + UNREAD BADGE */
-function updateMessageBadges(count) {
-    const badgeIds = ['msgBadge', 'msgBadgeMobile'];
-    const displayCount = count > 99 ? '99+' : String(count);
-
-    badgeIds.forEach(id => {
-        const el = document.getElementById(id);
-        if (!el) return;
-        if (count > 0) {
-            el.innerText = displayCount;
-            el.classList.remove('hidden');
-        } else {
-            el.classList.add('hidden');
-        }
+/* INBOX */
+function updateMessageBadges(count){
+    const text=count>99?'99+':String(count);
+    ['msgBadge'].forEach(id=>{
+        const el=document.getElementById(id);
+        if(el){el.innerText=text;el.classList.toggle('hidden',count<=0)}
     });
 }
-
-function clearInboxUI() {
+function clearInboxUI(){
     updateMessageBadges(0);
-    ['msgDropdown', 'msgDropdownMobile'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.classList.add('hidden');
-    });
-    ['msgList', 'msgListMobile'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.innerHTML = '<div class="p-5 text-center text-sm text-gray-500">লগইন করলে মেসেজ দেখতে পারবেন।</div>';
+    ['msgDropdown','msgDropdownMobile'].forEach(id=>document.getElementById(id)?.classList.add('hidden'));
+    ['msgList','msgListMobile'].forEach(id=>{
+        const el=document.getElementById(id);
+        if(el)el.innerHTML='<div class="p-5 text-center text-sm text-gray-500">লগইন করলে মেসেজ দেখতে পারবেন।</div>';
     });
 }
-
-function formatInboxTime(dateString) {
-    if (!dateString) return '';
-    const date = new Date(dateString);
-    if (isNaN(date.getTime())) return '';
-    return date.toLocaleString('bn-BD', {
-        day: 'numeric', month: 'short',
-        hour: '2-digit', minute: '2-digit'
-    });
+function formatInboxTime(value){
+    if(!value)return '';
+    const date=new Date(value);
+    if(isNaN(date.getTime()))return '';
+    return date.toLocaleString('bn-BD',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
 }
+async function loadInboxPreview(){
+    if(!currentUser){clearInboxUI();return}
+    const {data:messages,count,error}=await supabaseClient.from('messages')
+        .select('id,sender_id,receiver_id,message,is_read,created_at',{count:'exact'})
+        .eq('receiver_id',currentUser.id).eq('is_read',false)
+        .order('created_at',{ascending:false}).limit(8);
 
-async function loadInboxPreview() {
-    if (!currentUser) {
-        clearInboxUI();
-        return;
-    }
-
-    const { data: messages, count, error } = await supabaseClient
-        .from('messages')
-        .select('id,sender_id,receiver_id,message,is_read,created_at', { count: 'exact' })
-        .eq('receiver_id', currentUser.id)
-        .eq('is_read', false)
-        .order('created_at', { ascending: false })
-        .limit(8);
-
-    if (error) {
-        console.error('Inbox preview error:', error);
-        const errorHTML = '<div class="p-5 text-center text-sm text-red-500">মেসেজ লোড করা যায়নি।</div>';
-        ['msgList', 'msgListMobile'].forEach(id => {
-            const el = document.getElementById(id);
-            if (el) el.innerHTML = errorHTML;
+    if(error){
+        console.error('Inbox error:',error);
+        ['msgList','msgListMobile'].forEach(id=>{
+            const el=document.getElementById(id);
+            if(el)el.innerHTML='<div class="p-5 text-center text-sm text-red-500">মেসেজ লোড করা যায়নি।</div>';
         });
         return;
     }
-
-    updateMessageBadges(count ?? (messages || []).length);
-
-    if (!messages || messages.length === 0) {
-        const emptyHTML = '<div class="p-6 text-center text-sm text-gray-500">🎉 নতুন মেসেজ নেই</div>';
-        ['msgList', 'msgListMobile'].forEach(id => {
-            const el = document.getElementById(id);
-            if (el) el.innerHTML = emptyHTML;
+    updateMessageBadges(count??(messages||[]).length);
+    if(!messages?.length){
+        ['msgList','msgListMobile'].forEach(id=>{
+            const el=document.getElementById(id);
+            if(el)el.innerHTML='<div class="p-6 text-center text-sm text-gray-500">🎉 নতুন মেসেজ নেই</div>';
         });
         return;
     }
-
-    const senderIds = [...new Set(messages.map(m => m.sender_id).filter(Boolean))];
-    let profileMap = {};
-
-    if (senderIds.length) {
-        const { data: profiles, error: profileError } = await supabaseClient
-            .from('profiles')
-            .select('id,full_name,profile_image')
-            .in('id', senderIds);
-
-        if (!profileError && profiles) {
-            profiles.forEach(profile => profileMap[profile.id] = profile);
-        }
+    const senderIds=[...new Set(messages.map(m=>m.sender_id).filter(Boolean))];
+    let profileMap={};
+    if(senderIds.length){
+        const {data:profiles}=await supabaseClient.from('profiles').select('id,full_name,profile_image').in('id',senderIds);
+        profiles?.forEach(p=>profileMap[p.id]=p);
     }
-
-    const previewHTML = messages.map(message => {
-        const profile = profileMap[message.sender_id] || {};
-        const senderName = profile.full_name || 'ব্যবহারকারী';
-        const avatar = profile.profile_image ||
-            `https://ui-avatars.com/api/?name=${encodeURIComponent(senderName)}&background=random`;
-        const messageText = String(message.message || '').replace(/\s+/g, ' ').trim();
-        const shortMessage = messageText.length > 65 ? messageText.slice(0, 65) + '…' : messageText;
-
-        return `
-            <a href="/inbox.html?user=${encodeURIComponent(message.sender_id)}"
-               class="inbox-item border-b border-gray-100 dark:border-gray-700 last:border-0">
-                <img src="${escapeHTML(avatar)}"
-                     onerror="this.src='https://ui-avatars.com/api/?name=User'">
-                <div class="min-w-0 flex-1">
-                    <div class="flex justify-between items-center gap-2">
-                        <p class="font-bold text-sm text-gray-900 dark:text-white truncate">${escapeHTML(senderName)}</p>
-                        <span class="text-[10px] text-gray-400 whitespace-nowrap">${escapeHTML(formatInboxTime(message.created_at))}</span>
-                    </div>
-                    <p class="text-xs text-gray-600 dark:text-gray-300 mt-1 line-clamp-2">${escapeHTML(shortMessage)}</p>
-                    <span class="inline-block mt-1 text-[10px] text-blue-600 font-bold">নতুন মেসেজ</span>
+    const html=messages.map(m=>{
+        const p=profileMap[m.sender_id]||{};
+        const name=p.full_name||'ব্যবহারকারী';
+        const avatar=p.profile_image||`https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random`;
+        const msg=String(m.message||'').replace(/\s+/g,' ').trim();
+        return `<a href="/inbox.html?user=${encodeURIComponent(m.sender_id)}" class="inbox-item border-b border-gray-100 dark:border-gray-700 last:border-0">
+            <img src="${escapeHTML(avatar)}" onerror="this.src='https://ui-avatars.com/api/?name=User'">
+            <div class="min-w-0 flex-1">
+                <div class="flex justify-between items-center gap-2">
+                    <p class="font-bold text-sm text-gray-900 dark:text-white truncate">${escapeHTML(name)}</p>
+                    <span class="text-[10px] text-gray-400 whitespace-nowrap">${escapeHTML(formatInboxTime(m.created_at))}</span>
                 </div>
-            </a>`;
+                <p class="text-xs text-gray-600 dark:text-gray-300 mt-1 line-clamp-2">${escapeHTML(msg.slice(0,65))}${msg.length>65?'…':''}</p>
+                <span class="inline-block mt-1 text-[10px] text-blue-600 font-bold">নতুন মেসেজ</span>
+            </div>
+        </a>`;
     }).join('');
-
-    ['msgList', 'msgListMobile'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.innerHTML = previewHTML;
+    ['msgList','msgListMobile'].forEach(id=>{
+        const el=document.getElementById(id);if(el)el.innerHTML=html;
     });
 }
-
-window.toggleInboxDropdown = (device) => {
-    const targetId = device === 'mobile' ? 'msgDropdownMobile' : 'msgDropdown';
-    const otherId = device === 'mobile' ? 'msgDropdown' : 'msgDropdownMobile';
-    const target = document.getElementById(targetId);
-    const other = document.getElementById(otherId);
-
-    if (!target) return;
-
-    if (other) other.classList.add('hidden');
+window.toggleInboxDropdown=device=>{
+    const targetId=device==='mobile'?'msgDropdownMobile':'msgDropdown';
+    const otherId=device==='mobile'?'msgDropdown':'msgDropdownMobile';
+    const target=document.getElementById(targetId);
+    document.getElementById(otherId)?.classList.add('hidden');
     closeNotificationDropdowns();
-    target.classList.toggle('hidden');
-
-    if (!target.classList.contains('hidden')) {
-        loadInboxPreview();
-    }
+    target?.classList.toggle('hidden');
+    if(target&&!target.classList.contains('hidden'))loadInboxPreview();
 };
-
-document.addEventListener('click', (event) => {
-    if (!event.target.closest('.inbox-wrapper')) {
-        ['msgDropdown', 'msgDropdownMobile'].forEach(id => {
-            const dropdown = document.getElementById(id);
-            if (dropdown) dropdown.classList.add('hidden');
-        });
+document.addEventListener('click',e=>{
+    if(!e.target.closest('.inbox-wrapper')&&!e.target.closest('#msgDropdownMobile')){
+        ['msgDropdown','msgDropdownMobile'].forEach(id=>document.getElementById(id)?.classList.add('hidden'));
     }
 });
-
-/* SUPABASE REALTIME - MESSAGES */
-function stopMessageRealtime() {
-    if (messageRealtimeChannel) {
-        supabaseClient.removeChannel(messageRealtimeChannel);
-        messageRealtimeChannel = null;
-    }
+function stopMessageRealtime(){
+    if(messageRealtimeChannel){supabaseClient.removeChannel(messageRealtimeChannel);messageRealtimeChannel=null}
 }
-
-function setupMessageRealtime() {
-    if (!currentUser) return;
-
+function setupMessageRealtime(){
+    if(!currentUser)return;
     stopMessageRealtime();
-
-    messageRealtimeChannel = supabaseClient
-        .channel('inbox-realtime-' + currentUser.id)
-        .on('postgres_changes', {
-            event: '*',
-            schema: 'public',
-            table: 'messages',
-            filter: `receiver_id=eq.${currentUser.id}`
-        }, () => {
-            loadInboxPreview();
-        })
-        .subscribe((status) => {
-            console.log('Inbox realtime status:', status);
-        });
+    messageRealtimeChannel=supabaseClient.channel('inbox-realtime-'+currentUser.id)
+        .on('postgres_changes',{event:'*',schema:'public',table:'messages',filter:`receiver_id=eq.${currentUser.id}`},()=>loadInboxPreview())
+        .subscribe(status=>console.log('Inbox realtime:',status));
 }
 
 /* NOTIFICATIONS */
-function updateNotificationBadges(count) {
-    const displayCount = count > 99 ? '99+' : String(count);
-    ['notifBadge', 'notifBadgeMobile'].forEach(id => {
-        const el = document.getElementById(id);
-        if (!el) return;
-        if (count > 0) {
-            el.innerText = displayCount;
-            el.classList.remove('hidden');
-        } else {
-            el.classList.add('hidden');
-        }
+function updateNotificationBadges(count){
+    const text=count>99?'99+':String(count);
+    ['notifBadge'].forEach(id=>{
+        const el=document.getElementById(id);
+        if(el){el.innerText=text;el.classList.toggle('hidden',count<=0)}
     });
 }
-
-function clearNotificationUI() {
+function clearNotificationUI(){
     updateNotificationBadges(0);
-    ['notifDropdown', 'notifDropdownMobile'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.classList.add('hidden');
-    });
-    ['notifList', 'notifListMobile'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.innerHTML = '<div class="p-4 text-center text-sm text-gray-500">লগইন করলে নোটিফিকেশন দেখতে পারবেন।</div>';
+    closeNotificationDropdowns();
+    ['notifList','notifListMobile'].forEach(id=>{
+        const el=document.getElementById(id);
+        if(el)el.innerHTML='<div class="p-4 text-center text-sm text-gray-500">লগইন করলে নোটিফিকেশন দেখতে পারবেন।</div>';
     });
 }
-
-function closeNotificationDropdowns() {
-    ['notifDropdown', 'notifDropdownMobile'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.classList.add('hidden');
-    });
+function closeNotificationDropdowns(){
+    ['notifDropdown','notifDropdownMobile'].forEach(id=>document.getElementById(id)?.classList.add('hidden'));
 }
-
-function notificationHTML(n) {
-    const safeId = encodeURIComponent(String(n.id || ''));
-    const safeLink = encodeURIComponent(String(n.link || ''));
-    const time = n.created_at ? new Date(n.created_at).toLocaleString('bn-BD') : '';
-
-    return `
-        <div onclick="handleNotificationClick('${safeId}', '${safeLink}')"
-             class="p-3 text-sm border-b dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition ${!n.is_read ? 'bg-blue-50 dark:bg-gray-700 font-semibold' : 'text-gray-600 dark:text-gray-300'}">
-            <div>${escapeHTML(n.message || 'নতুন নোটিফিকেশন')}</div>
-            <p class="text-[10px] text-gray-400 mt-1">${escapeHTML(time)}</p>
-            ${!n.is_read ? '<span class="text-[10px] text-blue-600">নতুন</span>' : ''}
-        </div>`;
+function notificationHTML(n){
+    const safeId=encodeURIComponent(String(n.id||''));
+    const safeLink=encodeURIComponent(String(n.link||''));
+    const time=n.created_at?new Date(n.created_at).toLocaleString('bn-BD'):'';
+    return `<div onclick="handleNotificationClick('${safeId}','${safeLink}')"
+        class="p-3 text-sm border-b dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition ${!n.is_read?'bg-blue-50 dark:bg-gray-700 font-semibold':'text-gray-600 dark:text-gray-300'}">
+        <div>${escapeHTML(n.message||'নতুন নোটিফিকেশন')}</div>
+        <p class="text-[10px] text-gray-400 mt-1">${escapeHTML(time)}</p>
+        ${!n.is_read?'<span class="text-[10px] text-blue-600">নতুন</span>':''}
+    </div>`;
 }
-
-async function loadNotificationsAndUnreadMessages() {
-    if (!currentUser) {
-        clearNotificationUI();
-        clearInboxUI();
-        return;
-    }
-
-    const { data: notifs, error } = await supabaseClient
-        .from('notifications')
-        .select('*')
-        .eq('user_id', currentUser.id)
-        .order('created_at', { ascending: false })
-        .limit(50);
-
-    if (error) {
-        console.error('Notification load error:', error);
-        ['notifList', 'notifListMobile'].forEach(id => {
-            const list = document.getElementById(id);
-            if (list) list.innerHTML = '<div class="p-4 text-center text-sm text-red-500">নোটিফিকেশন লোড করা যায়নি।</div>';
+async function loadNotificationsAndUnreadMessages(){
+    if(!currentUser){clearNotificationUI();clearInboxUI();return}
+    const {data:notifs,error}=await supabaseClient.from('notifications').select('*')
+        .eq('user_id',currentUser.id).order('created_at',{ascending:false}).limit(50);
+    if(error){
+        console.error('Notification error:',error);
+        ['notifList','notifListMobile'].forEach(id=>{
+            const el=document.getElementById(id);
+            if(el)el.innerHTML='<div class="p-4 text-center text-sm text-red-500">নোটিফিকেশন লোড করা যায়নি।</div>';
         });
         updateNotificationBadges(0);
-    } else {
-        const notifications = notifs || [];
-        const unread = notifications.filter(n => !n.is_read).length;
-        updateNotificationBadges(unread);
-
-        const html = notifications.length
-            ? notifications.map(notificationHTML).join('')
-            : '<div class="p-4 text-center text-sm text-gray-500">কোনো নোটিফিকেশন নেই</div>';
-
-        ['notifList', 'notifListMobile'].forEach(id => {
-            const list = document.getElementById(id);
-            if (list) list.innerHTML = html;
+    }else{
+        const notifications=notifs||[];
+        updateNotificationBadges(notifications.filter(n=>!n.is_read).length);
+        const html=notifications.length?notifications.map(notificationHTML).join():'<div class="p-4 text-center text-sm text-gray-500">কোনো নোটিফিকেশন নেই</div>';
+        ['notifList','notifListMobile'].forEach(id=>{
+            const el=document.getElementById(id);if(el)el.innerHTML=html;
         });
     }
-
     await loadInboxPreview();
 }
-
-window.toggleNotifications = () => {
-    const isMobile = window.innerWidth < 768;
-    const target = document.getElementById(isMobile ? 'notifDropdownMobile' : 'notifDropdown');
-    const other = document.getElementById(isMobile ? 'notifDropdown' : 'notifDropdownMobile');
-
-    if (!target) return;
-
-    if (other) other.classList.add('hidden');
-    ['msgDropdown', 'msgDropdownMobile'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.classList.add('hidden');
-    });
-
-    target.classList.toggle('hidden');
-
-    if (!target.classList.contains('hidden')) {
-        loadNotificationsAndUnreadMessages();
-    }
+window.toggleNotifications=()=>{
+    const mobile=window.innerWidth<768;
+    const target=document.getElementById(mobile?'notifDropdownMobile':'notifDropdown');
+    const other=document.getElementById(mobile?'notifDropdown':'notifDropdownMobile');
+    other?.classList.add('hidden');
+    ['msgDropdown','msgDropdownMobile'].forEach(id=>document.getElementById(id)?.classList.add('hidden'));
+    target?.classList.toggle('hidden');
+    if(target&&!target.classList.contains('hidden'))loadNotificationsAndUnreadMessages();
 };
-
-window.handleNotificationClick = async (encodedId, encodedLink) => {
-    const notifId = decodeURIComponent(encodedId || '');
-    const link = decodeURIComponent(encodedLink || '');
-
-    if (!currentUser) {
-        showToast('নোটিফিকেশন দেখতে লগইন করুন।', true);
-        return;
+window.handleNotificationClick=async(encodedId,encodedLink)=>{
+    const notifId=decodeURIComponent(encodedId||'');
+    const link=decodeURIComponent(encodedLink||'');
+    if(!currentUser){showToast('নোটিফিকেশন দেখতে লগইন করুন।',true);return}
+    if(notifId){
+        const {error}=await supabaseClient.from('notifications').update({is_read:true})
+            .eq('id',notifId).eq('user_id',currentUser.id);
+        if(error)console.error('Notification read error:',error);
     }
-
-    if (notifId) {
-        const { error } = await supabaseClient
-            .from('notifications')
-            .update({ is_read: true })
-            .eq('id', notifId)
-            .eq('user_id', currentUser.id);
-
-        if (error) console.error('Notification read error:', error);
-    }
-
     closeNotificationDropdowns();
     await loadNotificationsAndUnreadMessages();
-
-    if (!link.trim()) return;
-
-    try {
-        const destination = new URL(link, window.location.origin);
-        const postId = destination.searchParams.get('post');
-
-        const sameHomePage =
-            destination.origin === window.location.origin &&
-            (destination.pathname === '/' || destination.pathname.endsWith('/index.html'));
-
-        if (postId && sameHomePage) {
-            await openPostDetails(postId);
-        } else {
-            window.location.href = destination.href;
-        }
-    } catch (error) {
-        console.error('Invalid notification link:', error);
-    }
+    if(!link.trim())return;
+    try{
+        const destination=new URL(link,window.location.origin);
+        const postId=destination.searchParams.get('post');
+        const sameHome=destination.origin===window.location.origin&&
+            (destination.pathname==='/'||destination.pathname.endsWith('/index.html'));
+        if(postId&&sameHome)await openPostDetails(postId);
+        else window.location.href=destination.href;
+    }catch(e){console.error('Invalid notification link:',e)}
 };
-
-/* REALTIME - NOTIFICATIONS */
-function stopNotificationRealtime() {
-    if (notificationRealtimeChannel) {
-        supabaseClient.removeChannel(notificationRealtimeChannel);
-        notificationRealtimeChannel = null;
-    }
+function stopNotificationRealtime(){
+    if(notificationRealtimeChannel){supabaseClient.removeChannel(notificationRealtimeChannel);notificationRealtimeChannel=null}
 }
-
-function setupNotificationRealtime() {
-    if (!currentUser) return;
-
+function setupNotificationRealtime(){
+    if(!currentUser)return;
     stopNotificationRealtime();
-
-    notificationRealtimeChannel = supabaseClient
-        .channel('notifications-realtime-' + currentUser.id)
-        .on('postgres_changes', {
-            event: '*',
-            schema: 'public',
-            table: 'notifications',
-            filter: `user_id=eq.${currentUser.id}`
-        }, (payload) => {
-            console.log('Notification realtime update:', payload.eventType);
-            loadNotificationsAndUnreadMessages();
-        })
-        .subscribe((status) => {
-            console.log('Notification realtime status:', status);
-        });
+    notificationRealtimeChannel=supabaseClient.channel('notifications-realtime-'+currentUser.id)
+        .on('postgres_changes',{event:'*',schema:'public',table:'notifications',filter:`user_id=eq.${currentUser.id}`},
+            payload=>{console.log('Notification realtime:',payload.eventType);loadNotificationsAndUnreadMessages()})
+        .subscribe(status=>console.log('Notification realtime status:',status));
 }
-
-/* USER DISPLAY NAME FOR NOTIFICATIONS */
-async function getCurrentUserDisplayName() {
-    if (!currentUser) return 'একজন ব্যবহারকারী';
-
-    const { data: profile, error } = await supabaseClient
-        .from('profiles')
-        .select('full_name')
-        .eq('id', currentUser.id)
-        .maybeSingle();
-
-    if (!error && profile && profile.full_name) {
-        return profile.full_name;
-    }
-
-    return currentUser.user_metadata?.full_name ||
-        currentUser.user_metadata?.name ||
-        currentUser.email?.split('@')[0] ||
-        'একজন ব্যবহারকারী';
+async function getCurrentUserDisplayName(){
+    if(!currentUser)return 'একজন ব্যবহারকারী';
+    const {data:profile,error}=await supabaseClient.from('profiles').select('full_name').eq('id',currentUser.id).maybeSingle();
+    if(!error&&profile?.full_name)return profile.full_name;
+    return currentUser.user_metadata?.full_name||currentUser.user_metadata?.name||currentUser.email?.split('@')[0]||'একজন ব্যবহারকারী';
 }
 
 /* BOOKS */
-async function loadBooks() {
-    const grid = document.getElementById('bookGrid');
-    const { data: books, error } = await supabaseClient
-        .from('books').select('*').order('created_at', { ascending: false });
-
-    if (error || !books || books.length === 0) {
-        grid.innerHTML = '<p class="text-gray-500 col-span-full text-center py-8">কোনো বই পাওয়া যায়নি।</p>';
-        return;
+async function loadBooks(){
+    const grid=document.getElementById('bookGrid');
+    const {data:books,error}=await supabaseClient.from('books').select('*').order('created_at',{ascending:false});
+    if(error||!books||!books.length){
+        grid.innerHTML='<p class="text-gray-500 col-span-full text-center py-8">কোনো বই পাওয়া যায়নি।</p>';return;
     }
-
-    allBooksData = books;
-    filteredBooksData = [...books];
-
-    const { data: categories } = await supabaseClient
-        .from('categories').select('*').order('name');
-
-    const categoryContainer = document.getElementById('categoryButtons');
-
-    if (categories) {
-        categories.forEach(cat => {
-            categoryContainer.insertAdjacentHTML('beforeend', `
-                <button onclick="filterCategory('${escapeHTML(cat.name)}')"
-                    class="category-btn bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-600 px-4 py-1.5 rounded-full text-xs sm:text-sm font-semibold hover:bg-blue-50 transition shadow-sm">
-                    ${escapeHTML(cat.name)}
-                </button>`);
-        });
-    }
-
+    allBooksData=books;filteredBooksData=[...books];
+    const {data:categories}=await supabaseClient.from('categories').select('*').order('name');
+    const container=document.getElementById('categoryButtons');
+    if(categories)categories.forEach(cat=>{
+        const button=document.createElement('button');
+        button.className='category-btn bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-600 px-4 py-1.5 rounded-full text-xs sm:text-sm font-semibold hover:bg-blue-50 transition shadow-sm';
+        button.textContent=cat.name;
+        button.addEventListener('click',()=>filterCategory(cat.name));
+        container.appendChild(button);
+    });
     renderBooks(filteredBooksData);
 }
-
-function createBookCard(book) {
-    const bookId = book.id || book.book_id;
-    const bookTitle = book.title || book.name || 'বইয়ের নাম নেই';
-    const bookAuthor = book.author || 'অজ্ঞাত লেখক';
-    const currentPrice = book.discount_price || book.price || 0;
-    const originalPrice = book.original_price || 0;
-    const hasDiscount = originalPrice && currentPrice && originalPrice > currentPrice;
-    const discountPercent = hasDiscount ? Math.round(((originalPrice - currentPrice) / originalPrice) * 100) : 0;
-
-    const rawImg = book.cover_url || book.image_url || '';
-    const bookImage = rawImg.startsWith('http') ? rawImg : 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=300';
-
-    const wishlist = JSON.parse(localStorage.getItem('boiChokroWishlist')) || [];
-    const isWishlisted = wishlist.some(id => String(id) === String(bookId));
-    const stockQty = book.stock_quantity !== undefined && book.stock_quantity !== null ? Number(book.stock_quantity) : 1;
-    const isOutOfStock = stockQty <= 0;
-    const heartFill = isWishlisted ? '#dc2626' : 'none';
-    const heartStroke = isWishlisted ? '#dc2626' : '#6b7280';
-    const wishlistClass = isWishlisted ? 'wishlist-btn wishlist-active' : 'wishlist-btn';
-
-    return `
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col overflow-hidden relative group">
-        <button type="button" onclick="toggleWishlist('${escapeHTML(bookId)}', event)"
-            class="absolute top-2 right-2 z-20 bg-white/90 dark:bg-gray-800/90 backdrop-blur-md p-2 rounded-full shadow hover:scale-110 transition ${wishlistClass}"
-            aria-label="${isWishlisted ? 'উইশলিস্ট থেকে সরান' : 'উইশলিস্টে যোগ করুন'}">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="${heartStroke}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" fill="${heartFill}" stroke="${heartStroke}"></path>
-            </svg>
+function createBookCard(book){
+    const id=book.id||book.book_id;
+    const title=book.title||book.name||'বইয়ের নাম নেই';
+    const author=book.author||'অজ্ঞাত লেখক';
+    const price=book.discount_price||book.price||0;
+    const original=book.original_price||0;
+    const discount=original&&price&&original>price;
+    const percent=discount?Math.round((original-price)/original*100):0;
+    const raw=book.cover_url||book.image_url||'';
+    const img=raw.startsWith('http')?raw:'https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=300';
+    let wishlist=[];
+    try{wishlist=JSON.parse(localStorage.getItem('boiChokroWishlist'))||[]}catch(e){}
+    const wished=wishlist.some(x=>String(x)===String(id));
+    const stock=book.stock_quantity!==undefined&&book.stock_quantity!==null?Number(book.stock_quantity):1;
+    const out=stock<=0;
+    return `<div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col overflow-hidden relative group">
+        <button type="button" onclick="toggleWishlist('${escapeHTML(id)}',event)" class="absolute top-2 right-2 z-20 bg-white/90 dark:bg-gray-800/90 p-2 rounded-full shadow hover:scale-110 transition wishlist-btn ${wished?'wishlist-active':''}" aria-label="উইশলিস্ট">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="${wished?'#dc2626':'none'}" stroke="${wished?'#dc2626':'#6b7280'}" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
         </button>
-
-        <a href="/book-details.html?id=${encodeURIComponent(bookId)}" class="block w-full aspect-[3/4] bg-gray-100 dark:bg-gray-700 overflow-hidden relative">
-            ${hasDiscount ? `<div class="absolute top-2 left-2 bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded-md shadow-md z-10">${discountPercent}% ছাড়</div>` : ''}
-            ${isOutOfStock ? `<div class="absolute inset-0 bg-black/60 backdrop-blur-[2px] flex items-center justify-center z-10"><span class="bg-red-600 text-white font-bold text-[10px] sm:text-xs px-3 py-1 rounded-md shadow-lg">স্টক আউট</span></div>` : ''}
-            <img src="${escapeHTML(bookImage)}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500"
-                onerror="this.src='https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=300'">
+        <a href="/book-details.html?id=${encodeURIComponent(id)}" class="block w-full aspect-[3/4] bg-gray-100 dark:bg-gray-700 overflow-hidden relative">
+            ${discount?`<div class="absolute top-2 left-2 bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded-md z-10">${percent}% ছাড়</div>`:''}
+            ${out?'<div class="absolute inset-0 bg-black/60 flex items-center justify-center z-10"><span class="bg-red-600 text-white font-bold text-xs px-3 py-1 rounded-md">স্টক আউট</span></div>':''}
+            <img src="${escapeHTML(img)}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" onerror="this.src='https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=300'">
         </a>
-
         <div class="p-3 flex flex-col flex-grow justify-between">
             <div>
-                <a href="/book-details.html?id=${encodeURIComponent(bookId)}">
-                    <h3 class="font-bold text-sm text-gray-900 dark:text-white leading-snug line-clamp-2 mb-1 hover:text-blue-600 transition">${escapeHTML(bookTitle)}</h3>
-                </a>
-                <p class="text-xs text-gray-500 mb-2">${escapeHTML(bookAuthor)}</p>
-                <div class="mb-2">
-                    ${isOutOfStock
-                        ? '<span class="text-[11px] font-bold text-red-500 bg-red-50 dark:bg-red-900/30 px-2 py-0.5 rounded">আউট অফ স্টক</span>'
-                        : '<span class="text-[11px] font-bold text-green-600 bg-green-50 dark:bg-green-900/30 px-2 py-0.5 rounded">স্টকে বইটি আছে</span>'}
-                </div>
+                <a href="/book-details.html?id=${encodeURIComponent(id)}"><h3 class="font-bold text-sm text-gray-900 dark:text-white leading-snug line-clamp-2 mb-1 hover:text-blue-600">${escapeHTML(title)}</h3></a>
+                <p class="text-xs text-gray-500 mb-2">${escapeHTML(author)}</p>
+                <div class="mb-2">${out?'<span class="text-[11px] font-bold text-red-500">আউট অফ স্টক</span>':'<span class="text-[11px] font-bold text-green-600">স্টকে বইটি আছে</span>'}</div>
             </div>
-            <div class="flex items-center gap-2">
-                <span class="text-lg font-bold text-blue-600 dark:text-blue-400">৳ ${escapeHTML(currentPrice)}</span>
-                ${hasDiscount ? `<span class="text-gray-400 line-through text-xs">৳ ${escapeHTML(originalPrice)}</span>` : ''}
-            </div>
+            <div class="flex items-center gap-2"><span class="text-lg font-bold text-blue-600 dark:text-blue-400">৳ ${escapeHTML(price)}</span>${discount?`<span class="text-gray-400 line-through text-xs">৳ ${escapeHTML(original)}</span>`:''}</div>
         </div>
     </div>`;
 }
-
-function renderBooks(books) {
-    const grid = document.getElementById('bookGrid');
-    if (!books || books.length === 0) {
-        grid.innerHTML = '<p class="text-gray-500 col-span-full text-center py-8">কোনো বই নেই।</p>';
-        return;
-    }
-    grid.innerHTML = books.map(book => createBookCard(book)).join('');
+function renderBooks(books){
+    const grid=document.getElementById('bookGrid');
+    if(!books||!books.length){grid.innerHTML='<p class="text-gray-500 col-span-full text-center py-8">কোনো বই নেই।</p>';return}
+    grid.innerHTML=books.map(createBookCard).join('');
 }
-
-window.filterCategory = (category) => {
-    document.querySelectorAll('.category-btn').forEach(btn => {
-        btn.classList.remove('bg-blue-600', 'text-white', 'border-blue-600');
-        btn.classList.add('bg-white', 'dark:bg-gray-800', 'text-gray-700', 'dark:text-gray-300', 'border-gray-200', 'dark:border-gray-600');
+window.filterCategory=category=>{
+    document.querySelectorAll('.category-btn').forEach(btn=>{
+        btn.classList.remove('bg-blue-600','text-white','border-blue-600');
+        btn.classList.add('bg-white','dark:bg-gray-800','text-gray-700','dark:text-gray-300','border-gray-200','dark:border-gray-600');
     });
-
-    const clickedBtn = Array.from(document.querySelectorAll('.category-btn'))
-        .find(btn => btn.innerText.trim() === (category === 'all' ? 'সব বই' : category));
-
-    if (clickedBtn) {
-        clickedBtn.classList.remove('bg-white', 'dark:bg-gray-800', 'text-gray-700', 'dark:text-gray-300', 'border-gray-200', 'dark:border-gray-600');
-        clickedBtn.classList.add('bg-blue-600', 'text-white', 'border-blue-600');
+    const clicked=Array.from(document.querySelectorAll('.category-btn')).find(b=>b.innerText.trim()===(category==='all'?'সব বই':category));
+    if(clicked){
+        clicked.classList.remove('bg-white','dark:bg-gray-800','text-gray-700','dark:text-gray-300','border-gray-200','dark:border-gray-600');
+        clicked.classList.add('bg-blue-600','text-white','border-blue-600');
     }
-
-    filteredBooksData = category === 'all'
-        ? [...allBooksData]
-        : allBooksData.filter(b => b.category === category);
+    filteredBooksData=category==='all'?[...allBooksData]:allBooksData.filter(b=>b.category===category);
     renderBooks(filteredBooksData);
 };
-
-window.handleSearch = (source) => {
-    const input = source === 'desktop' ? document.getElementById('searchInput') : document.getElementById('searchInputMobile');
-    const query = sanitizeSearchQuery(input.value.toLowerCase());
-    const dropdown = source === 'desktop' ? document.getElementById('searchResultsDropdown') : document.getElementById('searchResultsDropdownMobile');
-
-    if (query === '') {
-        dropdown.classList.add('hidden');
-        filteredBooksData = [...allBooksData];
-        renderBooks(filteredBooksData);
-        return;
+window.handleSearch=source=>{
+    const input=document.getElementById(source==='mobile'?'searchInputMobile':'searchInput');
+    const dropdown=document.getElementById(source==='mobile'?'searchResultsDropdownMobile':'searchResultsDropdown');
+    if(!input||!dropdown)return;
+    const query=sanitizeSearchQuery(input.value.toLowerCase());
+    if(!query){
+        dropdown.classList.add('hidden');filteredBooksData=[...allBooksData];renderBooks(filteredBooksData);return;
     }
-
-    filteredBooksData = allBooksData.filter(book => {
-        const title = (book.title || book.name || '').toLowerCase();
-        const author = (book.author || '').toLowerCase();
-        return title.includes(query) || author.includes(query);
+    filteredBooksData=allBooksData.filter(book=>{
+        const title=(book.title||book.name||'').toLowerCase();
+        const author=(book.author||'').toLowerCase();
+        const publisher=(book.publisher||'').toLowerCase();
+        return title.includes(query)||author.includes(query)||publisher.includes(query);
     });
-
     renderBooks(filteredBooksData);
-
-    if (filteredBooksData.length > 0) {
-        dropdown.classList.remove('hidden');
-        dropdown.innerHTML = filteredBooksData.map(book => {
-            const bId = book.id || book.book_id;
-            const bTitle = book.title || book.name || 'বই';
-            const bAuthor = book.author || '';
-            const rawImg = book.cover_url || book.image_url || '';
-            const bImg = rawImg.startsWith('http') ? rawImg : 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=100';
-
-            return `
-            <a href="/book-details.html?id=${encodeURIComponent(bId)}" class="flex items-center gap-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-700 last:border-0 cursor-pointer">
-                <img src="${escapeHTML(bImg)}" class="w-10 h-14 object-cover rounded shadow-sm flex-shrink-0">
-                <div class="overflow-hidden">
-                    <p class="font-bold text-sm text-gray-900 dark:text-white truncate">${escapeHTML(bTitle)}</p>
-                    <p class="text-xs text-gray-500 dark:text-gray-400 truncate">${escapeHTML(bAuthor)}</p>
-                </div>
+    dropdown.classList.remove('hidden');
+    if(filteredBooksData.length){
+        dropdown.innerHTML=filteredBooksData.map(book=>{
+            const id=book.id||book.book_id;
+            const title=book.title||book.name||'বই';
+            const author=book.author||'';
+            const raw=book.cover_url||book.image_url||'';
+            const img=raw.startsWith('http')?raw:'https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=100';
+            return `<a href="/book-details.html?id=${encodeURIComponent(id)}" class="flex items-center gap-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-700 border-b dark:border-gray-700">
+                <img src="${escapeHTML(img)}" class="w-10 h-14 object-cover rounded shadow-sm">
+                <div class="overflow-hidden"><p class="font-bold text-sm text-gray-900 dark:text-white truncate">${escapeHTML(title)}</p><p class="text-xs text-gray-500 truncate">${escapeHTML(author)}</p></div>
             </a>`;
         }).join('');
-    } else {
-        dropdown.classList.remove('hidden');
-        dropdown.innerHTML = '<p class="p-4 text-center text-sm text-gray-500 dark:text-gray-400">কোনো বই পাওয়া যায়নি।</p>';
-    }
+    }else dropdown.innerHTML='<p class="p-4 text-center text-sm text-gray-500">কোনো বই পাওয়া যায়নি।</p>';
 };
 
 /* BLOGS */
-async function loadBlogs() {
-    const blogList = document.getElementById('blogList');
-    if (!blogList) return;
-
-    const { data: blogs, error } = await supabaseClient
-        .from('blogs').select('*').eq('status', 'approved').order('created_at', { ascending: false });
-
-    if (error || !blogs || blogs.length === 0) {
-        blogList.innerHTML = `
-            <div class="col-span-full text-center py-10 bg-white dark:bg-gray-800 rounded-xl shadow-sm">
-                <p class="text-gray-500">এখনো কোনো পোস্ট প্রকাশিত হয়নি।</p>
-            </div>`;
-        return;
+async function loadBlogs(){
+    const list=document.getElementById('blogList');
+    if(!list)return;
+    const {data:blogs,error}=await supabaseClient.from('blogs').select('*').eq('status','approved').order('created_at',{ascending:false});
+    if(error||!blogs?.length){
+        list.innerHTML='<div class="col-span-full text-center py-10 bg-white dark:bg-gray-800 rounded-xl shadow-sm"><p class="text-gray-500">এখনো কোনো পোস্ট প্রকাশিত হয়নি।</p></div>';return;
     }
-
-    const authorIds = [...new Set(blogs.map(b => b.author_id))];
-    const { data: profiles } = await supabaseClient
-        .from('profiles').select('id, full_name, profile_image').in('id', authorIds);
-
-    const profileMap = {};
-    if (profiles) profiles.forEach(p => profileMap[p.id] = p);
-
-    const blogHTML = await Promise.all(blogs.map(async blog => {
-        const author = profileMap[blog.author_id] || { full_name: 'নামহীন লেখক', profile_image: '' };
-        const authorImg = author.profile_image || `https://ui-avatars.com/api/?name=${encodeURIComponent(author.full_name)}&background=random`;
-
-        const { count: likeCount } = await supabaseClient
-            .from('blog_likes').select('*', { count: 'exact', head: true }).eq('blog_id', blog.id);
-
-        return `
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col h-full overflow-hidden hover:shadow-md transition">
+    const ids=[...new Set(blogs.map(b=>b.author_id))];
+    const {data:profiles}=await supabaseClient.from('profiles').select('id,full_name,profile_image').in('id',ids);
+    const profileMap={};profiles?.forEach(p=>profileMap[p.id]=p);
+    const html=await Promise.all(blogs.map(async blog=>{
+        const author=profileMap[blog.author_id]||{full_name:'নামহীন লেখক',profile_image:''};
+        const avatar=author.profile_image||`https://ui-avatars.com/api/?name=${encodeURIComponent(author.full_name)}&background=random`;
+        const {count}=await supabaseClient.from('blog_likes').select('*',{count:'exact',head:true}).eq('blog_id',blog.id);
+        return `<div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col h-full overflow-hidden hover:shadow-md transition">
             <div>
-                <div class="p-4 flex items-center gap-3 border-b dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition"
-                    onclick="window.location.href='/profile.html?id=${encodeURIComponent(blog.author_id)}'">
-                    <img src="${escapeHTML(authorImg)}" class="w-10 h-10 rounded-full object-cover border">
-                    <div>
-                        <h4 class="font-bold text-sm text-gray-900 dark:text-white hover:text-blue-600 transition">${escapeHTML(author.full_name)}</h4>
-                        <p class="text-xs text-gray-400">${new Date(blog.created_at).toLocaleDateString('bn-BD')}</p>
-                    </div>
+                <div class="p-4 flex items-center gap-3 border-b dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700" onclick="window.location.href='/profile.html?id=${encodeURIComponent(blog.author_id)}'">
+                    <img src="${escapeHTML(avatar)}" class="w-10 h-10 rounded-full object-cover border">
+                    <div><h4 class="font-bold text-sm text-gray-900 dark:text-white">${escapeHTML(author.full_name)}</h4><p class="text-xs text-gray-400">${new Date(blog.created_at).toLocaleDateString('bn-BD')}</p></div>
                 </div>
-                ${blog.image_url ? `
-                    <div class="max-h-60 overflow-hidden bg-gray-100 cursor-pointer" onclick="openPostDetails('${escapeHTML(blog.id)}')">
-                        <img src="${escapeHTML(blog.image_url)}" class="w-full h-full object-cover hover:scale-105 transition duration-300">
-                    </div>` : ''}
+                ${blog.image_url?`<div class="max-h-60 overflow-hidden bg-gray-100 cursor-pointer" onclick="openPostDetails('${escapeHTML(blog.id)}')"><img src="${escapeHTML(blog.image_url)}" class="w-full h-full object-cover hover:scale-105 transition duration-300"></div>`:''}
                 <div class="p-4 space-y-2">
-                    <h3 class="text-lg font-bold text-gray-900 dark:text-white cursor-pointer hover:text-blue-600 transition line-clamp-2"
-                        onclick="openPostDetails('${escapeHTML(blog.id)}')">${escapeHTML(blog.title)}</h3>
+                    <h3 class="text-lg font-bold text-gray-900 dark:text-white cursor-pointer hover:text-blue-600 line-clamp-2" onclick="openPostDetails('${escapeHTML(blog.id)}')">${escapeHTML(blog.title)}</h3>
                     <p class="text-sm text-gray-600 dark:text-gray-300 line-clamp-3">${escapeHTML(blog.content)}</p>
                 </div>
             </div>
             <div class="p-4 mt-auto border-t border-gray-100 dark:border-gray-700 flex items-center justify-between">
                 <div class="flex items-center gap-4">
-                    <button onclick="likeBlog('${escapeHTML(blog.id)}')" class="flex items-center gap-1 text-gray-500 hover:text-red-500 transition text-sm">
-                        🌹 <span id="like-count-${escapeHTML(blog.id)}">${likeCount || 0}</span>
-                    </button>
-                    <button onclick="openPostDetails('${escapeHTML(blog.id)}')" class="flex items-center gap-1 text-gray-500 hover:text-blue-500 transition text-sm">💬 কমেন্ট</button>
-                    <span class="flex items-center gap-1 text-gray-400 text-xs">👁️ ${blog.views || 0}</span>
+                    <button onclick="likeBlog('${escapeHTML(blog.id)}')" class="flex items-center gap-1 text-gray-500 hover:text-red-500 text-sm">🌹 <span id="like-count-${escapeHTML(blog.id)}">${count||0}</span></button>
+                    <button onclick="openPostDetails('${escapeHTML(blog.id)}')" class="flex items-center gap-1 text-gray-500 hover:text-blue-500 text-sm">💬 কমেন্ট</button>
+                    <span class="text-gray-400 text-xs">👁️ ${blog.views||0}</span>
                 </div>
                 <button onclick="openPostDetails('${escapeHTML(blog.id)}')" class="text-xs font-bold text-blue-600 hover:underline">বিস্তারিত</button>
             </div>
         </div>`;
     }));
-
-    blogList.innerHTML = blogHTML.join('');
+    list.innerHTML=html.join('');
 }
-
-window.likeBlog = async (blogId) => {
-    if (!currentUser) {
-        showToast('গোলাপ দিতে লগইন করুন!', true);
-        return;
-    }
-
-    const { data: existing, error: existingError } = await supabaseClient
-        .from('blog_likes').select('id').eq('blog_id', blogId).eq('user_id', currentUser.id).maybeSingle();
-
-    if (existingError) {
-        showToast('লাইক যাচাই করা যায়নি: ' + existingError.message, true);
-        return;
-    }
-
-    if (existing) {
-        const { error } = await supabaseClient.from('blog_likes').delete().eq('id', existing.id);
-        if (error) showToast('গোলাপ সরানো যায়নি: ' + error.message, true);
-    } else {
-        const { error: likeError } = await supabaseClient
-            .from('blog_likes').insert([{ blog_id: blogId, user_id: currentUser.id }]);
-
-        if (likeError) {
-            showToast('গোলাপ দিতে সমস্যা হয়েছে: ' + likeError.message, true);
-            return;
-        }
-
-        const { data: blogData } = await supabaseClient
-            .from('blogs').select('author_id').eq('id', blogId).single();
-
-        if (blogData && blogData.author_id !== currentUser.id) {
-            const actorName = await getCurrentUserDisplayName();
-
-            const { error: notificationError } = await supabaseClient
-                .from('notifications')
-                .insert([{
-                    user_id: blogData.author_id,
-                    message: `🌹 ${actorName} আপনার পোস্টে লাইক দিয়েছেন।`,
-                    link: `/index.html?post=${blogId}`,
-                    is_read: false
-                }]);
-
-            if (notificationError) {
-                console.error('Like notification error:', notificationError);
-            }
+window.likeBlog=async blogId=>{
+    if(!currentUser){showToast('গোলাপ দিতে লগইন করুন!',true);return}
+    const {data:existing,error:checkError}=await supabaseClient.from('blog_likes').select('id').eq('blog_id',blogId).eq('user_id',currentUser.id).maybeSingle();
+    if(checkError){showToast('লাইক যাচাই করা যায়নি: '+checkError.message,true);return}
+    if(existing){
+        const {error}=await supabaseClient.from('blog_likes').delete().eq('id',existing.id);
+        if(error){showToast('গোলাপ সরানো যায়নি: '+error.message,true);return}
+    }else{
+        const {error:likeError}=await supabaseClient.from('blog_likes').insert([{blog_id:blogId,user_id:currentUser.id}]);
+        if(likeError){showToast('গোলাপ দিতে সমস্যা হয়েছে: '+likeError.message,true);return}
+        const {data:blog}=await supabaseClient.from('blogs').select('author_id').eq('id',blogId).single();
+        if(blog&&blog.author_id!==currentUser.id){
+            const name=await getCurrentUserDisplayName();
+            const {error}=await supabaseClient.from('notifications').insert([{
+                user_id:blog.author_id,
+                message:`🌹 ${name} আপনার পোস্টে লাইক দিয়েছেন।`,
+                link:`/index.html?post=${encodeURIComponent(blogId)}`,
+                is_read:false
+            }]);
+            if(error)console.error('Like notification error:',error);
         }
     }
-
     await loadBlogs();
 };
 
-/* FORBIDDEN WORD FILTER */
-function containsForbiddenContent(text) {
-    const forbiddenKeywords = [
-        'বাল', 'মাদারচোদ', 'মাগী', 'বেশ্যা', 'শালা', 'শুয়োর', 'কুত্তা',
-        'বট', 'bastard', 'shit', 'fuck', 'bitch', 'asshole',
-        'বটম', 'যৌন', 'সেক্স', 'sex', 'porn', 'xxx', 'naked', 'nude',
-        'chod', 'chodai', 'boob', 'vagina', 'penis', 'rape', 'ধর্ষণ',
-        'হ্যারাস', 'লুচ্চা'
-    ];
-    const lowerText = text.toLowerCase();
-    return forbiddenKeywords.some(word => lowerText.includes(word));
+/* CONTENT FILTER */
+function containsForbiddenContent(text){
+    const words=['বাল','মাদারচোদ','মাগী','বেশ্যা','শালা','শুয়োর','কুত্তা','bastard','shit','fuck','bitch','asshole','বটম','যৌন','সেক্স','sex','porn','xxx','naked','nude','chod','chodai','boob','vagina','penis','rape','ধর্ষণ','হ্যারাস','লুচ্চা'];
+    const lower=text.toLowerCase();
+    return words.some(word=>lower.includes(word));
 }
 
 /* POST DETAILS */
-window.openPostDetails = async (blogId) => {
-    const modal = document.getElementById('postDetailsModal');
-    const contentDiv = document.getElementById('modalBodyContent');
+window.openPostDetails=async blogId=>{
+    const modal=document.getElementById('postDetailsModal');
+    const content=document.getElementById('modalBodyContent');
     modal.classList.remove('hidden');
-    contentDiv.innerHTML = '<p class="text-center py-10 text-gray-500">লোড হচ্ছে...</p>';
+    document.body.style.overflow='hidden';
+    content.innerHTML='<p class="text-center py-10 text-gray-500">লোড হচ্ছে...</p>';
 
-    try {
-        const { data: currentBlog } = await supabaseClient
-            .from('blogs').select('views').eq('id', blogId).single();
-        const newViews = (currentBlog?.views || 0) + 1;
-        await supabaseClient.from('blogs').update({ views: newViews }).eq('id', blogId);
-    } catch (e) {
-        console.log('View count update error:', e);
-    }
+    try{
+        const {data:old}=await supabaseClient.from('blogs').select('views').eq('id',blogId).single();
+        await supabaseClient.from('blogs').update({views:(old?.views||0)+1}).eq('id',blogId);
+    }catch(e){console.log('View count error:',e)}
 
-    const { data: blog, error: blogError } = await supabaseClient
-        .from('blogs').select('*').eq('id', blogId).single();
+    const {data:blog,error}=await supabaseClient.from('blogs').select('*').eq('id',blogId).single();
+    if(error||!blog){content.innerHTML='<p class="text-red-500 text-center">পোস্ট পাওয়া যায়নি।</p>';return}
 
-    if (blogError || !blog) {
-        contentDiv.innerHTML = '<p class="text-red-500 text-center">পোস্ট পাওয়া যায়নি।</p>';
-        return;
-    }
+    const {data:author}=await supabaseClient.from('profiles').select('id,full_name,profile_image').eq('id',blog.author_id).maybeSingle();
+    const authorName=author?.full_name||'নামহীন লেখক';
+    const authorImg=author?.profile_image||`https://ui-avatars.com/api/?name=${encodeURIComponent(authorName)}&background=random`;
 
-    const { data: author } = await supabaseClient
-        .from('profiles').select('id, full_name, profile_image').eq('id', blog.author_id).maybeSingle();
-
-    const authorName = author?.full_name || 'নামহীন লেখক';
-    const authorImg = author?.profile_image || `https://ui-avatars.com/api/?name=${encodeURIComponent(authorName)}&background=random`;
-
-    const { data: likes } = await supabaseClient.from('blog_likes').select('user_id').eq('blog_id', blogId);
-    const totalLikes = likes ? likes.length : 0;
-    const hasLiked = currentUser ? likes?.some(l => l.user_id === currentUser.id) : false;
-
-    let likerNamesText = '';
-    if (totalLikes > 0 && likes) {
-        const likerIds = likes.slice(0, 3).map(l => l.user_id);
-        const { data: likerProfiles } = await supabaseClient.from('profiles').select('full_name').in('id', likerIds);
-        if (likerProfiles && likerProfiles.length > 0) {
-            const names = likerProfiles.map(p => p.full_name || 'ব্যবহারকারী');
-            if (totalLikes === 1) likerNamesText = `${names[0]} এটিতে গোলাপ দিয়েছেন`;
-            else if (totalLikes === 2) likerNamesText = `${names[0]} এবং ${names[1]} এটিতে গোলাপ দিয়েছেন`;
-            else likerNamesText = `${names[0]}, ${names[1]} এবং আরও ${totalLikes - 2} জন এটিতে গোলাপ দিয়েছেন`;
+    const {data:likes}=await supabaseClient.from('blog_likes').select('user_id').eq('blog_id',blogId);
+    const total=likes?.length||0;
+    const hasLiked=!!(currentUser&&likes?.some(l=>l.user_id===currentUser.id));
+    let likerText='';
+    if(total){
+        const likerIds=likes.slice(0,3).map(l=>l.user_id);
+        const {data:likerProfiles}=await supabaseClient.from('profiles').select('full_name').in('id',likerIds);
+        if(likerProfiles?.length){
+            const names=likerProfiles.map(p=>p.full_name||'ব্যবহারকারী');
+            likerText=total===1?`${names[0]} এটিতে গোলাপ দিয়েছেন`:total===2?`${names[0]} এবং ${names[1]} এটিতে গোলাপ দিয়েছেন`:`${names[0]}, ${names[1]} এবং আরও ${total-2} জন এটিতে গোলাপ দিয়েছেন`;
         }
     }
 
-    const { data: comments } = await supabaseClient
-        .from('blog_comments').select('*').eq('blog_id', blogId).order('created_at', { ascending: true });
-
-    let commentProfiles = {};
-    if (comments && comments.length > 0) {
-        const cUserIds = [...new Set(comments.map(c => c.user_id))];
-        const { data: cProfiles } = await supabaseClient
-            .from('profiles').select('id, full_name, profile_image').in('id', cUserIds);
-        if (cProfiles) cProfiles.forEach(p => commentProfiles[p.id] = p);
+    const {data:comments}=await supabaseClient.from('blog_comments').select('*').eq('blog_id',blogId).order('created_at',{ascending:true});
+    let commentProfiles={};
+    if(comments?.length){
+        const userIds=[...new Set(comments.map(c=>c.user_id))];
+        const {data:profiles}=await supabaseClient.from('profiles').select('id,full_name,profile_image').in('id',userIds);
+        profiles?.forEach(p=>commentProfiles[p.id]=p);
     }
+    const mainComments=comments?.filter(c=>!c.parent_id)||[];
+    const replies=comments?.filter(c=>c.parent_id)||[];
 
-    const mainComments = comments ? comments.filter(c => !c.parent_id) : [];
-    const replies = comments ? comments.filter(c => c.parent_id) : [];
-
-    contentDiv.innerHTML = `
-        <div class="flex items-center justify-between mb-4">
-            <div class="flex items-center gap-3 cursor-pointer hover:opacity-80 transition"
-                onclick="window.location.href='/profile.html?id=${encodeURIComponent(blog.author_id)}'">
-                <img src="${escapeHTML(authorImg)}" class="w-12 h-12 rounded-full object-cover border">
-                <div>
-                    <h3 class="font-bold text-base text-gray-900 dark:text-white hover:text-blue-600">${escapeHTML(authorName)}</h3>
-                    <p class="text-xs text-gray-400">${new Date(blog.created_at).toLocaleString('bn-BD')}</p>
+    content.innerHTML=`
+    <div class="flex items-center justify-between mb-4 gap-2">
+        <div class="flex items-center gap-3 cursor-pointer hover:opacity-80" onclick="window.location.href='/profile.html?id=${encodeURIComponent(blog.author_id)}'">
+            <img src="${escapeHTML(authorImg)}" class="w-12 h-12 rounded-full object-cover border">
+            <div><h3 class="font-bold text-base text-gray-900 dark:text-white">${escapeHTML(authorName)}</h3><p class="text-xs text-gray-400">${new Date(blog.created_at).toLocaleString('bn-BD')}</p></div>
+        </div>
+        <div class="text-xs font-bold bg-blue-50 dark:bg-gray-700 text-blue-600 px-3 py-1 rounded-full">👁️ ${(blog.views||0)+1} ভিউ</div>
+    </div>
+    <h2 class="text-2xl font-extrabold text-gray-900 dark:text-white mb-2">${escapeHTML(blog.title)}</h2>
+    ${blog.image_url?`<img src="${escapeHTML(blog.image_url)}" class="w-full max-h-96 object-cover rounded-xl mb-4 shadow-sm">`:''}
+    <div class="text-gray-700 dark:text-gray-200 text-base leading-relaxed whitespace-pre-line mb-4">${escapeHTML(blog.content)}</div>
+    <div class="flex items-center justify-between text-xs sm:text-sm text-gray-500 border-y dark:border-gray-700 py-2.5 my-3">
+        <div>🌹 ${total} জন গোলাপ দিয়েছেন</div><div class="italic text-xs">${escapeHTML(likerText||'প্রথমে গোলাপ দিন')}</div>
+    </div>
+    <div class="flex items-center justify-around border-b dark:border-gray-700 pb-2 mb-4">
+        <button onclick="toggleModalLike('${escapeHTML(blog.id)}')" class="flex-1 py-2 rounded-lg font-bold text-sm ${hasLiked?'text-pink-600 bg-pink-50 dark:bg-gray-700':'text-gray-600 dark:text-gray-300'}">${hasLiked?'🌹 গোলাপ দেওয়া হয়েছে':'🌹 গোলাপ দিন'}</button>
+        <button onclick="document.getElementById('commentInput_${escapeHTML(blog.id)}')?.focus()" class="flex-1 py-2 rounded-lg font-bold text-sm text-gray-600 dark:text-gray-300">💬 কমেন্ট করুন</button>
+    </div>
+    <h4 class="font-bold text-lg mb-3 text-gray-900 dark:text-white">💬 কমেন্টসমূহ (${comments?.length||0})</h4>
+    <div class="space-y-4 max-h-72 overflow-y-auto mb-4 pr-2">
+    ${mainComments.length===0?'<p class="text-sm text-gray-400 text-center py-4">এখনো কোনো কমেন্ট নেই। প্রথম কমেন্ট করুন!</p>':mainComments.map(c=>{
+        const p=commentProfiles[c.user_id]||{full_name:'ব্যবহারকারী',profile_image:''};
+        const avatar=p.profile_image||`https://ui-avatars.com/api/?name=${encodeURIComponent(p.full_name)}&background=random`;
+        const child=replies.filter(r=>r.parent_id===c.id);
+        const mine=currentUser?.id===c.user_id;
+        return `<div class="space-y-2">
+            <div class="flex items-start gap-2.5 bg-gray-50 dark:bg-gray-700 p-3 rounded-xl">
+                <img src="${escapeHTML(avatar)}" class="w-8 h-8 rounded-full object-cover mt-0.5">
+                <div class="flex-1 min-w-0">
+                    <div class="flex justify-between items-center"><span class="font-bold text-xs text-gray-900 dark:text-white">${escapeHTML(p.full_name)}</span><span class="text-[10px] text-gray-400">${new Date(c.created_at).toLocaleTimeString('bn-BD',{hour:'2-digit',minute:'2-digit'})}</span></div>
+                    <p id="commentText_${escapeHTML(c.id)}" class="text-sm text-gray-700 dark:text-gray-200 mt-1">${escapeHTML(c.comment)}</p>
+                    <div id="editBox_${escapeHTML(c.id)}" class="hidden mt-2">
+                        <input type="text" id="editInput_${escapeHTML(c.id)}" value="${escapeHTML(c.comment)}" class="w-full px-2 py-1 text-xs border rounded dark:bg-gray-800 dark:border-gray-600 mb-1">
+                        <div class="flex gap-2"><button onclick="saveEditedComment('${escapeHTML(c.id)}','${escapeHTML(blog.id)}')" class="bg-green-600 text-white px-2 py-1 rounded text-xs">সেভ</button><button onclick="toggleEditBox('${escapeHTML(c.id)}')" class="bg-gray-400 text-white px-2 py-1 rounded text-xs">বাতিল</button></div>
+                    </div>
+                    <div class="flex items-center gap-3 mt-1">
+                        <button onclick="toggleReplyBox('${escapeHTML(c.id)}')" class="text-xs text-blue-600 font-bold">রিপ্লাই দিন</button>
+                        ${mine?`<button onclick="toggleEditBox('${escapeHTML(c.id)}')" class="text-xs text-amber-600">এডিট</button><button onclick="deleteComment('${escapeHTML(c.id)}','${escapeHTML(blog.id)}')" class="text-xs text-red-500">ডিলিট</button>`:''}
+                    </div>
                 </div>
             </div>
-            <div class="flex items-center gap-1 text-xs font-bold bg-blue-50 dark:bg-gray-700 text-blue-600 dark:text-blue-300 px-3 py-1 rounded-full border border-blue-100 dark:border-gray-600">
-                👁️ <span>${blog.views || 1} ভিউ</span>
+            ${child.length?`<div class="pl-8 space-y-2 border-l-2 border-gray-200 dark:border-gray-600 ml-4">${child.map(r=>{
+                const rp=commentProfiles[r.user_id]||{full_name:'ব্যবহারকারী',profile_image:''};
+                const ri=rp.profile_image||`https://ui-avatars.com/api/?name=${encodeURIComponent(rp.full_name)}&background=random`;
+                const own=currentUser?.id===r.user_id;
+                return `<div class="flex items-start gap-2 bg-gray-100 dark:bg-gray-800 p-2.5 rounded-xl text-xs">
+                    <img src="${escapeHTML(ri)}" class="w-6 h-6 rounded-full object-cover">
+                    <div class="flex-1 min-w-0">
+                        <div class="flex justify-between"><span class="font-bold text-gray-900 dark:text-white">${escapeHTML(rp.full_name)}</span><span class="text-[9px] text-gray-400">${new Date(r.created_at).toLocaleTimeString('bn-BD',{hour:'2-digit',minute:'2-digit'})}</span></div>
+                        <p id="commentText_${escapeHTML(r.id)}" class="text-gray-700 dark:text-gray-200 mt-1">${escapeHTML(r.comment)}</p>
+                        <div id="editBox_${escapeHTML(r.id)}" class="hidden mt-1">
+                            <input type="text" id="editInput_${escapeHTML(r.id)}" value="${escapeHTML(r.comment)}" class="w-full px-2 py-1 text-xs border rounded dark:bg-gray-700 mb-1">
+                            <div class="flex gap-2"><button onclick="saveEditedComment('${escapeHTML(r.id)}','${escapeHTML(blog.id)}')" class="bg-green-600 text-white px-2 py-1 rounded">সেভ</button><button onclick="toggleEditBox('${escapeHTML(r.id)}')" class="bg-gray-400 text-white px-2 py-1 rounded">বাতিল</button></div>
+                        </div>
+                        ${own?`<div class="flex gap-2 mt-1"><button onclick="toggleEditBox('${escapeHTML(r.id)}')" class="text-amber-600">এডিট</button><button onclick="deleteComment('${escapeHTML(r.id)}','${escapeHTML(blog.id)}')" class="text-red-500">ডিলিট</button></div>`:''}
+                    </div>
+                </div>`;
+            }).join('')}</div>`:''}
+            <div id="replyBox_${escapeHTML(c.id)}" class="hidden pl-8 ml-4">
+                <form onsubmit="submitComment(event,'${escapeHTML(blog.id)}','${escapeHTML(c.id)}')" class="flex gap-2">
+                    <input type="text" id="replyInput_${escapeHTML(c.id)}" required placeholder="${escapeHTML(p.full_name)}-কে রিপ্লাই দিন..." class="flex-1 min-w-0 px-3 py-1.5 border rounded-lg dark:bg-gray-800 dark:border-gray-600 text-xs">
+                    <button type="submit" class="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs">রিপ্লাই</button>
+                </form>
             </div>
-        </div>
-
-        <h2 class="text-2xl font-extrabold text-gray-900 dark:text-white mb-2">${escapeHTML(blog.title)}</h2>
-        ${blog.image_url ? `<img src="${escapeHTML(blog.image_url)}" class="w-full max-h-96 object-cover rounded-xl mb-4 shadow-sm">` : ''}
-        <div class="text-gray-700 dark:text-gray-200 text-base leading-relaxed whitespace-pre-line mb-4">${escapeHTML(blog.content)}</div>
-
-        <div class="flex items-center justify-between text-xs sm:text-sm text-gray-500 dark:text-gray-400 border-y dark:border-gray-700 py-2.5 my-3">
-            <div class="flex items-center gap-1.5"><span class="p-1 rounded-full text-sm">🌹</span><span>${totalLikes} জন গোলাপ দিয়েছেন</span></div>
-            <div>${totalLikes > 0 ? `<span class="italic text-xs">${escapeHTML(likerNamesText)}</span>` : 'প্রথমে গোলাপ দিন'}</div>
-        </div>
-
-        <div class="flex items-center justify-around border-b dark:border-gray-700 pb-2 mb-4">
-            <button onclick="toggleModalLike('${escapeHTML(blog.id)}')" class="flex items-center justify-center gap-2 flex-1 py-1.5 rounded-lg font-bold text-sm transition ${hasLiked ? 'text-pink-600 bg-pink-50 dark:bg-gray-700' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'}">
-                <span>${hasLiked ? '🌹 গোলাপ দেওয়া হয়েছে' : '🌹 গোলাপ দিন'}</span>
-            </button>
-            <button onclick="document.getElementById('commentInput_${escapeHTML(blog.id)}').focus()" class="flex items-center justify-center gap-2 flex-1 py-1.5 rounded-lg font-bold text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition">
-                <span>💬 কমেন্ট করুন</span>
-            </button>
-        </div>
-
-        <h4 class="font-bold text-lg mb-3 text-gray-900 dark:text-white">💬 কমেন্টসমূহ (${comments ? comments.length : 0})</h4>
-
-        <div class="space-y-4 max-h-72 overflow-y-auto mb-4 pr-2">
-            ${mainComments.length === 0
-                ? '<p class="text-sm text-gray-400 text-center py-4">এখনো কোনো কমেন্ট নেই। প্রথম কমেন্ট করুন!</p>'
-                : mainComments.map(c => {
-                    const commenter = commentProfiles[c.user_id] || { full_name: 'ব্যবহারকারী', profile_image: '' };
-                    const cImg = commenter.profile_image || `https://ui-avatars.com/api/?name=${encodeURIComponent(commenter.full_name)}&background=random`;
-                    const childReplies = replies.filter(r => r.parent_id === c.id);
-                    const isMyComment = currentUser && currentUser.id === c.user_id;
-
-                    return `
-                    <div class="space-y-2">
-                        <div class="flex items-start gap-2.5 bg-gray-50 dark:bg-gray-700 p-3 rounded-xl relative group">
-                            <img src="${escapeHTML(cImg)}" class="w-8 h-8 rounded-full object-cover mt-0.5">
-                            <div class="flex-1">
-                                <div class="flex justify-between items-center">
-                                    <span class="font-bold text-xs text-gray-900 dark:text-white">${escapeHTML(commenter.full_name)}</span>
-                                    <span class="text-[10px] text-gray-400">${new Date(c.created_at).toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-digit' })}</span>
-                                </div>
-                                <p id="commentText_${escapeHTML(c.id)}" class="text-sm text-gray-700 dark:text-gray-200 mt-1">${escapeHTML(c.comment)}</p>
-                                <div id="editBox_${escapeHTML(c.id)}" class="hidden mt-2">
-                                    <input type="text" id="editInput_${escapeHTML(c.id)}" value="${escapeHTML(c.comment)}" class="w-full px-2 py-1 text-xs border rounded dark:bg-gray-800 dark:border-gray-600 mb-1">
-                                    <div class="flex gap-2">
-                                        <button onclick="saveEditedComment('${escapeHTML(c.id)}', '${escapeHTML(blog.id)}')" class="bg-green-600 text-white px-2 py-0.5 rounded text-[10px] font-bold">সেভ</button>
-                                        <button onclick="toggleEditBox('${escapeHTML(c.id)}')" class="bg-gray-400 text-white px-2 py-0.5 rounded text-[10px]">বাতিল</button>
-                                    </div>
-                                </div>
-                                <div class="flex items-center gap-3 mt-1">
-                                    <button onclick="toggleReplyBox('${escapeHTML(c.id)}')" class="text-xs text-blue-600 font-bold hover:underline">রিপ্লাই দিন</button>
-                                    ${isMyComment ? `
-                                        <button onclick="toggleEditBox('${escapeHTML(c.id)}')" class="text-xs text-amber-600 font-semibold hover:underline">এডিট</button>
-                                        <button onclick="deleteComment('${escapeHTML(c.id)}', '${escapeHTML(blog.id)}')" class="text-xs text-red-500 font-semibold hover:underline">ডিলিট</button>` : ''}
-                                </div>
-                            </div>
-                        </div>
-
-                        ${childReplies.length > 0 ? `
-                            <div class="pl-8 space-y-2 border-l-2 border-gray-200 dark:border-gray-600 ml-4">
-                                ${childReplies.map(r => {
-                                    const replier = commentProfiles[r.user_id] || { full_name: 'ব্যবহারকারী', profile_image: '' };
-                                    const rImg = replier.profile_image || `https://ui-avatars.com/api/?name=${encodeURIComponent(replier.full_name)}&background=random`;
-                                    const isMyReply = currentUser && currentUser.id === r.user_id;
-                                    return `
-                                    <div class="flex items-start gap-2 bg-gray-100 dark:bg-gray-800 p-2.5 rounded-xl text-xs">
-                                        <img src="${escapeHTML(rImg)}" class="w-6 h-6 rounded-full object-cover mt-0.5">
-                                        <div class="flex-1">
-                                            <div class="flex justify-between items-center">
-                                                <span class="font-bold text-gray-900 dark:text-white">${escapeHTML(replier.full_name)}</span>
-                                                <span class="text-[9px] text-gray-400">${new Date(r.created_at).toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-digit' })}</span>
-                                            </div>
-                                            <p id="commentText_${escapeHTML(r.id)}" class="text-gray-700 dark:text-gray-200 mt-0.5">${escapeHTML(r.comment)}</p>
-                                            <div id="editBox_${escapeHTML(r.id)}" class="hidden mt-1">
-                                                <input type="text" id="editInput_${escapeHTML(r.id)}" value="${escapeHTML(r.comment)}" class="w-full px-2 py-1 text-[10px] border rounded dark:bg-gray-700 mb-1">
-                                                <div class="flex gap-2">
-                                                    <button onclick="saveEditedComment('${escapeHTML(r.id)}', '${escapeHTML(blog.id)}')" class="bg-green-600 text-white px-2 py-0.5 rounded text-[9px] font-bold">সেভ</button>
-                                                    <button onclick="toggleEditBox('${escapeHTML(r.id)}')" class="bg-gray-400 text-white px-2 py-0.5 rounded text-[9px]">বাতিল</button>
-                                                </div>
-                                            </div>
-                                            ${isMyReply ? `
-                                                <div class="flex gap-2 mt-1">
-                                                    <button onclick="toggleEditBox('${escapeHTML(r.id)}')" class="text-[10px] text-amber-600 font-semibold hover:underline">এডিট</button>
-                                                    <button onclick="deleteComment('${escapeHTML(r.id)}', '${escapeHTML(blog.id)}')" class="text-[10px] text-red-500 font-semibold hover:underline">ডিলিট</button>
-                                                </div>` : ''}
-                                        </div>
-                                    </div>`;
-                                }).join('')}
-                            </div>` : ''}
-
-                        <div id="replyBox_${escapeHTML(c.id)}" class="hidden pl-8 ml-4">
-                            <form onsubmit="submitComment(event, '${escapeHTML(blog.id)}', '${escapeHTML(c.id)}')" class="flex gap-2">
-                                <input type="text" id="replyInput_${escapeHTML(c.id)}" required placeholder="${escapeHTML(commenter.full_name)}-কে রিপ্লাই দিন..."
-                                    class="flex-1 px-3 py-1.5 border rounded-lg dark:bg-gray-800 dark:border-gray-600 text-xs outline-none focus:ring-1 focus:ring-blue-500">
-                                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition">রিপ্লাই</button>
-                            </form>
-                        </div>
-                    </div>`;
-                }).join('')}
-        </div>
-
-        ${currentUser ? `
-            <form onsubmit="submitComment(event, '${escapeHTML(blog.id)}', null)" class="flex gap-2">
-                <input type="text" id="commentInput_${escapeHTML(blog.id)}" required placeholder="একটি সুন্দর কমেন্ট লিখুন..."
-                    class="flex-1 px-4 py-2 border rounded-xl dark:bg-gray-700 dark:border-gray-600 text-sm outline-none focus:ring-2 focus:ring-blue-500">
-                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-5 py-2 rounded-xl text-sm transition">পাঠান</button>
-            </form>` : `
-            <p class="text-center text-sm py-2 bg-gray-50 dark:bg-gray-700 rounded-xl text-gray-500">
-                কমেন্ট করতে অনুগ্রহ করে <a href="/login.html" class="text-blue-600 font-bold underline">লগইন করুন</a>।
-            </p>`}
+        </div>`;
+    }).join('')}
+    </div>
+    ${currentUser?`<form onsubmit="submitComment(event,'${escapeHTML(blog.id)}',null)" class="flex gap-2">
+        <input type="text" id="commentInput_${escapeHTML(blog.id)}" required placeholder="একটি সুন্দর কমেন্ট লিখুন..." class="flex-1 min-w-0 px-4 py-2 border rounded-xl dark:bg-gray-700 dark:border-gray-600 text-sm">
+        <button type="submit" class="bg-blue-600 text-white font-bold px-5 py-2 rounded-xl text-sm">পাঠান</button>
+    </form>`:`<p class="text-center text-sm py-2 bg-gray-50 dark:bg-gray-700 rounded-xl text-gray-500">কমেন্ট করতে <a href="/login.html" class="text-blue-600 font-bold underline">লগইন করুন</a>।</p>`}
     `;
 };
 
-window.toggleReplyBox = (commentId) => {
-    const box = document.getElementById(`replyBox_${commentId}`);
-    if (box) box.classList.toggle('hidden');
-};
+window.toggleReplyBox=id=>document.getElementById(`replyBox_${id}`)?.classList.toggle('hidden');
+window.toggleEditBox=id=>document.getElementById(`editBox_${id}`)?.classList.toggle('hidden');
 
-window.toggleEditBox = (commentId) => {
-    const box = document.getElementById(`editBox_${commentId}`);
-    if (box) box.classList.toggle('hidden');
+window.saveEditedComment=async(commentId,blogId)=>{
+    const text=document.getElementById(`editInput_${commentId}`)?.value.trim()||'';
+    if(!text){showToast('কমেন্ট খালি রাখা যাবে না!',true);return}
+    if(containsForbiddenContent(text)){showToast('অনুপযুক্ত শব্দ থাকায় এডিট বাতিল করা হয়েছে!',true);return}
+    const {error}=await supabaseClient.from('blog_comments').update({comment:text}).eq('id',commentId).eq('user_id',currentUser?.id);
+    if(!error){showToast('কমেন্ট সফলভাবে এডিট হয়েছে!');await openPostDetails(blogId)}
+    else showToast('এডিট করতে সমস্যা: '+error.message,true);
 };
-
-window.saveEditedComment = async (commentId, blogId) => {
-    const input = document.getElementById(`editInput_${commentId}`);
-    const newText = input ? input.value.trim() : '';
-    if (!newText) {
-        showToast('কমেন্ট খালি রাখা যাবে না!', true);
-        return;
-    }
-    if (containsForbiddenContent(newText)) {
-        showToast('⚠️ আপনার কমেন্টে গালি, অ্যাডাল্ট বা অনুপযুক্ত শব্দ থাকায় এটি এডিট করা বাতিল করা হয়েছে!', true);
-        return;
-    }
-    const { error } = await supabaseClient.from('blog_comments').update({ comment: newText }).eq('id', commentId);
-    if (!error) {
-        showToast('✅ কমেন্ট সফলভাবে এডিট করা হয়েছে!');
-        openPostDetails(blogId);
-    } else showToast('এডিট করতে সমস্যা হয়েছে: ' + error.message, true);
+window.deleteComment=async(commentId,blogId)=>{
+    if(!confirm('আপনি কি নিশ্চিতভাবে এই কমেন্টটি ডিলিট করতে চান?'))return;
+    const {error}=await supabaseClient.from('blog_comments').delete().eq('id',commentId).eq('user_id',currentUser?.id);
+    if(!error){showToast('কমেন্ট ডিলিট হয়েছে!');await openPostDetails(blogId)}
+    else showToast('ডিলিট করতে সমস্যা: '+error.message,true);
 };
-
-window.deleteComment = async (commentId, blogId) => {
-    if (!confirm('আপনি কি নিশ্চিতভাবে এই কমেন্টটি ডিলিট করতে চান?')) return;
-    const { error } = await supabaseClient.from('blog_comments').delete().eq('id', commentId);
-    if (!error) {
-        showToast('🗑️ কমেন্ট সফলভাবে ডিলিট করা হয়েছে!');
-        openPostDetails(blogId);
-    } else showToast('ডিলিট করতে সমস্যা হয়েছে: ' + error.message, true);
-};
-
-window.toggleModalLike = async (blogId) => {
+window.toggleModalLike=async blogId=>{
     await likeBlog(blogId);
-    openPostDetails(blogId);
+    await openPostDetails(blogId);
 };
-
-window.closePostModal = () => {
+window.closePostModal=()=>{
     document.getElementById('postDetailsModal').classList.add('hidden');
+    document.body.style.overflow='';
 };
+document.getElementById('postDetailsModal').addEventListener('click',e=>{
+    if(e.target.id==='postDetailsModal')closePostModal();
+});
+document.addEventListener('keydown',e=>{
+    if(e.key==='Escape'){
+        closeMainMenu();
+        closeNotificationDropdowns();
+        closePostModal();
+    }
+});
 
-window.submitComment = async (e, blogId, parentId = null) => {
+window.submitComment=async(e,blogId,parentId=null)=>{
     e.preventDefault();
-    if (!currentUser) {
-        showToast('লগইন করুন', true);
-        return;
-    }
-
-    let commentText = '';
-    if (parentId) {
-        const replyInput = document.getElementById(`replyInput_${parentId}`);
-        commentText = replyInput ? replyInput.value.trim() : '';
-    } else {
-        const mainInput = document.getElementById(`commentInput_${blogId}`);
-        commentText = mainInput ? mainInput.value.trim() : '';
-    }
-
-    if (!commentText) return;
-    if (containsForbiddenContent(commentText)) {
-        showToast('🚫 সতর্কতা: আপনার কমেন্টে গালিগালাজ, অ্যাডাল্ট বা হ্যারেসমেন্টমূলক শব্দ শনাক্ত হয়েছে। এই কমেন্টটি ব্লক ও রিজেক্ট করা হলো!', true);
-        return;
-    }
-
-    const insertData = { blog_id: blogId, user_id: currentUser.id, comment: commentText };
-    if (parentId) insertData.parent_id = parentId;
-
-    const { error } = await supabaseClient.from('blog_comments').insert([insertData]);
-
-    if (!error) {
-        showToast('✅ কমেন্ট সফলভাবে পোস্ট হয়েছে!');
-
-        const { data: blogData } = await supabaseClient
-            .from('blogs').select('author_id').eq('id', blogId).single();
-
-        if (blogData && blogData.author_id !== currentUser.id) {
-            const actorName = await getCurrentUserDisplayName();
-
-            const { error: notificationError } = await supabaseClient
-                .from('notifications')
-                .insert([{
-                    user_id: blogData.author_id,
-                    message: `💬 ${actorName} আপনার পোস্টে কমেন্ট করেছেন।`,
-                    link: `/index.html?post=${blogId}`,
-                    is_read: false
-                }]);
-
-            if (notificationError) {
-                console.error('Comment notification error:', notificationError);
-            }
-        }
-
-        openPostDetails(blogId);
-    } else {
-        showToast('কমেন্ট সাবমিট সমস্যা: ' + error.message, true);
-    }
-};
-
-window.submitBlog = async () => {
-    if (!currentUser) {
-        showToast('পোস্ট লিখতে প্রথমে লগইন করুন!', true);
-        return;
-    }
-
-    const title = document.getElementById('newBlogTitle').value.trim();
-    const content = document.getElementById('newBlogContent').value.trim();
-    const imageFile = document.getElementById('newBlogImage').files[0];
-    const btn = document.getElementById('submitBlogBtn');
-
-    if (!title || !content) {
-        showToast('শিরোনাম এবং বিষয়বস্তু লিখুন!', true);
-        return;
-    }
-
-    btn.innerText = 'সাবমিট হচ্ছে...';
-    btn.disabled = true;
-
-    try {
-        let image_url = null;
-
-        if (imageFile) {
-            const fileName = `blog_${Date.now()}.${imageFile.name.split('.').pop()}`;
-            const { error: uploadError } = await supabaseClient.storage.from('book-covers').upload(fileName, imageFile);
-            if (uploadError) throw new Error('ছবি আপলোডে সমস্যা: ' + uploadError.message);
-
-            const { data } = supabaseClient.storage.from('book-covers').getPublicUrl(fileName);
-            image_url = data.publicUrl;
-        }
-
-        const { error } = await supabaseClient.from('blogs').insert([{
-            author_id: currentUser.id,
-            title,
-            content,
-            image_url,
-            status: 'pending',
-            views: 0
+    if(!currentUser){showToast('লগইন করুন',true);return}
+    const input=document.getElementById(parentId?`replyInput_${parentId}`:`commentInput_${blogId}`);
+    const text=input?.value.trim()||'';
+    if(!text)return;
+    if(containsForbiddenContent(text)){showToast('আপনার কমেন্টে অনুপযুক্ত শব্দ শনাক্ত হয়েছে। কমেন্টটি ব্লক করা হয়েছে!',true);return}
+    const data={blog_id:blogId,user_id:currentUser.id,comment:text};
+    if(parentId)data.parent_id=parentId;
+    const {error}=await supabaseClient.from('blog_comments').insert([data]);
+    if(error){showToast('কমেন্ট সাবমিট সমস্যা: '+error.message,true);return}
+    showToast('কমেন্ট সফলভাবে পোস্ট হয়েছে!');
+    const {data:blog}=await supabaseClient.from('blogs').select('author_id').eq('id',blogId).single();
+    if(blog&&blog.author_id!==currentUser.id){
+        const name=await getCurrentUserDisplayName();
+        const {error:notificationError}=await supabaseClient.from('notifications').insert([{
+            user_id:blog.author_id,
+            message:`💬 ${name} আপনার পোস্টে কমেন্ট করেছেন।`,
+            link:`/index.html?post=${encodeURIComponent(blogId)}`,
+            is_read:false
         }]);
-
-        if (error) throw new Error(error.message);
-
-        showToast('✅ আপনার পোস্টটি সফলভাবে জমা হয়েছে। অ্যাডমিন অ্যাপ্রুভ করার পর ফিডে দেখাবে।');
-        document.getElementById('newBlogTitle').value = '';
-        document.getElementById('newBlogContent').value = '';
-        document.getElementById('newBlogImage').value = '';
-        document.getElementById('writeBlogForm').classList.add('hidden');
-        loadBlogs();
-
-    } catch (err) {
-        showToast('সমস্যা: ' + err.message, true);
-    } finally {
-        btn.innerText = 'সাবমিট করুন';
-        btn.disabled = false;
+        if(notificationError)console.error('Comment notification error:',notificationError);
     }
+    await openPostDetails(blogId);
 };
 
-async function checkUrlForPost() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const postId = urlParams.get('post');
-    if (postId) await openPostDetails(postId);
+window.submitBlog=async()=>{
+    if(!currentUser){showToast('পোস্ট লিখতে প্রথমে লগইন করুন!',true);return}
+    const title=document.getElementById('newBlogTitle').value.trim();
+    const content=document.getElementById('newBlogContent').value.trim();
+    const file=document.getElementById('newBlogImage').files[0];
+    const btn=document.getElementById('submitBlogBtn');
+    if(!title||!content){showToast('শিরোনাম এবং বিষয়বস্তু লিখুন!',true);return}
+    if(file&& !['image/jpeg','image/png'].includes(file.type)){showToast('শুধু JPG বা PNG ছবি ব্যবহার করুন।',true);return}
+    btn.innerText='সাবমিট হচ্ছে...';btn.disabled=true;
+    try{
+        let image_url=null;
+        if(file){
+            const ext=file.name.split('.').pop().toLowerCase();
+            const filename=`blog_${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+            const {error:uploadError}=await supabaseClient.storage.from('book-covers').upload(filename,file);
+            if(uploadError)throw new Error('ছবি আপলোডে সমস্যা: '+uploadError.message);
+            image_url=supabaseClient.storage.from('book-covers').getPublicUrl(filename).data.publicUrl;
+        }
+        const {error}=await supabaseClient.from('blogs').insert([{
+            author_id:currentUser.id,title,content,image_url,status:'pending',views:0
+        }]);
+        if(error)throw new Error(error.message);
+        showToast('আপনার পোস্টটি জমা হয়েছে। অ্যাডমিন অনুমোদনের পর প্রকাশিত হবে।');
+        document.getElementById('newBlogTitle').value='';
+        document.getElementById('newBlogContent').value='';
+        document.getElementById('newBlogImage').value='';
+        document.getElementById('writeBlogForm').classList.add('hidden');
+        await loadBlogs();
+    }catch(err){showToast('সমস্যা: '+err.message,true)}
+    finally{btn.innerText='সাবমিট করুন';btn.disabled=false}
+};
+
+/* OPEN POST FROM URL */
+async function checkUrlForPost(){
+    const postId=new URLSearchParams(window.location.search).get('post');
+    if(postId)await openPostDetails(postId);
 }
 
-async function init() {
+/* INITIALIZE */
+async function init(){
     await loadAdminSettings();
     await checkAuth();
     await loadBooks();
@@ -1486,9 +958,7 @@ async function init() {
     updateWishlistCount();
     await checkUrlForPost();
 }
-
 init();
 </script>
-
 </body>
 </html>
