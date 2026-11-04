@@ -441,8 +441,9 @@
             const wishlist = JSON.parse(localStorage.getItem('boiChokroWishlist')) || [];
             const isWishlisted = wishlist.includes(bookId);
 
-            // স্টক চেক
-            const isOutOfStock = (book.stock_quantity !== undefined && book.stock_quantity !== null) ? book.stock_quantity <= 0 : false;
+            // স্টক চেক (stock_quantity না থাকলে বা ০ এর কম হলে স্টক আউট)
+            const stockQty = book.stock_quantity !== undefined && book.stock_quantity !== null ? Number(book.stock_quantity) : 1;
+            const isOutOfStock = stockQty <= 0;
 
             // উইশলিস্টের লাল লাভ নিশ্চিত করার জন্য ক্লাস ব্যবহার
             const heartClass = isWishlisted ? 'wishlisted-heart' : 'not-wishlisted-heart';
@@ -458,7 +459,10 @@
 
                 <a href="/book-details.html?id=${bookId}" class="block w-full aspect-[3/4] bg-gray-100 dark:bg-gray-700 overflow-hidden relative">
                     ${hasDiscount ? `<div class="absolute top-2 left-2 bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded-md shadow-md z-10">${discountPercent}% ছাড়</div>` : ''}
+                    
+                    <!-- স্টক আউট ওভারলে -->
                     ${isOutOfStock ? `<div class="absolute inset-0 bg-black/60 backdrop-blur-[2px] flex items-center justify-center z-10"><span class="bg-red-600 text-white font-bold text-[10px] sm:text-xs px-3 py-1 rounded-md shadow-lg">স্টক আউট</span></div>` : ''}
+                    
                     <img src="${bookImage}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" onerror="this.src='https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=300'">
                 </a>
                 <div class="p-3 flex flex-col flex-grow justify-between">
