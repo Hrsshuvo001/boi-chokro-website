@@ -22,15 +22,9 @@
         @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
         .modal-animate { animation: fadeIn 0.25s ease-out forwards; }
         
-        /* উইশলিস্ট লাভ আইকন ফিক্সড স্টাইল */
-        .wishlist-btn svg path {
-            transition: all 0.2s ease;
-        }
-        .wishlist-active svg {
-            fill: #dc2626 !important;
-            color: #dc2626 !important;
-            stroke: #dc2626 !important;
-        }
+        /* লাল লাভ নিশ্চিত করার জন্য কাস্টম ক্লাস */
+        .wishlisted-heart { color: #ef4444 !important; fill: #ef4444 !important; }
+        .not-wishlisted-heart { color: #9ca3af !important; fill: transparent !important; }
     </style>
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 transition-colors duration-300 min-h-screen flex flex-col">
@@ -325,7 +319,7 @@
                 if(authBtnMobile) {
                     authBtnMobile.innerHTML = `<a href="/profile.html" class="bg-blue-600 text-white px-2.5 py-1 rounded-md font-bold text-xs shadow">প্রোফাইল</a>`;
                 }
-                loadNotificationsAndUnreadMessages();
+                loadNotificationsAndMessages();
             } else {
                 currentUser = null;
                 if(authBtnDesktop) authBtnDesktop.innerHTML = `<a href="/login.html" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition">লগইন</a>`;
@@ -340,12 +334,12 @@
         }
 
         // ==========================================
-        // ১. আনসিন মেসেজ ও নোটিফিকেশন লোড করার ফাংশন (সিন করা মেসেজ কাউন্টে আসবে না)
+        // নোটিফিকেশন এবং মেসেজ লোড করার ফাংশন
         // ==========================================
-        async function loadNotificationsAndUnreadMessages() {
+        async function loadNotificationsAndMessages() {
             if(!currentUser) return;
             
-            // নোটিফিকেশন লোড
+            // ১. নোটিফিকেশন লোড
             const { data: notifs } = await supabaseClient.from('notifications')
                 .select('*')
                 .eq('user_id', currentUser.id)
@@ -377,8 +371,8 @@
                 if(badgeMob) badgeMob.classList.add('hidden');
             }
 
-            // শুধুমাত্র আনসিন মেসেজ গণনা (is_read = false)
-            const { count: unreadMsgsCount } = await supabaseClient.from('messages')
+            // ২. ইনবক্সের মোট মেসেজ কাউন্ট (শুধু আনরিড মেসেজ)
+            const { count: totalMsgs } = await supabaseClient.from('messages')
                 .select('*', { count: 'exact', head: true })
                 .eq('receiver_id', currentUser.id)
                 .eq('is_read', false);
@@ -386,9 +380,9 @@
             const msgBadge = document.getElementById('msgBadge');
             const msgBadgeMob = document.getElementById('msgBadgeMobile');
 
-            if(unreadMsgsCount && unreadMsgsCount > 0) {
-                if(msgBadge) { msgBadge.innerText = unreadMsgsCount; msgBadge.classList.remove('hidden'); }
-                if(msgBadgeMob) { msgBadgeMob.innerText = unreadMsgsCount; msgBadgeMob.classList.remove('hidden'); }
+            if(totalMsgs && totalMsgs > 0) {
+                if(msgBadge) { msgBadge.innerText = totalMsgs; msgBadge.classList.remove('hidden'); }
+                if(msgBadgeMob) { msgBadgeMob.innerText = totalMsgs; msgBadgeMob.classList.remove('hidden'); }
             } else {
                 if(msgBadge) msgBadge.classList.add('hidden');
                 if(msgBadgeMob) msgBadgeMob.classList.add('hidden');
@@ -401,7 +395,7 @@
 
         window.handleNotificationClick = async (notifId, link) => {
             await supabaseClient.from('notifications').update({ is_read: true }).eq('id', notifId);
-            loadNotificationsAndUnreadMessages();
+            loadNotificationsAndMessages();
             document.getElementById('notifDropdown').classList.add('hidden');
             if(link && link.trim() !== '') {
                 window.location.href = link;
@@ -447,18 +441,17 @@
             const wishlist = JSON.parse(localStorage.getItem('boiChokroWishlist')) || [];
             const isWishlisted = wishlist.includes(bookId);
 
-            // স্টক চেক এবং টেক্সট প্রদর্শন
-            const stockQty = (book.stock_quantity !== undefined && book.stock_quantity !== null) ? Number(book.stock_quantity) : 1;
-            const isOutOfStock = stockQty <= 0;
+            // স্টক চেক
+            const isOutOfStock = (book.stock_quantity !== undefined && book.stock_quantity !== null) ? book.stock_quantity <= 0 : false;
 
-            // উইশলিস্ট লাভ আইকন ক্লাস ও এসভিজি হ্যান্ডলিং
-            const wishlistClass = isWishlisted ? 'wishlist-btn wishlist-active' : 'wishlist-btn';
+            // উইশলিস্টের লাল লাভ নিশ্চিত করার জন্য ক্লাস ব্যবহার
+            const heartClass = isWishlisted ? 'wishlisted-heart' : 'not-wishlisted-heart';
 
             return `
             <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col overflow-hidden relative group">
                 <!-- উইশলিস্ট লাভ বাটন -->
-                <button onclick="toggleWishlist('${bookId}', event)" class="absolute top-2 right-2 z-20 bg-white/90 dark:bg-gray-800/90 backdrop-blur-md p-2 rounded-full shadow hover:scale-110 transition ${wishlistClass}">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="${isWishlisted ? '#dc2626' : 'none'}" stroke="${isWishlisted ? '#dc2626' : 'currentColor'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <button onclick="toggleWishlist('${bookId}', event)" class="absolute top-2 right-2 z-20 bg-white/80 dark:bg-gray-800/80 backdrop-blur-md p-2 rounded-full shadow hover:scale-110 transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ${heartClass}" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
                     </svg>
                 </button>
@@ -473,12 +466,7 @@
                         <a href="/book-details.html?id=${bookId}">
                             <h3 class="font-bold text-sm text-gray-900 dark:text-white leading-snug line-clamp-2 mb-1 hover:text-blue-600 transition">${escapeHTML(bookTitle)}</h3>
                         </a>
-                        <p class="text-xs text-gray-500 mb-2">${escapeHTML(bookAuthor)}</p>
-                        
-                        <!-- স্টকের স্ট্যাটাস টেক্সট -->
-                        <div class="mb-2">
-                            ${isOutOfStock ? '<span class="text-[11px] font-bold text-red-500 bg-red-50 dark:bg-red-900/30 px-2 py-0.5 rounded">আউট অফ স্টক</span>' : '<span class="text-[11px] font-bold text-green-600 bg-green-50 dark:bg-green-900/30 px-2 py-0.5 rounded">স্টকে বইটি আছে</span>'}
-                        </div>
+                        <p class="text-xs text-gray-500 mb-3">${escapeHTML(bookAuthor)}</p>
                     </div>
                     <div class="flex items-center gap-2">
                         <span class="text-lg font-bold text-blue-600 dark:text-blue-400">৳ ${currentPrice}</span>
@@ -629,6 +617,7 @@
                 await supabaseClient.from('blog_likes').delete().eq('id', existing.id);
             } else {
                 await supabaseClient.from('blog_likes').insert([{ blog_id: blogId, user_id: currentUser.id }]);
+                // নোটিফিকেশন তৈরি (পোস্টের মালিকের জন্য)
                 const { data: blogData } = await supabaseClient.from('blogs').select('author_id').eq('id', blogId).single();
                 if(blogData && blogData.author_id !== currentUser.id) {
                     await supabaseClient.from('notifications').insert([{
@@ -913,6 +902,7 @@
 
             if(!error) {
                 showToast('✅ কমেন্ট সফলভাবে পোস্ট হয়েছে!');
+                // নোটিফিকেশন তৈরি (পোস্টের মালিকের জন্য)
                 const { data: blogData } = await supabaseClient.from('blogs').select('author_id').eq('id', blogId).single();
                 if(blogData && blogData.author_id !== currentUser.id) {
                     await supabaseClient.from('notifications').insert([{
@@ -968,6 +958,7 @@
             }
         }
 
+        // পেজ লোড হওয়ার সময় URL-এ post প্যারামিটার থাকলে সেই পোস্টটি ওপেন করা
         async function checkUrlForPost() {
             const urlParams = new URLSearchParams(window.location.search);
             const postId = urlParams.get('post');
