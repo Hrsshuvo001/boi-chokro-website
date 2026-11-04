@@ -53,6 +53,31 @@
         .inbox-item { display: flex; gap: 10px; padding: 12px; cursor: pointer; }
         .inbox-item:hover { background: rgba(59,130,246,.08); }
         .inbox-item img { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+
+        @media (max-width: 767px) {
+            .inbox-dropdown {
+                position: fixed !important;
+                top: 68px !important;
+                left: 8px !important;
+                right: 8px !important;
+                width: auto !important;
+                max-width: 500px;
+                max-height: 70vh !important;
+                margin-left: auto;
+                margin-right: auto;
+            }
+            #notifDropdown, #notifDropdownMobile {
+                position: fixed !important;
+                top: 68px !important;
+                left: 8px !important;
+                right: 8px !important;
+                width: auto !important;
+                max-width: 500px;
+                max-height: 70vh !important;
+                overflow-y: auto;
+                z-index: 999999 !important;
+            }
+        }
     </style>
 </head>
 
@@ -140,7 +165,7 @@
             <div class="inbox-wrapper">
                 <button type="button" onclick="toggleInboxDropdown('desktop')" class="relative p-2 text-gray-600 dark:text-gray-300 hover:text-blue-600 transition">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
                     </svg>
                     <span id="msgBadge" class="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold rounded-full h-4 min-w-4 px-1 flex items-center justify-center hidden">0</span>
                 </button>
@@ -180,6 +205,12 @@
         </div>
     </div>
 </nav>
+
+<!-- MOBILE NOTIFICATION DROPDOWN -->
+<div id="notifDropdownMobile" class="hidden bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700">
+    <div class="p-3 bg-gray-50 dark:bg-gray-900 border-b dark:border-gray-700 font-bold text-sm">নোটিফিকেশন</div>
+    <div id="notifListMobile" class="divide-y divide-gray-100 dark:divide-gray-700"></div>
+</div>
 
 <!-- HERO -->
 <header id="heroSection" class="relative bg-gray-900 text-white rounded-b-[2rem] shadow-lg min-h-[16rem] sm:min-h-[20rem] md:min-h-[24rem] flex items-center justify-center no-print z-40 overflow-visible">
@@ -260,6 +291,7 @@ let currentUser = null;
 let allBooksData = [];
 let filteredBooksData = [];
 let messageRealtimeChannel = null;
+let notificationRealtimeChannel = null;
 
 /* COMMON */
 window.showToast = (message, isError = false) => {
@@ -394,16 +426,22 @@ async function checkAuth() {
                 <a href="/profile.html" class="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-white px-3 py-1.5 rounded-lg font-semibold hover:bg-gray-200 transition">প্রোফাইল</a>
                 <button onclick="handleLogout()" class="bg-red-50 text-red-600 px-3 py-1.5 rounded-lg font-semibold border border-red-200 hover:bg-red-100 transition">লগআউট</button>`;
         }
+
         if (authBtnMobile) {
-            authBtnMobile.innerHTML = `<a href="/profile.html" class="bg-blue-600 text-white px-2.5 py-1 rounded-md font-bold text-xs shadow">প্রোফাইল</a>`;
+            authBtnMobile.innerHTML = `
+                <a href="/profile.html" class="bg-blue-600 text-white px-2.5 py-1 rounded-md font-bold text-xs shadow">প্রোফাইল</a>
+                <button onclick="handleLogout()" class="bg-red-50 text-red-600 border border-red-200 px-2 py-1 rounded-md font-bold text-xs">লগআউট</button>`;
         }
 
         await loadNotificationsAndUnreadMessages();
         setupMessageRealtime();
+        setupNotificationRealtime();
     } else {
         currentUser = null;
         stopMessageRealtime();
+        stopNotificationRealtime();
         clearInboxUI();
+        clearNotificationUI();
 
         if (authBtnDesktop) {
             authBtnDesktop.innerHTML = `<a href="/login.html" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition">লগইন</a>`;
@@ -416,6 +454,8 @@ async function checkAuth() {
 
 window.handleLogout = async () => {
     stopMessageRealtime();
+    stopNotificationRealtime();
+
     const { error } = await supabaseClient.auth.signOut();
     if (error) {
         showToast('লগআউট সমস্যা: ' + error.message, true);
@@ -552,6 +592,7 @@ window.toggleInboxDropdown = (device) => {
     if (!target) return;
 
     if (other) other.classList.add('hidden');
+    closeNotificationDropdowns();
     target.classList.toggle('hidden');
 
     if (!target.classList.contains('hidden')) {
@@ -568,7 +609,7 @@ document.addEventListener('click', (event) => {
     }
 });
 
-/* SUPABASE REALTIME */
+/* SUPABASE REALTIME - MESSAGES */
 function stopMessageRealtime() {
     if (messageRealtimeChannel) {
         supabaseClient.removeChannel(messageRealtimeChannel);
@@ -588,8 +629,7 @@ function setupMessageRealtime() {
             schema: 'public',
             table: 'messages',
             filter: `receiver_id=eq.${currentUser.id}`
-        }, (payload) => {
-            console.log('Message realtime update:', payload.eventType);
+        }, () => {
             loadInboxPreview();
         })
         .subscribe((status) => {
@@ -598,60 +638,202 @@ function setupMessageRealtime() {
 }
 
 /* NOTIFICATIONS */
+function updateNotificationBadges(count) {
+    const displayCount = count > 99 ? '99+' : String(count);
+    ['notifBadge', 'notifBadgeMobile'].forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        if (count > 0) {
+            el.innerText = displayCount;
+            el.classList.remove('hidden');
+        } else {
+            el.classList.add('hidden');
+        }
+    });
+}
+
+function clearNotificationUI() {
+    updateNotificationBadges(0);
+    ['notifDropdown', 'notifDropdownMobile'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.add('hidden');
+    });
+    ['notifList', 'notifListMobile'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = '<div class="p-4 text-center text-sm text-gray-500">লগইন করলে নোটিফিকেশন দেখতে পারবেন।</div>';
+    });
+}
+
+function closeNotificationDropdowns() {
+    ['notifDropdown', 'notifDropdownMobile'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.add('hidden');
+    });
+}
+
+function notificationHTML(n) {
+    const safeId = encodeURIComponent(String(n.id || ''));
+    const safeLink = encodeURIComponent(String(n.link || ''));
+    const time = n.created_at ? new Date(n.created_at).toLocaleString('bn-BD') : '';
+
+    return `
+        <div onclick="handleNotificationClick('${safeId}', '${safeLink}')"
+             class="p-3 text-sm border-b dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition ${!n.is_read ? 'bg-blue-50 dark:bg-gray-700 font-semibold' : 'text-gray-600 dark:text-gray-300'}">
+            <div>${escapeHTML(n.message || 'নতুন নোটিফিকেশন')}</div>
+            <p class="text-[10px] text-gray-400 mt-1">${escapeHTML(time)}</p>
+            ${!n.is_read ? '<span class="text-[10px] text-blue-600">নতুন</span>' : ''}
+        </div>`;
+}
+
 async function loadNotificationsAndUnreadMessages() {
-    if (!currentUser) return;
+    if (!currentUser) {
+        clearNotificationUI();
+        clearInboxUI();
+        return;
+    }
 
     const { data: notifs, error } = await supabaseClient
         .from('notifications')
         .select('*')
         .eq('user_id', currentUser.id)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(50);
 
-    const badge = document.getElementById('notifBadge');
-    const badgeMob = document.getElementById('notifBadgeMobile');
-    const list = document.getElementById('notifList');
-
-    if (!error && notifs && notifs.length > 0) {
-        const unread = notifs.filter(n => !n.is_read).length;
-
-        [badge, badgeMob].forEach(el => {
-            if (!el) return;
-            if (unread > 0) {
-                el.innerText = unread > 99 ? '99+' : unread;
-                el.classList.remove('hidden');
-            } else el.classList.add('hidden');
+    if (error) {
+        console.error('Notification load error:', error);
+        ['notifList', 'notifListMobile'].forEach(id => {
+            const list = document.getElementById(id);
+            if (list) list.innerHTML = '<div class="p-4 text-center text-sm text-red-500">নোটিফিকেশন লোড করা যায়নি।</div>';
         });
-
-        if (list) {
-            list.innerHTML = notifs.map(n => `
-                <div onclick="handleNotificationClick('${escapeHTML(n.id)}', '${escapeHTML(n.link || '')}')"
-                     class="p-3 text-sm border-b dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition ${!n.is_read ? 'bg-blue-50 dark:bg-gray-700 font-semibold' : 'text-gray-600'}">
-                    ${escapeHTML(n.message)}
-                    <p class="text-[10px] text-gray-400 mt-1">${new Date(n.created_at).toLocaleString('bn-BD')}</p>
-                </div>
-            `).join('');
-        }
+        updateNotificationBadges(0);
     } else {
-        if (list) list.innerHTML = '<div class="p-4 text-center text-sm text-gray-500">কোনো নোটিফিকেশন নেই</div>';
-        if (badge) badge.classList.add('hidden');
-        if (badgeMob) badgeMob.classList.add('hidden');
+        const notifications = notifs || [];
+        const unread = notifications.filter(n => !n.is_read).length;
+        updateNotificationBadges(unread);
+
+        const html = notifications.length
+            ? notifications.map(notificationHTML).join('')
+            : '<div class="p-4 text-center text-sm text-gray-500">কোনো নোটিফিকেশন নেই</div>';
+
+        ['notifList', 'notifListMobile'].forEach(id => {
+            const list = document.getElementById(id);
+            if (list) list.innerHTML = html;
+        });
     }
 
     await loadInboxPreview();
 }
 
 window.toggleNotifications = () => {
-    const dropdown = document.getElementById('notifDropdown');
-    if (dropdown) dropdown.classList.toggle('hidden');
+    const isMobile = window.innerWidth < 768;
+    const target = document.getElementById(isMobile ? 'notifDropdownMobile' : 'notifDropdown');
+    const other = document.getElementById(isMobile ? 'notifDropdown' : 'notifDropdownMobile');
+
+    if (!target) return;
+
+    if (other) other.classList.add('hidden');
+    ['msgDropdown', 'msgDropdownMobile'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.add('hidden');
+    });
+
+    target.classList.toggle('hidden');
+
+    if (!target.classList.contains('hidden')) {
+        loadNotificationsAndUnreadMessages();
+    }
 };
 
-window.handleNotificationClick = async (notifId, link) => {
-    await supabaseClient.from('notifications').update({ is_read: true }).eq('id', notifId);
+window.handleNotificationClick = async (encodedId, encodedLink) => {
+    const notifId = decodeURIComponent(encodedId || '');
+    const link = decodeURIComponent(encodedLink || '');
+
+    if (!currentUser) {
+        showToast('নোটিফিকেশন দেখতে লগইন করুন।', true);
+        return;
+    }
+
+    if (notifId) {
+        const { error } = await supabaseClient
+            .from('notifications')
+            .update({ is_read: true })
+            .eq('id', notifId)
+            .eq('user_id', currentUser.id);
+
+        if (error) console.error('Notification read error:', error);
+    }
+
+    closeNotificationDropdowns();
     await loadNotificationsAndUnreadMessages();
-    const dropdown = document.getElementById('notifDropdown');
-    if (dropdown) dropdown.classList.add('hidden');
-    if (link && link.trim() !== '') window.location.href = link;
+
+    if (!link.trim()) return;
+
+    try {
+        const destination = new URL(link, window.location.origin);
+        const postId = destination.searchParams.get('post');
+
+        const sameHomePage =
+            destination.origin === window.location.origin &&
+            (destination.pathname === '/' || destination.pathname.endsWith('/index.html'));
+
+        if (postId && sameHomePage) {
+            await openPostDetails(postId);
+        } else {
+            window.location.href = destination.href;
+        }
+    } catch (error) {
+        console.error('Invalid notification link:', error);
+    }
 };
+
+/* REALTIME - NOTIFICATIONS */
+function stopNotificationRealtime() {
+    if (notificationRealtimeChannel) {
+        supabaseClient.removeChannel(notificationRealtimeChannel);
+        notificationRealtimeChannel = null;
+    }
+}
+
+function setupNotificationRealtime() {
+    if (!currentUser) return;
+
+    stopNotificationRealtime();
+
+    notificationRealtimeChannel = supabaseClient
+        .channel('notifications-realtime-' + currentUser.id)
+        .on('postgres_changes', {
+            event: '*',
+            schema: 'public',
+            table: 'notifications',
+            filter: `user_id=eq.${currentUser.id}`
+        }, (payload) => {
+            console.log('Notification realtime update:', payload.eventType);
+            loadNotificationsAndUnreadMessages();
+        })
+        .subscribe((status) => {
+            console.log('Notification realtime status:', status);
+        });
+}
+
+/* USER DISPLAY NAME FOR NOTIFICATIONS */
+async function getCurrentUserDisplayName() {
+    if (!currentUser) return 'একজন ব্যবহারকারী';
+
+    const { data: profile, error } = await supabaseClient
+        .from('profiles')
+        .select('full_name')
+        .eq('id', currentUser.id)
+        .maybeSingle();
+
+    if (!error && profile && profile.full_name) {
+        return profile.full_name;
+    }
+
+    return currentUser.user_metadata?.full_name ||
+        currentUser.user_metadata?.name ||
+        currentUser.email?.split('@')[0] ||
+        'একজন ব্যবহারকারী';
+}
 
 /* BOOKS */
 async function loadBooks() {
@@ -888,27 +1070,48 @@ window.likeBlog = async (blogId) => {
         return;
     }
 
-    const { data: existing } = await supabaseClient
+    const { data: existing, error: existingError } = await supabaseClient
         .from('blog_likes').select('id').eq('blog_id', blogId).eq('user_id', currentUser.id).maybeSingle();
 
+    if (existingError) {
+        showToast('লাইক যাচাই করা যায়নি: ' + existingError.message, true);
+        return;
+    }
+
     if (existing) {
-        await supabaseClient.from('blog_likes').delete().eq('id', existing.id);
+        const { error } = await supabaseClient.from('blog_likes').delete().eq('id', existing.id);
+        if (error) showToast('গোলাপ সরানো যায়নি: ' + error.message, true);
     } else {
-        await supabaseClient.from('blog_likes').insert([{ blog_id: blogId, user_id: currentUser.id }]);
+        const { error: likeError } = await supabaseClient
+            .from('blog_likes').insert([{ blog_id: blogId, user_id: currentUser.id }]);
+
+        if (likeError) {
+            showToast('গোলাপ দিতে সমস্যা হয়েছে: ' + likeError.message, true);
+            return;
+        }
 
         const { data: blogData } = await supabaseClient
             .from('blogs').select('author_id').eq('id', blogId).single();
 
         if (blogData && blogData.author_id !== currentUser.id) {
-            await supabaseClient.from('notifications').insert([{
-                user_id: blogData.author_id,
-                message: '🌹 আপনার একটি পোস্টে নতুন গোলাপ (লাইক) এসেছে!',
-                link: `/index.html?post=${blogId}`,
-                is_read: false
-            }]);
+            const actorName = await getCurrentUserDisplayName();
+
+            const { error: notificationError } = await supabaseClient
+                .from('notifications')
+                .insert([{
+                    user_id: blogData.author_id,
+                    message: `🌹 ${actorName} আপনার পোস্টে লাইক দিয়েছেন।`,
+                    link: `/index.html?post=${blogId}`,
+                    is_read: false
+                }]);
+
+            if (notificationError) {
+                console.error('Like notification error:', notificationError);
+            }
         }
     }
-    loadBlogs();
+
+    await loadBlogs();
 };
 
 /* FORBIDDEN WORD FILTER */
@@ -940,10 +1143,10 @@ window.openPostDetails = async (blogId) => {
         console.log('View count update error:', e);
     }
 
-    const { data: blog } = await supabaseClient
+    const { data: blog, error: blogError } = await supabaseClient
         .from('blogs').select('*').eq('id', blogId).single();
 
-    if (!blog) {
+    if (blogError || !blog) {
         contentDiv.innerHTML = '<p class="text-red-500 text-center">পোস্ট পাওয়া যায়নি।</p>';
         return;
     }
@@ -963,7 +1166,7 @@ window.openPostDetails = async (blogId) => {
         const likerIds = likes.slice(0, 3).map(l => l.user_id);
         const { data: likerProfiles } = await supabaseClient.from('profiles').select('full_name').in('id', likerIds);
         if (likerProfiles && likerProfiles.length > 0) {
-            const names = likerProfiles.map(p => p.full_name);
+            const names = likerProfiles.map(p => p.full_name || 'ব্যবহারকারী');
             if (totalLikes === 1) likerNamesText = `${names[0]} এটিতে গোলাপ দিয়েছেন`;
             else if (totalLikes === 2) likerNamesText = `${names[0]} এবং ${names[1]} এটিতে গোলাপ দিয়েছেন`;
             else likerNamesText = `${names[0]}, ${names[1]} এবং আরও ${totalLikes - 2} জন এটিতে গোলাপ দিয়েছেন`;
@@ -1184,18 +1387,31 @@ window.submitComment = async (e, blogId, parentId = null) => {
 
     if (!error) {
         showToast('✅ কমেন্ট সফলভাবে পোস্ট হয়েছে!');
-        const { data: blogData } = await supabaseClient.from('blogs').select('author_id').eq('id', blogId).single();
+
+        const { data: blogData } = await supabaseClient
+            .from('blogs').select('author_id').eq('id', blogId).single();
 
         if (blogData && blogData.author_id !== currentUser.id) {
-            await supabaseClient.from('notifications').insert([{
-                user_id: blogData.author_id,
-                message: '💬 আপনার একটি পোস্টে নতুন কমেন্ট এসেছে!',
-                link: `/index.html?post=${blogId}`,
-                is_read: false
-            }]);
+            const actorName = await getCurrentUserDisplayName();
+
+            const { error: notificationError } = await supabaseClient
+                .from('notifications')
+                .insert([{
+                    user_id: blogData.author_id,
+                    message: `💬 ${actorName} আপনার পোস্টে কমেন্ট করেছেন।`,
+                    link: `/index.html?post=${blogId}`,
+                    is_read: false
+                }]);
+
+            if (notificationError) {
+                console.error('Comment notification error:', notificationError);
+            }
         }
+
         openPostDetails(blogId);
-    } else showToast('কমেন্ট সাবমিট সমস্যা: ' + error.message, true);
+    } else {
+        showToast('কমেন্ট সাবমিট সমস্যা: ' + error.message, true);
+    }
 };
 
 window.submitBlog = async () => {
