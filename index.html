@@ -5,988 +5,1400 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title id="pageTitle">Boi Chokro - অনলাইন বইঘর</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script> tailwind.config = { darkMode: 'class' } </script>
+    <script>tailwind.config = { darkMode: 'class' }</script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap');
+
         body { font-family: 'Hind Siliguri', sans-serif; }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
-        .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-        .line-clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-        .card-shadow { box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05); transition: all 0.3s ease; }
-        .dark .card-shadow { box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); }
-        .card-shadow:hover { transform: translateY(-4px); box-shadow: 0 10px 35px rgba(0, 0, 0, 0.12); }
-        .search-dropdown-custom { z-index: 99999 !important; position: absolute; top: 100%; left: 0; width: 100%; margin-top: 0.5rem; }
-        @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-        .toast-animate { animation: slideInRight 0.3s ease-out forwards; }
-        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
-        .modal-animate { animation: fadeIn 0.25s ease-out forwards; }
-        
-        /* উইশলিস্ট লাভ আইকন ফিক্সড স্টাইল */
-        .wishlist-btn svg path {
-            transition: all 0.2s ease;
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
         }
-        .wishlist-active svg {
-            fill: #dc2626 !important;
+        .line-clamp-3 {
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .card-shadow {
+            box-shadow: 0 4px 20px rgba(0,0,0,.05);
+            transition: all .3s ease;
+        }
+        .dark .card-shadow {
+            box-shadow: 0 4px 20px rgba(0,0,0,.3);
+        }
+        .card-shadow:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 35px rgba(0,0,0,.12);
+        }
+        .search-dropdown-custom {
+            z-index: 99999 !important;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            margin-top: .5rem;
+        }
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .toast-animate { animation: slideInRight .3s ease-out forwards; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .modal-animate { animation: fadeIn .25s ease-out forwards; }
+
+        /* সম্পূর্ণ লাল হার্টের স্টাইল */
+        .wishlist-btn {
+            color: #6b7280;
+            transition: transform .2s ease, color .2s ease;
+        }
+
+        .wishlist-btn svg {
+            width: 20px;
+            height: 20px;
+            display: block;
+            transition: all .2s ease;
+        }
+
+        .wishlist-btn svg path {
+            transition: fill .2s ease, stroke .2s ease;
+        }
+
+        .wishlist-btn.wishlist-active {
             color: #dc2626 !important;
+        }
+
+        .wishlist-btn.wishlist-active svg path {
+            fill: #dc2626 !important;
             stroke: #dc2626 !important;
         }
     </style>
 </head>
+
 <body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 transition-colors duration-300 min-h-screen flex flex-col">
 
-    <div id="toast-container" class="fixed top-20 right-4 md:right-10 z-[100] flex flex-col gap-3 pointer-events-none"></div>
+<div id="toast-container" class="fixed top-20 right-4 md:right-10 z-[100] flex flex-col gap-3 pointer-events-none"></div>
 
-    <!-- নেভিগেশন বার -->
-    <nav class="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-50 transition-colors duration-300 no-print">
-        <div class="max-w-7xl mx-auto px-3 sm:px-4 py-3 flex flex-col md:flex-row justify-between items-center gap-3 md:gap-0">
-            
-            <div class="flex justify-between items-center w-full md:w-auto">
-                <a href="/" class="flex items-center gap-2 group">
-                    <img id="web_header_logo" src="" class="hidden h-8 sm:h-10 w-auto max-w-[40px] object-contain">
-                    <span id="web_header_name" class="text-xl sm:text-2xl font-extrabold text-blue-600 dark:text-blue-400 tracking-tight">Boi Chokro</span>
-                </a>
-                
-                <!-- মোবাইল ভিউ নেভিগেশন আইকন -->
-                <div class="flex items-center gap-2 md:hidden">
-                    <div id="authButtonsMobile" class="flex items-center gap-1 text-xs"></div>
-                    
-                    <a href="/inbox.html" class="relative text-gray-500 p-1.5">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" /></svg>
-                        <span id="msgBadgeMobile" class="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center hidden">0</span>
-                    </a>
+<!-- নেভিগেশন বার -->
+<nav class="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-50 transition-colors duration-300 no-print">
+    <div class="max-w-7xl mx-auto px-3 sm:px-4 py-3 flex flex-col md:flex-row justify-between items-center gap-3 md:gap-0">
 
-                    <button onclick="toggleNotifications()" class="relative text-gray-500 p-1.5">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
-                        <span id="notifBadgeMobile" class="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center hidden">0</span>
-                    </button>
+        <div class="flex justify-between items-center w-full md:w-auto">
+            <a href="/" class="flex items-center gap-2 group">
+                <img id="web_header_logo" src="" class="hidden h-8 sm:h-10 w-auto max-w-[40px] object-contain">
+                <span id="web_header_name" class="text-xl sm:text-2xl font-extrabold text-blue-600 dark:text-blue-400 tracking-tight">Boi Chokro</span>
+            </a>
 
-                    <button onclick="toggleDarkMode()" class="text-gray-500 p-1.5">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
-                    </button>
+            <div class="flex items-center gap-2 md:hidden">
+                <div id="authButtonsMobile" class="flex items-center gap-1 text-xs"></div>
 
-                    <a href="/cart.html" class="relative flex items-center bg-blue-50 dark:bg-gray-700 text-blue-600 dark:text-blue-400 px-2 py-1 rounded-lg border border-blue-100 dark:border-gray-600">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
-                        <span id="cartCountMobile" class="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center border border-white">0</span>
-                    </a>
-                </div>
-            </div>
-
-            <div class="hidden md:block w-full md:w-1/3 relative group">
-                <input type="text" id="searchInput" placeholder="বই, লেখক বা প্রকাশনী খুঁজুন..." class="w-full pl-10 pr-4 py-2.5 bg-gray-100 dark:bg-gray-700 border-transparent rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-white transition shadow-inner text-sm" oninput="handleSearch('desktop')">
-                <svg xmlns="http://www.w3.org/2000/svg" class="absolute left-3.5 top-3 h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-                <div id="searchResultsDropdown" class="hidden search-dropdown-custom bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-100 dark:border-gray-700 max-h-96 overflow-y-auto"></div>
-            </div>
-
-            <div class="hidden md:flex items-center gap-4">
-                <div class="relative">
-                    <button onclick="toggleNotifications()" class="relative p-2 text-gray-600 dark:text-gray-300 hover:text-blue-600 transition">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
-                        <span id="notifBadge" class="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center hidden">0</span>
-                    </button>
-                    <div id="notifDropdown" class="hidden absolute right-0 mt-2 w-72 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-50 max-h-80 overflow-y-auto">
-                        <div class="p-3 bg-gray-50 dark:bg-gray-900 border-b dark:border-gray-700 font-bold text-sm rounded-t-lg">নোটিফিকেশন</div>
-                        <div id="notifList" class="divide-y divide-gray-100 dark:divide-gray-700"></div>
-                    </div>
-                </div>
-
-                <a href="/inbox.html" class="relative p-2 text-gray-600 dark:text-gray-300 hover:text-blue-600 transition">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" /></svg>
-                    <span id="msgBadge" class="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center hidden">0</span>
+                <a href="/inbox.html" class="relative text-gray-500 p-1.5">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
+                    </svg>
+                    <span id="msgBadgeMobile" class="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center hidden">0</span>
                 </a>
 
-                <a href="/wishlist.html" class="relative text-red-500 hover:text-red-600 p-2" title="উইশলিস্ট">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
-                    <span id="wishlistCountBadge" class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center hidden">0</span>
-                </a>
+                <button onclick="toggleNotifications()" class="relative text-gray-500 p-1.5">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                    </svg>
+                    <span id="notifBadgeMobile" class="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center hidden">0</span>
+                </button>
 
-                <button onclick="toggleDarkMode()" class="text-gray-500 dark:text-gray-400 hover:text-blue-600 transition p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg></button>
-                
-                <a href="/cart.html" class="relative flex items-center gap-1.5 bg-blue-50 dark:bg-gray-700 text-blue-600 dark:text-blue-400 hover:bg-blue-100 px-4 py-2 rounded-lg font-semibold transition border border-blue-100 dark:border-gray-600">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
-                    <span class="text-sm">কার্ট</span>
-                    <span id="cartCountDesktop" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center border-2 border-white">0</span>
-                </a>
-                <div id="authButtonsDesktop" class="flex items-center gap-2 text-sm"></div>
-            </div>
-        </div>
-    </nav>
-
-    <!-- হিরো সেকশন ও ব্যানার -->
-    <header id="heroSection" class="relative bg-gray-900 text-white rounded-b-[2rem] shadow-lg min-h-[16rem] sm:min-h-[20rem] md:min-h-[24rem] flex items-center justify-center no-print z-40 overflow-visible">
-        <div id="heroBannerImage" class="absolute inset-0 bg-gradient-to-br from-blue-900 via-blue-700 to-blue-500 bg-cover bg-center transition-all duration-500 rounded-b-[2rem]"></div>
-        <div class="absolute inset-0 bg-black/40 rounded-b-[2rem]"></div>
-        
-        <div class="relative z-50 text-center px-4 w-full max-w-4xl mx-auto py-8">
-            <h1 id="web_tagline" class="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-4 tracking-tight drop-shadow-lg">আপনার পছন্দের বই, এক জায়গায়</h1>
-            <p id="web_sub_tagline" class="text-sm sm:text-base md:text-lg text-gray-200 max-w-2xl mx-auto mb-8 drop-shadow">সেরা লেখকদের বইয়ের বিশাল সংগ্রহ। আজই আপনার প্রিয় বইটি খুঁজে নিন।</p>
-            
-            <div class="md:hidden max-w-md mx-auto relative group z-[99999]">
-                <input type="text" id="searchInputMobile" placeholder="বই খুঁজুন..." class="w-full pl-10 pr-4 py-3 bg-white/20 backdrop-blur-md border border-white/30 text-white placeholder-gray-200 rounded-full focus:outline-none focus:bg-white focus:text-gray-800 transition shadow-lg text-sm" oninput="handleSearch('mobile')">
-                <svg xmlns="http://www.w3.org/2000/svg" class="absolute left-3.5 top-3.5 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-                <div id="searchResultsDropdownMobile" class="hidden search-dropdown-custom bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-100 dark:border-gray-700 max-h-72 overflow-y-auto text-left"></div>
-            </div>
-        </div>
-    </header>
-
-    <main class="flex-grow max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 -mt-8 relative z-30 pb-16 no-print">
-        
-        <!-- ১. ই-কমার্স বইয়ের দোকান -->
-        <section id="allBooksSection" class="mt-8">
-            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 mb-6 flex flex-col md:flex-row justify-between items-center gap-4 border border-gray-100 dark:border-gray-700">
-                <div class="flex flex-wrap gap-2 w-full md:w-auto" id="categoryButtons">
-                    <button onclick="filterCategory('all')" class="category-btn bg-blue-600 text-white px-4 py-1.5 rounded-full text-xs sm:text-sm font-semibold transition shadow-sm">সব বই</button>
-                </div>
-            </div>
-            
-            <div id="bookGrid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-6 items-stretch">
-                <p class="text-gray-500 col-span-full text-center py-8">বই লোড হচ্ছে...</p>
-            </div>
-        </section>
-
-        <!-- ২. ব্লগ ও পোস্ট সমূহ সেকশন -->
-        <section id="blogSection" class="mt-16 mb-12">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-3xl font-bold text-gray-900 dark:text-white border-l-4 border-blue-600 pl-3">ব্লগ ও পোস্ট সমূহ</h2>
-                <button onclick="document.getElementById('writeBlogForm').classList.toggle('hidden')" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-700 transition">✍️ নতুন পোস্ট লিখুন</button>
-            </div>
-
-            <div id="writeBlogForm" class="hidden bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md mb-8 border border-gray-100 dark:border-gray-700">
-                <h3 class="text-xl font-bold mb-4">নতুন পোস্ট লিখুন</h3>
-                <div class="space-y-4">
-                    <input type="text" id="newBlogTitle" placeholder="পোস্টের শিরোনাম" class="w-full px-4 py-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 focus:outline-none">
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">ছবি (ঐচ্ছিক)</label>
-                        <input type="file" id="newBlogImage" accept="image/jpeg, image/png" class="w-full px-4 py-2 border rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600 text-sm">
-                    </div>
-                    <textarea id="newBlogContent" rows="5" placeholder="আপনার গল্প বা লেখা লিখুন..." class="w-full px-4 py-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 focus:outline-none"></textarea>
-                    <button onclick="submitBlog()" id="submitBlogBtn" class="bg-green-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-green-700 transition">সাবমিট করুন</button>
-                </div>
-            </div>
-            
-            <div id="blogList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <p class="text-gray-500 col-span-full text-center">পোস্ট লোড হচ্ছে...</p>
-            </div>
-        </section>
-    </main>
-
-    <!-- ফুল পোস্ট ভিউ, ভিউ কাউন্ট, কমেন্ট, রিপ্লাই, এডিট ও ডিলিট মডাল -->
-    <div id="postDetailsModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
-        <div class="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl relative modal-animate">
-            <button onclick="closePostModal()" class="absolute top-4 right-4 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-red-500 hover:text-white h-8 w-8 rounded-full flex items-center justify-center font-bold transition">✕</button>
-            <div id="modalBodyContent" class="p-6 space-y-4"></div>
-        </div>
-    </div>
-
-    <!-- ডাইনামিক ফুটার -->
-    <footer class="bg-gray-900 dark:bg-black text-gray-400 pt-12 pb-6 mt-auto border-t-4 border-blue-600 no-print">
-        <div class="max-w-7xl mx-auto px-4 text-center space-y-2">
-            <p id="web_footer_text">&copy; 2026 Boi Chokro. All rights reserved.</p>
-            <p id="web_footer_contact" class="text-sm"></p>
-        </div>
-    </footer>
-
-    <script>
-        const SUPABASE_URL = 'https://jhbpaezbpkfwjfmazdcn.supabase.co';
-        const SUPABASE_ANON_KEY = 'sb_publishable_oBzutzPKvIvujmSG7icXug_SwwveL5g';
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-        let currentUser = null;
-        let allBooksData = [];
-        let filteredBooksData = [];
-
-        window.showToast = (message, isError = false) => {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            toast.className = `toast-animate px-5 py-4 rounded-lg shadow-2xl text-white font-bold flex items-center gap-3 ${isError ? 'bg-red-600 border-l-4 border-red-800' : 'bg-green-600 border-l-4 border-green-800'}`;
-            toast.innerHTML = `<span class="text-2xl">${isError ? '⚠️' : '✅'}</span><span class="text-sm md:text-base pr-2">${message}</span>`;
-            container.appendChild(toast);
-            setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateX(100%)'; toast.style.transition = 'all 0.3s ease'; setTimeout(() => toast.remove(), 300); }, 4000);
-        };
-
-        function escapeHTML(str) {
-            if (!str) return '';
-            return str.replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
-        }
-
-        function sanitizeSearchQuery(query) { return query.replace(/[<>]/g, '').trim(); }
-
-        if (localStorage.getItem('theme') === 'dark') document.documentElement.classList.add('dark');
-        window.toggleDarkMode = () => {
-            document.documentElement.classList.toggle('dark');
-            localStorage.setItem('theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
-        }
-
-        function updateCartCount() {
-            const cart = JSON.parse(localStorage.getItem('boiChokroCart')) || [];
-            const mobEl = document.getElementById('cartCountMobile');
-            const deskEl = document.getElementById('cartCountDesktop');
-            if(mobEl) mobEl.innerText = cart.length;
-            if(deskEl) deskEl.innerText = cart.length;
-        }
-
-        function updateWishlistCount() {
-            const wishlist = JSON.parse(localStorage.getItem('boiChokroWishlist')) || [];
-            const badge = document.getElementById('wishlistCountBadge');
-            if(badge) {
-                if(wishlist.length > 0) {
-                    badge.innerText = wishlist.length;
-                    badge.classList.remove('hidden');
-                } else {
-                    badge.classList.add('hidden');
-                }
-            }
-        }
-
-        window.toggleWishlist = (bookId, event) => {
-            if(event) event.preventDefault();
-            let wishlist = JSON.parse(localStorage.getItem('boiChokroWishlist')) || [];
-            const index = wishlist.indexOf(bookId);
-            
-            if(index > -1) {
-                wishlist.splice(index, 1);
-                showToast('💔 উইশলিস্ট থেকে বইটি সরিয়ে ফেলা হয়েছে!');
-            } else {
-                wishlist.push(bookId);
-                showToast('💖 আপনার উইশলিস্টে বইটি যোগ করা হয়েছে!');
-            }
-            localStorage.setItem('boiChokroWishlist', JSON.stringify(wishlist));
-            updateWishlistCount();
-            renderBooks(filteredBooksData);
-        }
-
-        async function loadAdminSettings() {
-            try {
-                const { data: settings, error } = await supabaseClient.from('site_settings').select('*').limit(1).maybeSingle();
-                if (settings && !error) {
-                    const companyName = settings.company_name || 'Boi Chokro';
-                    document.getElementById('pageTitle').innerText = companyName + ' - অনলাইন বইঘর';
-                    const headerName = document.getElementById('web_header_name');
-                    if(headerName) headerName.innerText = companyName;
-
-                    const logoUrl = settings.logo_url || settings.logo || '';
-                    if (logoUrl) {
-                        const logoEl = document.getElementById('web_header_logo');
-                        if(logoEl) { logoEl.src = logoUrl; logoEl.classList.remove('hidden'); }
-                    }
-
-                    const taglineText = settings.banner_text || settings.tagline || '';
-                    if (taglineText) {
-                        const taglineEl = document.getElementById('web_tagline');
-                        if(taglineEl) taglineEl.innerText = taglineText;
-                    }
-
-                    const subTaglineText = settings.sub_tagline || '';
-                    if (subTaglineText) {
-                        const subTaglineEl = document.getElementById('web_sub_tagline');
-                        if(subTaglineEl) subTaglineEl.innerText = subTaglineText;
-                    }
-
-                    const bannerUrl = settings.banner_url || '';
-                    if (bannerUrl) {
-                        const heroBanner = document.getElementById('heroBannerImage');
-                        if (heroBanner) heroBanner.style.backgroundImage = `url('${bannerUrl}')`;
-                    }
-
-                    const phone = settings.phone || '';
-                    const address = settings.address || '';
-                    const footerContact = document.getElementById('web_footer_contact');
-                    if (footerContact) {
-                        let contactHTML = '';
-                        if (phone) contactHTML += `📞 ফোন: ${phone} `;
-                        if (address) contactHTML += ` | 📍 ঠিকানা: ${address}`;
-                        footerContact.innerHTML = contactHTML;
-                    }
-
-                    const footerText = settings.footer_text || '';
-                    if (footerText) {
-                        const footerEl = document.getElementById('web_footer_text');
-                        if(footerEl) footerEl.innerHTML = footerText;
-                    }
-                }
-            } catch (e) {
-                console.log('site_settings table fetch error:', e);
-            }
-        }
-
-        async function checkAuth() {
-            const { data: { session } } = await supabaseClient.auth.getSession();
-            const authBtnDesktop = document.getElementById('authButtonsDesktop');
-            const authBtnMobile = document.getElementById('authButtonsMobile');
-            
-            if (session) {
-                currentUser = session.user;
-                if(authBtnDesktop) {
-                    authBtnDesktop.innerHTML = `
-                        <a href="/profile.html" class="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-white px-3 py-1.5 rounded-lg font-semibold hover:bg-gray-200 transition">প্রোফাইল</a>
-                        <button onclick="handleLogout()" class="bg-red-50 text-red-600 px-3 py-1.5 rounded-lg font-semibold border border-red-200 hover:bg-red-100 transition">লগআউট</button>
-                    `;
-                }
-                if(authBtnMobile) {
-                    authBtnMobile.innerHTML = `<a href="/profile.html" class="bg-blue-600 text-white px-2.5 py-1 rounded-md font-bold text-xs shadow">প্রোফাইল</a>`;
-                }
-                loadNotificationsAndUnreadMessages();
-            } else {
-                currentUser = null;
-                if(authBtnDesktop) authBtnDesktop.innerHTML = `<a href="/login.html" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition">লগইন</a>`;
-                if(authBtnMobile) authBtnMobile.innerHTML = `<a href="/login.html" class="bg-blue-600 text-white px-2.5 py-1 rounded-md font-bold text-xs">লগইন</a>`;
-            }
-        }
-
-        window.handleLogout = async () => { 
-            await supabaseClient.auth.signOut(); 
-            checkAuth(); 
-            showToast('লগআউট হয়েছে।', false); 
-        }
-
-        // ==========================================
-        // ১. আনসিন মেসেজ ও নোটিফিকেশন লোড করার ফাংশন (সিন করা মেসেজ কাউন্টে আসবে না)
-        // ==========================================
-        async function loadNotificationsAndUnreadMessages() {
-            if(!currentUser) return;
-            
-            // নোটিফিকেশন লোড
-            const { data: notifs } = await supabaseClient.from('notifications')
-                .select('*')
-                .eq('user_id', currentUser.id)
-                .order('created_at', { ascending: false });
-            
-            const badge = document.getElementById('notifBadge');
-            const badgeMob = document.getElementById('notifBadgeMobile');
-            const list = document.getElementById('notifList');
-            
-            if(notifs && notifs.length > 0) {
-                const unread = notifs.filter(n => !n.is_read).length;
-                if(unread > 0) { 
-                    if(badge) { badge.innerText = unread; badge.classList.remove('hidden'); }
-                    if(badgeMob) { badgeMob.innerText = unread; badgeMob.classList.remove('hidden'); }
-                } else {
-                    if(badge) badge.classList.add('hidden');
-                    if(badgeMob) badgeMob.classList.add('hidden');
-                }
-
-                list.innerHTML = notifs.map(n => `
-                    <div onclick="handleNotificationClick('${n.id}', '${n.link || ''}')" class="p-3 text-sm border-b dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition ${!n.is_read ? 'bg-blue-50 dark:bg-gray-700 font-semibold' : 'text-gray-600'}">
-                        ${escapeHTML(n.message)}
-                        <p class="text-[10px] text-gray-400 mt-1">${new Date(n.created_at).toLocaleString('bn-BD')}</p>
-                    </div>
-                `).join('');
-            } else {
-                list.innerHTML = `<div class="p-4 text-center text-sm text-gray-500">কোনো নোটিফিকেশন নেই</div>`;
-                if(badge) badge.classList.add('hidden');
-                if(badgeMob) badgeMob.classList.add('hidden');
-            }
-
-            // শুধুমাত্র আনসিন মেসেজ গণনা (is_read = false)
-            const { count: unreadMsgsCount } = await supabaseClient.from('messages')
-                .select('*', { count: 'exact', head: true })
-                .eq('receiver_id', currentUser.id)
-                .eq('is_read', false);
-
-            const msgBadge = document.getElementById('msgBadge');
-            const msgBadgeMob = document.getElementById('msgBadgeMobile');
-
-            if(unreadMsgsCount && unreadMsgsCount > 0) {
-                if(msgBadge) { msgBadge.innerText = unreadMsgsCount; msgBadge.classList.remove('hidden'); }
-                if(msgBadgeMob) { msgBadgeMob.innerText = unreadMsgsCount; msgBadgeMob.classList.remove('hidden'); }
-            } else {
-                if(msgBadge) msgBadge.classList.add('hidden');
-                if(msgBadgeMob) msgBadgeMob.classList.add('hidden');
-            }
-        }
-
-        window.toggleNotifications = () => { 
-            document.getElementById('notifDropdown').classList.toggle('hidden'); 
-        };
-
-        window.handleNotificationClick = async (notifId, link) => {
-            await supabaseClient.from('notifications').update({ is_read: true }).eq('id', notifId);
-            loadNotificationsAndUnreadMessages();
-            document.getElementById('notifDropdown').classList.add('hidden');
-            if(link && link.trim() !== '') {
-                window.location.href = link;
-            }
-        };
-
-        async function loadBooks() {
-            const grid = document.getElementById('bookGrid');
-            const { data: books, error } = await supabaseClient.from('books').select('*').order('created_at', { ascending: false });
-            
-            if (error || !books || books.length === 0) {
-                grid.innerHTML = `<p class="text-gray-500 col-span-full text-center py-8">কোনো বই পাওয়া যায়নি।</p>`;
-                return;
-            }
-
-            allBooksData = books;
-            filteredBooksData = [...books];
-
-            const { data: categories } = await supabaseClient.from('categories').select('*').order('name');
-            const categoryContainer = document.getElementById('categoryButtons');
-            if (categories) {
-                categories.forEach(cat => {
-                    categoryContainer.insertAdjacentHTML('beforeend', `
-                        <button onclick="filterCategory('${escapeHTML(cat.name)}')" class="category-btn bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-600 px-4 py-1.5 rounded-full text-xs sm:text-sm font-semibold hover:bg-blue-50 transition shadow-sm">${escapeHTML(cat.name)}</button>
-                    `);
-                });
-            }
-            renderBooks(filteredBooksData);
-        }
-
-        function createBookCard(book) {
-            const bookId = book.id || book.book_id;
-            const bookTitle = book.title || book.name || 'বইয়ের নাম নেই';
-            const bookAuthor = book.author || 'অজ্ঞাত লেখক';
-            const currentPrice = book.discount_price || book.price || 0;
-            const originalPrice = book.original_price || 0;
-            const hasDiscount = originalPrice && currentPrice && originalPrice > currentPrice;
-            let discountPercent = hasDiscount ? Math.round(((originalPrice - currentPrice) / originalPrice) * 100) : 0;
-            
-            let rawImg = book.cover_url || book.image_url || '';
-            let bookImage = rawImg.startsWith('http') ? rawImg : 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=300';
-
-            const wishlist = JSON.parse(localStorage.getItem('boiChokroWishlist')) || [];
-            const isWishlisted = wishlist.includes(bookId);
-
-            // স্টক চেক এবং টেক্সট প্রদর্শন
-            const stockQty = (book.stock_quantity !== undefined && book.stock_quantity !== null) ? Number(book.stock_quantity) : 1;
-            const isOutOfStock = stockQty <= 0;
-
-            // উইশলিস্ট লাভ আইকন ক্লাস ও এসভিজি হ্যান্ডলিং
-            const wishlistClass = isWishlisted ? 'wishlist-btn wishlist-active' : 'wishlist-btn';
-
-            return `
-            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col overflow-hidden relative group">
-                <!-- উইশলিস্ট লাভ বাটন -->
-                <button onclick="toggleWishlist('${bookId}', event)" class="absolute top-2 right-2 z-20 bg-white/90 dark:bg-gray-800/90 backdrop-blur-md p-2 rounded-full shadow hover:scale-110 transition ${wishlistClass}">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="${isWishlisted ? '#dc2626' : 'none'}" stroke="${isWishlisted ? '#dc2626' : 'currentColor'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                <button onclick="toggleDarkMode()" class="text-gray-500 p-1.5">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
                     </svg>
                 </button>
 
-                <a href="/book-details.html?id=${bookId}" class="block w-full aspect-[3/4] bg-gray-100 dark:bg-gray-700 overflow-hidden relative">
-                    ${hasDiscount ? `<div class="absolute top-2 left-2 bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded-md shadow-md z-10">${discountPercent}% ছাড়</div>` : ''}
-                    ${isOutOfStock ? `<div class="absolute inset-0 bg-black/60 backdrop-blur-[2px] flex items-center justify-center z-10"><span class="bg-red-600 text-white font-bold text-[10px] sm:text-xs px-3 py-1 rounded-md shadow-lg">স্টক আউট</span></div>` : ''}
-                    <img src="${bookImage}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" onerror="this.src='https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=300'">
+                <a href="/cart.html" class="relative flex items-center bg-blue-50 dark:bg-gray-700 text-blue-600 dark:text-blue-400 px-2 py-1 rounded-lg border border-blue-100 dark:border-gray-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+                    </svg>
+                    <span id="cartCountMobile" class="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center border border-white">0</span>
                 </a>
-                <div class="p-3 flex flex-col flex-grow justify-between">
-                    <div>
-                        <a href="/book-details.html?id=${bookId}">
-                            <h3 class="font-bold text-sm text-gray-900 dark:text-white leading-snug line-clamp-2 mb-1 hover:text-blue-600 transition">${escapeHTML(bookTitle)}</h3>
-                        </a>
-                        <p class="text-xs text-gray-500 mb-2">${escapeHTML(bookAuthor)}</p>
-                        
-                        <!-- স্টকের স্ট্যাটাস টেক্সট -->
-                        <div class="mb-2">
-                            ${isOutOfStock ? '<span class="text-[11px] font-bold text-red-500 bg-red-50 dark:bg-red-900/30 px-2 py-0.5 rounded">আউট অফ স্টক</span>' : '<span class="text-[11px] font-bold text-green-600 bg-green-50 dark:bg-green-900/30 px-2 py-0.5 rounded">স্টকে বইটি আছে</span>'}
-                        </div>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <span class="text-lg font-bold text-blue-600 dark:text-blue-400">৳ ${currentPrice}</span>
-                        ${hasDiscount ? `<span class="text-gray-400 line-through text-xs">৳ ${originalPrice}</span>` : ''}
-                    </div>
+            </div>
+        </div>
+
+        <div class="hidden md:block w-full md:w-1/3 relative group">
+            <input type="text" id="searchInput" placeholder="বই, লেখক বা প্রকাশনী খুঁজুন..." class="w-full pl-10 pr-4 py-2.5 bg-gray-100 dark:bg-gray-700 border-transparent rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-white transition shadow-inner text-sm" oninput="handleSearch('desktop')">
+            <svg xmlns="http://www.w3.org/2000/svg" class="absolute left-3.5 top-3 h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+            <div id="searchResultsDropdown" class="hidden search-dropdown-custom bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-100 dark:border-gray-700 max-h-96 overflow-y-auto"></div>
+        </div>
+
+        <div class="hidden md:flex items-center gap-4">
+            <div class="relative">
+                <button onclick="toggleNotifications()" class="relative p-2 text-gray-600 dark:text-gray-300 hover:text-blue-600 transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                    </svg>
+                    <span id="notifBadge" class="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center hidden">0</span>
+                </button>
+                <div id="notifDropdown" class="hidden absolute right-0 mt-2 w-72 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-50 max-h-80 overflow-y-auto">
+                    <div class="p-3 bg-gray-50 dark:bg-gray-900 border-b dark:border-gray-700 font-bold text-sm rounded-t-lg">নোটিফিকেশন</div>
+                    <div id="notifList" class="divide-y divide-gray-100 dark:divide-gray-700"></div>
                 </div>
-            </div>`;
-        }
+            </div>
 
-        function renderBooks(books) {
-            const grid = document.getElementById('bookGrid');
-            if(books.length === 0) {
-                grid.innerHTML = `<p class="text-gray-500 col-span-full text-center py-8">কোনো বই নেই।</p>`;
-                return;
-            }
-            grid.innerHTML = books.map(book => createBookCard(book)).join('');
-        }
+            <a href="/inbox.html" class="relative p-2 text-gray-600 dark:text-gray-300 hover:text-blue-600 transition">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
+                </svg>
+                <span id="msgBadge" class="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center hidden">0</span>
+            </a>
 
-        window.filterCategory = (category) => {
-            document.querySelectorAll('.category-btn').forEach(btn => {
-                btn.classList.remove('bg-blue-600', 'text-white', 'border-blue-600'); 
-                btn.classList.add('bg-white', 'dark:bg-gray-800', 'text-gray-700', 'dark:text-gray-300', 'border-gray-200', 'dark:border-gray-600');
-            });
-            const clickedBtn = Array.from(document.querySelectorAll('.category-btn')).find(btn => btn.innerText.trim() === (category === 'all' ? 'সব বই' : category));
-            if (clickedBtn) { 
-                clickedBtn.classList.remove('bg-white', 'dark:bg-gray-800', 'text-gray-700', 'dark:text-gray-300', 'border-gray-200', 'dark:border-gray-600'); 
-                clickedBtn.classList.add('bg-blue-600', 'text-white', 'border-blue-600'); 
-            }
+            <a href="/wishlist.html" class="relative text-red-500 hover:text-red-600 p-2" title="উইশলিস্ট">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                </svg>
+                <span id="wishlistCountBadge" class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center hidden">0</span>
+            </a>
 
-            filteredBooksData = (category === 'all') ? [...allBooksData] : allBooksData.filter(b => b.category === category);
-            renderBooks(filteredBooksData);
-        }
+            <button onclick="toggleDarkMode()" class="text-gray-500 dark:text-gray-400 hover:text-blue-600 transition p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+                </svg>
+            </button>
 
-        window.handleSearch = (source) => {
-            const input = source === 'desktop' ? document.getElementById('searchInput') : document.getElementById('searchInputMobile');
-            const query = sanitizeSearchQuery(input.value.toLowerCase());
-            const dropdown = source === 'desktop' ? document.getElementById('searchResultsDropdown') : document.getElementById('searchResultsDropdownMobile');
-            
-            if(query === '') {
-                dropdown.classList.add('hidden');
-                renderBooks(allBooksData);
-                return;
-            }
+            <a href="/cart.html" class="relative flex items-center gap-1.5 bg-blue-50 dark:bg-gray-700 text-blue-600 dark:text-blue-400 hover:bg-blue-100 px-4 py-2 rounded-lg font-semibold transition border border-blue-100 dark:border-gray-600">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+                </svg>
+                <span class="text-sm">কার্ট</span>
+                <span id="cartCountDesktop" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center border-2 border-white">0</span>
+            </a>
 
-            filteredBooksData = allBooksData.filter(book => {
-                const title = (book.title || '').toLowerCase();
-                const author = (book.author || '').toLowerCase();
-                return title.includes(query) || author.includes(query);
-            });
-            
-            renderBooks(filteredBooksData);
+            <div id="authButtonsDesktop" class="flex items-center gap-2 text-sm"></div>
+        </div>
+    </div>
+</nav>
 
-            if(filteredBooksData.length > 0) {
-                dropdown.classList.remove('hidden');
-                dropdown.innerHTML = filteredBooksData.map(book => {
-                    const bId = book.id || book.book_id;
-                    const bTitle = book.title || book.name || 'বই';
-                    const bAuthor = book.author || '';
-                    let rawImg = book.cover_url || book.image_url || '';
-                    let bImg = rawImg.startsWith('http') ? rawImg : 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=100';
+<!-- হিরো সেকশন -->
+<header id="heroSection" class="relative bg-gray-900 text-white rounded-b-[2rem] shadow-lg min-h-[16rem] sm:min-h-[20rem] md:min-h-[24rem] flex items-center justify-center no-print z-40 overflow-visible">
+    <div id="heroBannerImage" class="absolute inset-0 bg-gradient-to-br from-blue-900 via-blue-700 to-blue-500 bg-cover bg-center transition-all duration-500 rounded-b-[2rem]"></div>
+    <div class="absolute inset-0 bg-black/40 rounded-b-[2rem]"></div>
 
-                    return `
-                    <a href="/book-details.html?id=${bId}" class="flex items-center gap-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-700 last:border-0 cursor-pointer">
-                        <img src="${bImg}" class="w-10 h-14 object-cover rounded shadow-sm flex-shrink-0">
-                        <div class="overflow-hidden">
-                            <p class="font-bold text-sm text-gray-900 dark:text-white truncate">${escapeHTML(bTitle)}</p>
-                            <p class="text-xs text-gray-500 dark:text-gray-400 truncate">${escapeHTML(bAuthor)}</p>
-                        </div>
-                    </a>
-                `;}).join('');
-            } else {
-                dropdown.classList.remove('hidden');
-                dropdown.innerHTML = `<p class="p-4 text-center text-sm text-gray-500 dark:text-gray-400">কোনো বই পাওয়া যায়নি।</p>`;
-            }
-        }
+    <div class="relative z-50 text-center px-4 w-full max-w-4xl mx-auto py-8">
+        <h1 id="web_tagline" class="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-4 tracking-tight drop-shadow-lg">আপনার পছন্দের বই, এক জায়গায়</h1>
+        <p id="web_sub_tagline" class="text-sm sm:text-base md:text-lg text-gray-200 max-w-2xl mx-auto mb-8 drop-shadow">সেরা লেখকদের বইয়ের বিশাল সংগ্রহ। আজই আপনার প্রিয় বইটি খুঁজে নিন।</p>
 
-        async function loadBlogs() {
-            const blogList = document.getElementById('blogList');
-            if(!blogList) return;
-            
-            const { data: blogs, error } = await supabaseClient
-                .from('blogs')
-                .select('*')
-                .eq('status', 'approved')
-                .order('created_at', { ascending: false });
-            
-            if (error || !blogs || blogs.length === 0) {
-                blogList.innerHTML = `<div class="col-span-full text-center py-10 bg-white dark:bg-gray-800 rounded-xl shadow-sm"><p class="text-gray-500">এখনো কোনো পোস্ট প্রকাশিত হয়নি।</p></div>`;
-                return;
-            }
+        <div class="md:hidden max-w-md mx-auto relative group z-[99999]">
+            <input type="text" id="searchInputMobile" placeholder="বই খুঁজুন..." class="w-full pl-10 pr-4 py-3 bg-white/20 backdrop-blur-md border border-white/30 text-white placeholder-gray-200 rounded-full focus:outline-none focus:bg-white focus:text-gray-800 transition shadow-lg text-sm" oninput="handleSearch('mobile')">
+            <svg xmlns="http://www.w3.org/2000/svg" class="absolute left-3.5 top-3.5 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+            <div id="searchResultsDropdownMobile" class="hidden search-dropdown-custom bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-100 dark:border-gray-700 max-h-72 overflow-y-auto text-left"></div>
+        </div>
+    </div>
+</header>
 
-            const authorIds = [...new Set(blogs.map(b => b.author_id))];
-            const { data: profiles } = await supabaseClient.from('profiles').select('id, full_name, profile_image').in('id', authorIds);
-            const profileMap = {};
-            if(profiles) {
-                profiles.forEach(p => profileMap[p.id] = p);
-            }
+<main class="flex-grow max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 -mt-8 relative z-30 pb-16 no-print">
 
-            const blogHTML = await Promise.all(blogs.map(async (blog) => {
-                const author = profileMap[blog.author_id] || { full_name: 'নামহীন লেখক', profile_image: '' };
-                const authorImg = author.profile_image || `https://ui-avatars.com/api/?name=${encodeURIComponent(author.full_name)}&background=random`;
-                
-                const { count: likeCount } = await supabaseClient.from('blog_likes').select('*', { count: 'exact', head: true }).eq('blog_id', blog.id);
+    <!-- বইয়ের দোকান -->
+    <section id="allBooksSection" class="mt-8">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 mb-6 flex flex-col md:flex-row justify-between items-center gap-4 border border-gray-100 dark:border-gray-700">
+            <div class="flex flex-wrap gap-2 w-full md:w-auto" id="categoryButtons">
+                <button onclick="filterCategory('all')" class="category-btn bg-blue-600 text-white px-4 py-1.5 rounded-full text-xs sm:text-sm font-semibold transition shadow-sm">সব বই</button>
+            </div>
+        </div>
 
-                return `
-                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col h-full overflow-hidden hover:shadow-md transition">
-                    <div>
-                        <div class="p-4 flex items-center gap-3 border-b dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition" onclick="window.location.href='/profile.html?id=${blog.author_id}'">
-                            <img src="${authorImg}" class="w-10 h-10 rounded-full object-cover border">
-                            <div>
-                                <h4 class="font-bold text-sm text-gray-900 dark:text-white hover:text-blue-600 transition">${escapeHTML(author.full_name)}</h4>
-                                <p class="text-xs text-gray-400">${new Date(blog.created_at).toLocaleDateString('bn-BD')}</p>
-                            </div>
-                        </div>
+        <div id="bookGrid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-6 items-stretch">
+            <p class="text-gray-500 col-span-full text-center py-8">বই লোড হচ্ছে...</p>
+        </div>
+    </section>
 
-                        ${blog.image_url ? `<div class="max-h-60 overflow-hidden bg-gray-100 cursor-pointer" onclick="openPostDetails('${blog.id}')"><img src="${blog.image_url}" class="w-full h-full object-cover hover:scale-105 transition duration-300"></div>` : ''}
-                        
-                        <div class="p-4 space-y-2">
-                            <h3 class="text-lg font-bold text-gray-900 dark:text-white cursor-pointer hover:text-blue-600 transition line-clamp-2" onclick="openPostDetails('${blog.id}')">${escapeHTML(blog.title)}</h3>
-                            <p class="text-sm text-gray-600 dark:text-gray-300 line-clamp-3">${escapeHTML(blog.content)}</p>
-                        </div>
-                    </div>
+    <!-- ব্লগ সেকশন -->
+    <section id="blogSection" class="mt-16 mb-12">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-3xl font-bold text-gray-900 dark:text-white border-l-4 border-blue-600 pl-3">ব্লগ ও পোস্ট সমূহ</h2>
+            <button onclick="document.getElementById('writeBlogForm').classList.toggle('hidden')" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-700 transition">✍️ নতুন পোস্ট লিখুন</button>
+        </div>
 
-                    <div class="p-4 mt-auto border-t border-gray-100 dark:border-gray-700 flex items-center justify-between">
-                        <div class="flex items-center gap-4">
-                            <button onclick="likeBlog('${blog.id}')" class="flex items-center gap-1 text-gray-500 hover:text-red-500 transition text-sm">
-                                🌹 <span id="like-count-${blog.id}">${likeCount || 0}</span>
-                            </button>
-                            <button onclick="openPostDetails('${blog.id}')" class="flex items-center gap-1 text-gray-500 hover:text-blue-500 transition text-sm">
-                                💬 কমেন্ট
-                            </button>
-                            <span class="flex items-center gap-1 text-gray-400 text-xs">👁️ ${blog.views || 0}</span>
-                        </div>
-                        <button onclick="openPostDetails('${blog.id}')" class="text-xs font-bold text-blue-600 hover:underline">বিস্তারিত</button>
-                    </div>
+        <div id="writeBlogForm" class="hidden bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md mb-8 border border-gray-100 dark:border-gray-700">
+            <h3 class="text-xl font-bold mb-4">নতুন পোস্ট লিখুন</h3>
+            <div class="space-y-4">
+                <input type="text" id="newBlogTitle" placeholder="পোস্টের শিরোনাম" class="w-full px-4 py-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 focus:outline-none">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">ছবি (ঐচ্ছিক)</label>
+                    <input type="file" id="newBlogImage" accept="image/jpeg, image/png" class="w-full px-4 py-2 border rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600 text-sm">
                 </div>
-                `;
-            }));
+                <textarea id="newBlogContent" rows="5" placeholder="আপনার গল্প বা লেখা লিখুন..." class="w-full px-4 py-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 focus:outline-none"></textarea>
+                <button onclick="submitBlog()" id="submitBlogBtn" class="bg-green-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-green-700 transition">সাবমিট করুন</button>
+            </div>
+        </div>
 
-            blogList.innerHTML = blogHTML.join('');
+        <div id="blogList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <p class="text-gray-500 col-span-full text-center">পোস্ট লোড হচ্ছে...</p>
+        </div>
+    </section>
+</main>
+
+<!-- পোস্ট মডাল -->
+<div id="postDetailsModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl relative modal-animate">
+        <button onclick="closePostModal()" class="absolute top-4 right-4 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-red-500 hover:text-white h-8 w-8 rounded-full flex items-center justify-center font-bold transition">✕</button>
+        <div id="modalBodyContent" class="p-6 space-y-4"></div>
+    </div>
+</div>
+
+<!-- ফুটার -->
+<footer class="bg-gray-900 dark:bg-black text-gray-400 pt-12 pb-6 mt-auto border-t-4 border-blue-600 no-print">
+    <div class="max-w-7xl mx-auto px-4 text-center space-y-2">
+        <p id="web_footer_text">&copy; 2026 Boi Chokro. All rights reserved.</p>
+        <p id="web_footer_contact" class="text-sm"></p>
+    </div>
+</footer>
+
+<script>
+const SUPABASE_URL = 'https://jhbpaezbpkfwjfmazdcn.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_oBzutzPKvIvujmSG7icXug_SwwveL5g';
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+let currentUser = null;
+let allBooksData = [];
+let filteredBooksData = [];
+
+window.showToast = (message, isError = false) => {
+    const container = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    toast.className = `toast-animate px-5 py-4 rounded-lg shadow-2xl text-white font-bold flex items-center gap-3 ${isError ? 'bg-red-600 border-l-4 border-red-800' : 'bg-green-600 border-l-4 border-green-800'}`;
+    toast.innerHTML = `<span class="text-2xl">${isError ? '⚠️' : '✅'}</span><span class="text-sm md:text-base pr-2">${message}</span>`;
+    container.appendChild(toast);
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(100%)';
+        toast.style.transition = 'all 0.3s ease';
+        setTimeout(() => toast.remove(), 300);
+    }, 4000);
+};
+
+function escapeHTML(str) {
+    if (!str) return '';
+    return String(str).replace(/[&<>'"]/g, tag => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;',
+        "'": '&#39;', '"': '&quot;'
+    }[tag] || tag));
+}
+
+function sanitizeSearchQuery(query) {
+    return query.replace(/[<>]/g, '').trim();
+}
+
+if (localStorage.getItem('theme') === 'dark') {
+    document.documentElement.classList.add('dark');
+}
+
+window.toggleDarkMode = () => {
+    document.documentElement.classList.toggle('dark');
+    localStorage.setItem(
+        'theme',
+        document.documentElement.classList.contains('dark') ? 'dark' : 'light'
+    );
+};
+
+function updateCartCount() {
+    const cart = JSON.parse(localStorage.getItem('boiChokroCart')) || [];
+    const mobEl = document.getElementById('cartCountMobile');
+    const deskEl = document.getElementById('cartCountDesktop');
+
+    if (mobEl) mobEl.innerText = cart.length;
+    if (deskEl) deskEl.innerText = cart.length;
+}
+
+function updateWishlistCount() {
+    const wishlist = JSON.parse(localStorage.getItem('boiChokroWishlist')) || [];
+    const badge = document.getElementById('wishlistCountBadge');
+
+    if (badge) {
+        if (wishlist.length > 0) {
+            badge.innerText = wishlist.length;
+            badge.classList.remove('hidden');
+        } else {
+            badge.classList.add('hidden');
         }
+    }
+}
 
-        window.likeBlog = async (blogId) => {
-            if(!currentUser) { showToast('গোলাপ দিতে লগইন করুন!', true); return; }
-            const { data: existing } = await supabaseClient.from('blog_likes').select('id').eq('blog_id', blogId).eq('user_id', currentUser.id).maybeSingle();
-            
-            if(existing) {
-                await supabaseClient.from('blog_likes').delete().eq('id', existing.id);
-            } else {
-                await supabaseClient.from('blog_likes').insert([{ blog_id: blogId, user_id: currentUser.id }]);
-                const { data: blogData } = await supabaseClient.from('blogs').select('author_id').eq('id', blogId).single();
-                if(blogData && blogData.author_id !== currentUser.id) {
-                    await supabaseClient.from('notifications').insert([{
-                        user_id: blogData.author_id,
-                        message: `🌹 আপনার একটি পোস্টে নতুন গোলাপ (লাইক) এসেছে!`,
-                        link: `/index.html?post=${blogId}`,
-                        is_read: false
-                    }]);
+/* উইশলিস্ট যোগ/বাদ */
+window.toggleWishlist = (bookId, event) => {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+
+    let wishlist = JSON.parse(localStorage.getItem('boiChokroWishlist')) || [];
+    const index = wishlist.findIndex(id => String(id) === String(bookId));
+
+    if (index > -1) {
+        wishlist.splice(index, 1);
+        showToast('💔 উইশলিস্ট থেকে বইটি সরিয়ে ফেলা হয়েছে!');
+    } else {
+        wishlist.push(bookId);
+        showToast('💖 আপনার উইশলিস্টে বইটি যোগ করা হয়েছে!');
+    }
+
+    localStorage.setItem('boiChokroWishlist', JSON.stringify(wishlist));
+    updateWishlistCount();
+    renderBooks(filteredBooksData);
+};
+
+async function loadAdminSettings() {
+    try {
+        const { data: settings, error } = await supabaseClient
+            .from('site_settings')
+            .select('*')
+            .limit(1)
+            .maybeSingle();
+
+        if (settings && !error) {
+            const companyName = settings.company_name || 'Boi Chokro';
+
+            document.getElementById('pageTitle').innerText = companyName + ' - অনলাইন বইঘর';
+
+            const headerName = document.getElementById('web_header_name');
+            if (headerName) headerName.innerText = companyName;
+
+            const logoUrl = settings.logo_url || settings.logo || '';
+            if (logoUrl) {
+                const logoEl = document.getElementById('web_header_logo');
+                if (logoEl) {
+                    logoEl.src = logoUrl;
+                    logoEl.classList.remove('hidden');
                 }
             }
-            loadBlogs();
-        }
 
-        function containsForbiddenContent(text) {
-            const forbiddenKeywords = [
-                'বাল', 'মাদারচোদ', 'মাগী', 'বেশ্যা', 'শালা', 'শুয়োর', 'কুত্তা', 'বট', 'bastard', 'shit', 'fuck', 'bitch', 'asshole',
-                'বটম', 'যৌন', 'সেক্স', 'sex', 'porn', 'xxx', 'naked', 'nude', 'chod', 'chodai', 'boob', 'vagina', 'penis', 'rape', 'ধর্ষণ', 'হ্যারাস', 'লুচ্চা'
-            ];
-            const lowerText = text.toLowerCase();
-            return forbiddenKeywords.some(word => lowerText.includes(word));
-        }
-
-        window.openPostDetails = async (blogId) => {
-            const modal = document.getElementById('postDetailsModal');
-            const contentDiv = document.getElementById('modalBodyContent');
-            modal.classList.remove('hidden');
-            contentDiv.innerHTML = '<p class="text-center py-10 text-gray-500">লোড হচ্ছে...</p>';
-
-            try {
-                const { data: currentBlog } = await supabaseClient.from('blogs').select('views').eq('id', blogId).single();
-                const newViews = ((currentBlog?.views) || 0) + 1;
-                await supabaseClient.from('blogs').update({ views: newViews }).eq('id', blogId);
-            } catch(e) { console.log('View count update error:', e); }
-
-            const { data: blog } = await supabaseClient.from('blogs').select('*').eq('id', blogId).single();
-            if(!blog) { contentDiv.innerHTML = '<p class="text-red-500 text-center">পোস্ট পাওয়া যায়নি।</p>'; return; }
-
-            const { data: author } = await supabaseClient.from('profiles').select('id, full_name, profile_image').eq('id', blog.author_id).maybeSingle();
-            const authorName = author?.full_name || 'নামহীন লেখক';
-            const authorImg = author?.profile_image || `https://ui-avatars.com/api/?name=${encodeURIComponent(authorName)}&background=random`;
-
-            const { data: likes } = await supabaseClient.from('blog_likes').select('user_id').eq('blog_id', blogId);
-            const totalLikes = likes ? likes.length : 0;
-            const hasLiked = currentUser ? likes?.some(l => l.user_id === currentUser.id) : false;
-
-            let likerNamesText = '';
-            if (totalLikes > 0 && likes) {
-                const likerIds = likes.slice(0, 3).map(l => l.user_id);
-                const { data: likerProfiles } = await supabaseClient.from('profiles').select('full_name').in('id', likerIds);
-                if (likerProfiles && likerProfiles.length > 0) {
-                    const names = likerProfiles.map(p => p.full_name);
-                    if (totalLikes === 1) likerNamesText = `${names[0]} এটিতে গোলাপ দিয়েছেন`;
-                    else if (totalLikes === 2) likerNamesText = `${names[0]} এবং ${names[1]} এটিতে গোলাপ দিয়েছেন`;
-                    else likerNamesText = `${names[0]}, ${names[1]} এবং আরও ${totalLikes - 2} জন এটিতে গোলাপ দিয়েছেন`;
-                }
+            const taglineText = settings.banner_text || settings.tagline || '';
+            if (taglineText) {
+                document.getElementById('web_tagline').innerText = taglineText;
             }
 
-            const { data: comments } = await supabaseClient.from('blog_comments').select('*').eq('blog_id', blogId).order('created_at', { ascending: true });
-            
-            let commentProfiles = {};
-            if(comments && comments.length > 0) {
-                const cUserIds = [...new Set(comments.map(c => c.user_id))];
-                const { data: cProfiles } = await supabaseClient.from('profiles').select('id, full_name, profile_image').in('id', cUserIds);
-                if(cProfiles) cProfiles.forEach(p => commentProfiles[p.id] = p);
+            if (settings.sub_tagline) {
+                document.getElementById('web_sub_tagline').innerText = settings.sub_tagline;
             }
 
-            const mainComments = comments ? comments.filter(c => !c.parent_id) : [];
-            const replies = comments ? comments.filter(c => c.parent_id) : [];
+            if (settings.banner_url) {
+                document.getElementById('heroBannerImage').style.backgroundImage = `url('${settings.banner_url}')`;
+            }
 
-            contentDiv.innerHTML = `
-                <div class="flex items-center justify-between mb-4">
-                    <div class="flex items-center gap-3 cursor-pointer hover:opacity-80 transition" onclick="window.location.href='/profile.html?id=${blog.author_id}'">
-                        <img src="${authorImg}" class="w-12 h-12 rounded-full object-cover border">
-                        <div>
-                            <h3 class="font-bold text-base text-gray-900 dark:text-white hover:text-blue-600">${escapeHTML(authorName)}</h3>
-                            <p class="text-xs text-gray-400">${new Date(blog.created_at).toLocaleString('bn-BD')}</p>
-                        </div>
-                    </div>
-                    <div class="flex items-center gap-1 text-xs font-bold bg-blue-50 dark:bg-gray-700 text-blue-600 dark:text-blue-300 px-3 py-1 rounded-full border border-blue-100 dark:border-gray-600">
-                        👁️ <span>${blog.views || 1} ভিউ</span>
-                    </div>
-                </div>
+            const phone = settings.phone || '';
+            const address = settings.address || '';
+            const footerContact = document.getElementById('web_footer_contact');
 
-                <h2 class="text-2xl font-extrabold text-gray-900 dark:text-white mb-2">${escapeHTML(blog.title)}</h2>
-                ${blog.image_url ? `<img src="${blog.image_url}" class="w-full max-h-96 object-cover rounded-xl mb-4 shadow-sm">` : ''}
-                <div class="text-gray-700 dark:text-gray-200 text-base leading-relaxed whitespace-pre-line mb-4">${escapeHTML(blog.content)}</div>
+            if (footerContact) {
+                let contactHTML = '';
+                if (phone) contactHTML += `📞 ফোন: ${escapeHTML(phone)} `;
+                if (address) contactHTML += ` | 📍 ঠিকানা: ${escapeHTML(address)}`;
+                footerContact.innerHTML = contactHTML;
+            }
 
-                <div class="flex items-center justify-between text-xs sm:text-sm text-gray-500 dark:text-gray-400 border-y dark:border-gray-700 py-2.5 my-3">
-                    <div class="flex items-center gap-1.5">
-                        <span class="p-1 rounded-full text-sm">🌹</span>
-                        <span>${totalLikes} জন গোলাপ দিয়েছেন</span>
-                    </div>
-                    <div>${totalLikes > 0 ? `<span class="italic text-xs">${escapeHTML(likerNamesText)}</span>` : 'প্রথমে গোলাপ দিন'}</div>
-                </div>
+            if (settings.footer_text) {
+                document.getElementById('web_footer_text').innerHTML = settings.footer_text;
+            }
+        }
+    } catch (e) {
+        console.log('site_settings table fetch error:', e);
+    }
+}
 
-                <div class="flex items-center justify-around border-b dark:border-gray-700 pb-2 mb-4">
-                    <button onclick="toggleModalLike('${blog.id}')" class="flex items-center justify-center gap-2 flex-1 py-1.5 rounded-lg font-bold text-sm transition ${hasLiked ? 'text-pink-600 bg-pink-50 dark:bg-gray-700' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'}">
-                        <span>${hasLiked ? '🌹 গোলাপ দেওয়া হয়েছে' : '🌹 গোলাপ দিন'}</span>
-                    </button>
-                    <button onclick="document.getElementById('commentInput_${blog.id}').focus()" class="flex items-center justify-center gap-2 flex-1 py-1.5 rounded-lg font-bold text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition">
-                        <span>💬 কমেন্ট করুন</span>
-                    </button>
-                </div>
+async function checkAuth() {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    const authBtnDesktop = document.getElementById('authButtonsDesktop');
+    const authBtnMobile = document.getElementById('authButtonsMobile');
 
-                <h4 class="font-bold text-lg mb-3 text-gray-900 dark:text-white">💬 কমেন্টসমূহ (${comments ? comments.length : 0})</h4>
-                
-                <div class="space-y-4 max-h-72 overflow-y-auto mb-4 pr-2">
-                    ${(mainComments.length === 0) ? '<p class="text-sm text-gray-400 text-center py-4">এখনো কোনো কমেন্ট নেই। প্রথম কমেন্ট করুন!</p>' : 
-                        mainComments.map(c => {
-                            const commenter = commentProfiles[c.user_id] || { full_name: 'ব্যবহারকারী', profile_image: '' };
-                            const cImg = commenter.profile_image || `https://ui-avatars.com/api/?name=${encodeURIComponent(commenter.full_name)}&background=random`;
-                            const childReplies = replies.filter(r => r.parent_id === c.id);
-                            const isMyComment = currentUser && currentUser.id === c.user_id;
+    if (session) {
+        currentUser = session.user;
 
-                            return `
-                            <div class="space-y-2">
-                                <div class="flex items-start gap-2.5 bg-gray-50 dark:bg-gray-700 p-3 rounded-xl relative group">
-                                    <img src="${cImg}" class="w-8 h-8 rounded-full object-cover mt-0.5">
-                                    <div class="flex-1">
-                                        <div class="flex justify-between items-center">
-                                            <span class="font-bold text-xs text-gray-900 dark:text-white">${escapeHTML(commenter.full_name)}</span>
-                                            <span class="text-[10px] text-gray-400">${new Date(c.created_at).toLocaleTimeString('bn-BD', {hour: '2-digit', minute:'2-digit'})}</span>
-                                        </div>
-                                        <p id="commentText_${c.id}" class="text-sm text-gray-700 dark:text-gray-200 mt-1">${escapeHTML(c.comment)}</p>
-                                        
-                                        <div id="editBox_${c.id}" class="hidden mt-2">
-                                            <input type="text" id="editInput_${c.id}" value="${escapeHTML(c.comment)}" class="w-full px-2 py-1 text-xs border rounded dark:bg-gray-800 dark:border-gray-600 mb-1">
-                                            <div class="flex gap-2">
-                                                <button onclick="saveEditedComment('${c.id}', '${blog.id}')" class="bg-green-600 text-white px-2 py-0.5 rounded text-[10px] font-bold">সেভ</button>
-                                                <button onclick="toggleEditBox('${c.id}')" class="bg-gray-400 text-white px-2 py-0.5 rounded text-[10px]">বাতিল</button>
-                                            </div>
-                                        </div>
-
-                                        <div class="flex items-center gap-3 mt-1">
-                                            <button onclick="toggleReplyBox('${c.id}')" class="text-xs text-blue-600 font-bold hover:underline">রিপ্লাই দিন</button>
-                                            ${isMyComment ? `
-                                                <button onclick="toggleEditBox('${c.id}')" class="text-xs text-amber-600 font-semibold hover:underline">এডিট</button>
-                                                <button onclick="deleteComment('${c.id}', '${blog.id}')" class="text-xs text-red-500 font-semibold hover:underline">ডিলিট</button>
-                                            ` : ''}
-                                        </div>
-                                    </div>
-                                </div>
-
-                                ${childReplies.length > 0 ? `
-                                    <div class="pl-8 space-y-2 border-l-2 border-gray-200 dark:border-gray-600 ml-4">
-                                        ${childReplies.map(r => {
-                                            const replier = commentProfiles[r.user_id] || { full_name: 'ব্যবহারকারী', profile_image: '' };
-                                            const rImg = replier.profile_image || `https://ui-avatars.com/api/?name=${encodeURIComponent(replier.full_name)}&background=random`;
-                                            const isMyReply = currentUser && currentUser.id === r.user_id;
-
-                                            return `
-                                            <div class="flex items-start gap-2 bg-gray-100 dark:bg-gray-800 p-2.5 rounded-xl text-xs">
-                                                <img src="${rImg}" class="w-6 h-6 rounded-full object-cover mt-0.5">
-                                                <div class="flex-1">
-                                                    <div class="flex justify-between items-center">
-                                                        <span class="font-bold text-gray-900 dark:text-white">${escapeHTML(replier.full_name)}</span>
-                                                        <span class="text-[9px] text-gray-400">${new Date(r.created_at).toLocaleTimeString('bn-BD', {hour: '2-digit', minute:'2-digit'})}</span>
-                                                    </div>
-                                                    <p id="commentText_${r.id}" class="text-gray-700 dark:text-gray-200 mt-0.5">${escapeHTML(r.comment)}</p>
-
-                                                    <div id="editBox_${r.id}" class="hidden mt-1">
-                                                        <input type="text" id="editInput_${r.id}" value="${escapeHTML(r.comment)}" class="w-full px-2 py-1 text-[10px] border rounded dark:bg-gray-700 mb-1">
-                                                        <div class="flex gap-2">
-                                                            <button onclick="saveEditedComment('${r.id}', '${blog.id}')" class="bg-green-600 text-white px-2 py-0.5 rounded text-[9px] font-bold">সেভ</button>
-                                                            <button onclick="toggleEditBox('${r.id}')" class="bg-gray-400 text-white px-2 py-0.5 rounded text-[9px]">বাতিল</button>
-                                                        </div>
-                                                    </div>
-
-                                                    ${isMyReply ? `
-                                                        <div class="flex gap-2 mt-1">
-                                                            <button onclick="toggleEditBox('${r.id}')" class="text-[10px] text-amber-600 font-semibold hover:underline">এডিট</button>
-                                                            <button onclick="deleteComment('${r.id}', '${blog.id}')" class="text-[10px] text-red-500 font-semibold hover:underline">ডিলিট</button>
-                                                        </div>
-                                                    ` : ''}
-                                                </div>
-                                            </div>
-                                            `;
-                                        }).join('')}
-                                    </div>
-                                ` : ''}
-
-                                <div id="replyBox_${c.id}" class="hidden pl-8 ml-4">
-                                    <form onsubmit="submitComment(event, '${blog.id}', '${c.id}')" class="flex gap-2">
-                                        <input type="text" id="replyInput_${c.id}" required placeholder="${escapeHTML(commenter.full_name)}-কে রিপ্লাই দিন..." class="flex-1 px-3 py-1.5 border rounded-lg dark:bg-gray-800 dark:border-gray-600 text-xs outline-none focus:ring-1 focus:ring-blue-500">
-                                        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition">রিপ্লাই</button>
-                                    </form>
-                                </div>
-                            </div>
-                            `;
-                        }).join('')
-                    }
-                </div>
-
-                ${currentUser ? `
-                <form onsubmit="submitComment(event, '${blog.id}', null)" class="flex gap-2">
-                    <input type="text" id="commentInput_${blog.id}" required placeholder="একটি সুন্দর কমেন্ট লিখুন..." class="flex-1 px-4 py-2 border rounded-xl dark:bg-gray-700 dark:border-gray-600 text-sm outline-none focus:ring-2 focus:ring-blue-500">
-                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-5 py-2 rounded-xl text-sm transition">পাঠান</button>
-                </form>
-                ` : `
-                <p class="text-center text-sm py-2 bg-gray-50 dark:bg-gray-700 rounded-xl text-gray-500">কমেন্ট করতে অনুগ্রহ করে <a href="/login.html" class="text-blue-600 font-bold underline">লগইন করুন</a>।</p>
-                `}
+        if (authBtnDesktop) {
+            authBtnDesktop.innerHTML = `
+                <a href="/profile.html" class="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-white px-3 py-1.5 rounded-lg font-semibold hover:bg-gray-200 transition">প্রোফাইল</a>
+                <button onclick="handleLogout()" class="bg-red-50 text-red-600 px-3 py-1.5 rounded-lg font-semibold border border-red-200 hover:bg-red-100 transition">লগআউট</button>
             `;
         }
 
-        window.toggleReplyBox = (commentId) => {
-            const box = document.getElementById(`replyBox_${commentId}`);
-            if(box) box.classList.toggle('hidden');
+        if (authBtnMobile) {
+            authBtnMobile.innerHTML = `<a href="/profile.html" class="bg-blue-600 text-white px-2.5 py-1 rounded-md font-bold text-xs shadow">প্রোফাইল</a>`;
         }
 
-        window.toggleEditBox = (commentId) => {
-            const box = document.getElementById(`editBox_${commentId}`);
-            if(box) box.classList.toggle('hidden');
+        loadNotificationsAndUnreadMessages();
+    } else {
+        currentUser = null;
+
+        if (authBtnDesktop) {
+            authBtnDesktop.innerHTML = `<a href="/login.html" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition">লগইন</a>`;
         }
 
-        window.saveEditedComment = async (commentId, blogId) => {
-            const input = document.getElementById(`editInput_${commentId}`);
-            const newText = input ? input.value.trim() : '';
+        if (authBtnMobile) {
+            authBtnMobile.innerHTML = `<a href="/login.html" class="bg-blue-600 text-white px-2.5 py-1 rounded-md font-bold text-xs">লগইন</a>`;
+        }
+    }
+}
 
-            if(!newText) { showToast('কমেন্ট খালি রাখা যাবে না!', true); return; }
+window.handleLogout = async () => {
+    await supabaseClient.auth.signOut();
+    checkAuth();
+    showToast('লগআউট হয়েছে।', false);
+};
 
-            if (containsForbiddenContent(newText)) {
-                showToast('⚠️ আপনার কমেন্টে গালি, অ্যাডাল্ট বা অনুপযুক্ত শব্দ থাকায় এটি এডিট করা বাতিল করা হয়েছে!', true);
-                return;
+async function loadNotificationsAndUnreadMessages() {
+    if (!currentUser) return;
+
+    const { data: notifs } = await supabaseClient
+        .from('notifications')
+        .select('*')
+        .eq('user_id', currentUser.id)
+        .order('created_at', { ascending: false });
+
+    const badge = document.getElementById('notifBadge');
+    const badgeMob = document.getElementById('notifBadgeMobile');
+    const list = document.getElementById('notifList');
+
+    if (notifs && notifs.length > 0) {
+        const unread = notifs.filter(n => !n.is_read).length;
+
+        if (unread > 0) {
+            if (badge) {
+                badge.innerText = unread;
+                badge.classList.remove('hidden');
             }
+            if (badgeMob) {
+                badgeMob.innerText = unread;
+                badgeMob.classList.remove('hidden');
+            }
+        } else {
+            if (badge) badge.classList.add('hidden');
+            if (badgeMob) badgeMob.classList.add('hidden');
+        }
 
-            const { error } = await supabaseClient.from('blog_comments').update({ comment: newText }).eq('id', commentId);
-            if(!error) {
-                showToast('✅ কমেন্ট সফলভাবে এডিট করা হয়েছে!');
-                openPostDetails(blogId);
+        if (list) {
+            list.innerHTML = notifs.map(n => `
+                <div onclick="handleNotificationClick('${n.id}', '${n.link || ''}')"
+                     class="p-3 text-sm border-b dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition ${!n.is_read ? 'bg-blue-50 dark:bg-gray-700 font-semibold' : 'text-gray-600'}">
+                    ${escapeHTML(n.message)}
+                    <p class="text-[10px] text-gray-400 mt-1">${new Date(n.created_at).toLocaleString('bn-BD')}</p>
+                </div>
+            `).join('');
+        }
+    } else {
+        if (list) {
+            list.innerHTML = `<div class="p-4 text-center text-sm text-gray-500">কোনো নোটিফিকেশন নেই</div>`;
+        }
+        if (badge) badge.classList.add('hidden');
+        if (badgeMob) badgeMob.classList.add('hidden');
+    }
+
+    const { count: unreadMsgsCount } = await supabaseClient
+        .from('messages')
+        .select('*', { count: 'exact', head: true })
+        .eq('receiver_id', currentUser.id)
+        .eq('is_read', false);
+
+    const msgBadge = document.getElementById('msgBadge');
+    const msgBadgeMob = document.getElementById('msgBadgeMobile');
+
+    if (unreadMsgsCount && unreadMsgsCount > 0) {
+        if (msgBadge) {
+            msgBadge.innerText = unreadMsgsCount;
+            msgBadge.classList.remove('hidden');
+        }
+        if (msgBadgeMob) {
+            msgBadgeMob.innerText = unreadMsgsCount;
+            msgBadgeMob.classList.remove('hidden');
+        }
+    } else {
+        if (msgBadge) msgBadge.classList.add('hidden');
+        if (msgBadgeMob) msgBadgeMob.classList.add('hidden');
+    }
+}
+
+window.toggleNotifications = () => {
+    document.getElementById('notifDropdown').classList.toggle('hidden');
+};
+
+window.handleNotificationClick = async (notifId, link) => {
+    await supabaseClient.from('notifications').update({ is_read: true }).eq('id', notifId);
+    loadNotificationsAndUnreadMessages();
+    document.getElementById('notifDropdown').classList.add('hidden');
+
+    if (link && link.trim() !== '') {
+        window.location.href = link;
+    }
+};
+
+async function loadBooks() {
+    const grid = document.getElementById('bookGrid');
+
+    const { data: books, error } = await supabaseClient
+        .from('books')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+    if (error || !books || books.length === 0) {
+        grid.innerHTML = `<p class="text-gray-500 col-span-full text-center py-8">কোনো বই পাওয়া যায়নি।</p>`;
+        return;
+    }
+
+    allBooksData = books;
+    filteredBooksData = [...books];
+
+    const { data: categories } = await supabaseClient
+        .from('categories')
+        .select('*')
+        .order('name');
+
+    const categoryContainer = document.getElementById('categoryButtons');
+
+    if (categories) {
+        categories.forEach(cat => {
+            categoryContainer.insertAdjacentHTML('beforeend', `
+                <button onclick="filterCategory('${escapeHTML(cat.name)}')"
+                    class="category-btn bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-600 px-4 py-1.5 rounded-full text-xs sm:text-sm font-semibold hover:bg-blue-50 transition shadow-sm">
+                    ${escapeHTML(cat.name)}
+                </button>
+            `);
+        });
+    }
+
+    renderBooks(filteredBooksData);
+}
+
+/* বইয়ের কার্ড তৈরি */
+function createBookCard(book) {
+    const bookId = book.id || book.book_id;
+    const bookTitle = book.title || book.name || 'বইয়ের নাম নেই';
+    const bookAuthor = book.author || 'অজ্ঞাত লেখক';
+    const currentPrice = book.discount_price || book.price || 0;
+    const originalPrice = book.original_price || 0;
+
+    const hasDiscount = originalPrice && currentPrice && originalPrice > currentPrice;
+    const discountPercent = hasDiscount
+        ? Math.round(((originalPrice - currentPrice) / originalPrice) * 100)
+        : 0;
+
+    const rawImg = book.cover_url || book.image_url || '';
+    const bookImage = rawImg.startsWith('http')
+        ? rawImg
+        : 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=300';
+
+    const wishlist = JSON.parse(localStorage.getItem('boiChokroWishlist')) || [];
+    const isWishlisted = wishlist.some(id => String(id) === String(bookId));
+
+    const stockQty = (book.stock_quantity !== undefined && book.stock_quantity !== null)
+        ? Number(book.stock_quantity)
+        : 1;
+
+    const isOutOfStock = stockQty <= 0;
+
+    /*
+       গুরুত্বপূর্ণ:
+       নির্বাচিত অবস্থায় path-এর fill সরাসরি লাল দেওয়া হয়েছে।
+       এতে শুধু বর্ডার নয়, হার্টের সম্পূর্ণ ভেতরও লাল হবে।
+    */
+    const heartFill = isWishlisted ? '#dc2626' : 'none';
+    const heartStroke = isWishlisted ? '#dc2626' : '#6b7280';
+    const wishlistClass = isWishlisted ? 'wishlist-btn wishlist-active' : 'wishlist-btn';
+
+    return `
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col overflow-hidden relative group">
+
+        <button
+            type="button"
+            onclick="toggleWishlist('${bookId}', event)"
+            class="absolute top-2 right-2 z-20 bg-white/90 dark:bg-gray-800/90 backdrop-blur-md p-2 rounded-full shadow hover:scale-110 transition ${wishlistClass}"
+            aria-label="${isWishlisted ? 'উইশলিস্ট থেকে সরান' : 'উইশলিস্টে যোগ করুন'}">
+
+            <svg xmlns="http://www.w3.org/2000/svg"
+                class="h-5 w-5"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="${heartStroke}"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round">
+
+                <path
+                    d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"
+                    fill="${heartFill}"
+                    stroke="${heartStroke}">
+                </path>
+            </svg>
+        </button>
+
+        <a href="/book-details.html?id=${encodeURIComponent(bookId)}"
+            class="block w-full aspect-[3/4] bg-gray-100 dark:bg-gray-700 overflow-hidden relative">
+
+            ${hasDiscount ? `
+                <div class="absolute top-2 left-2 bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded-md shadow-md z-10">
+                    ${discountPercent}% ছাড়
+                </div>
+            ` : ''}
+
+            ${isOutOfStock ? `
+                <div class="absolute inset-0 bg-black/60 backdrop-blur-[2px] flex items-center justify-center z-10">
+                    <span class="bg-red-600 text-white font-bold text-[10px] sm:text-xs px-3 py-1 rounded-md shadow-lg">স্টক আউট</span>
+                </div>
+            ` : ''}
+
+            <img src="${bookImage}"
+                class="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+                onerror="this.src='https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=300'">
+        </a>
+
+        <div class="p-3 flex flex-col flex-grow justify-between">
+            <div>
+                <a href="/book-details.html?id=${encodeURIComponent(bookId)}">
+                    <h3 class="font-bold text-sm text-gray-900 dark:text-white leading-snug line-clamp-2 mb-1 hover:text-blue-600 transition">
+                        ${escapeHTML(bookTitle)}
+                    </h3>
+                </a>
+
+                <p class="text-xs text-gray-500 mb-2">${escapeHTML(bookAuthor)}</p>
+
+                <div class="mb-2">
+                    ${isOutOfStock
+                        ? '<span class="text-[11px] font-bold text-red-500 bg-red-50 dark:bg-red-900/30 px-2 py-0.5 rounded">আউট অফ স্টক</span>'
+                        : '<span class="text-[11px] font-bold text-green-600 bg-green-50 dark:bg-green-900/30 px-2 py-0.5 rounded">স্টকে বইটি আছে</span>'}
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <span class="text-lg font-bold text-blue-600 dark:text-blue-400">৳ ${currentPrice}</span>
+                ${hasDiscount ? `<span class="text-gray-400 line-through text-xs">৳ ${originalPrice}</span>` : ''}
+            </div>
+        </div>
+    </div>`;
+}
+
+function renderBooks(books) {
+    const grid = document.getElementById('bookGrid');
+
+    if (!books || books.length === 0) {
+        grid.innerHTML = `<p class="text-gray-500 col-span-full text-center py-8">কোনো বই নেই।</p>`;
+        return;
+    }
+
+    grid.innerHTML = books.map(book => createBookCard(book)).join('');
+}
+
+window.filterCategory = (category) => {
+    document.querySelectorAll('.category-btn').forEach(btn => {
+        btn.classList.remove('bg-blue-600', 'text-white', 'border-blue-600');
+        btn.classList.add('bg-white', 'dark:bg-gray-800', 'text-gray-700', 'dark:text-gray-300', 'border-gray-200', 'dark:border-gray-600');
+    });
+
+    const clickedBtn = Array.from(document.querySelectorAll('.category-btn'))
+        .find(btn => btn.innerText.trim() === (category === 'all' ? 'সব বই' : category));
+
+    if (clickedBtn) {
+        clickedBtn.classList.remove('bg-white', 'dark:bg-gray-800', 'text-gray-700', 'dark:text-gray-300', 'border-gray-200', 'dark:border-gray-600');
+        clickedBtn.classList.add('bg-blue-600', 'text-white', 'border-blue-600');
+    }
+
+    filteredBooksData = category === 'all'
+        ? [...allBooksData]
+        : allBooksData.filter(b => b.category === category);
+
+    renderBooks(filteredBooksData);
+};
+
+window.handleSearch = (source) => {
+    const input = source === 'desktop'
+        ? document.getElementById('searchInput')
+        : document.getElementById('searchInputMobile');
+
+    const query = sanitizeSearchQuery(input.value.toLowerCase());
+
+    const dropdown = source === 'desktop'
+        ? document.getElementById('searchResultsDropdown')
+        : document.getElementById('searchResultsDropdownMobile');
+
+    if (query === '') {
+        dropdown.classList.add('hidden');
+        filteredBooksData = [...allBooksData];
+        renderBooks(filteredBooksData);
+        return;
+    }
+
+    filteredBooksData = allBooksData.filter(book => {
+        const title = (book.title || book.name || '').toLowerCase();
+        const author = (book.author || '').toLowerCase();
+        return title.includes(query) || author.includes(query);
+    });
+
+    renderBooks(filteredBooksData);
+
+    if (filteredBooksData.length > 0) {
+        dropdown.classList.remove('hidden');
+
+        dropdown.innerHTML = filteredBooksData.map(book => {
+            const bId = book.id || book.book_id;
+            const bTitle = book.title || book.name || 'বই';
+            const bAuthor = book.author || '';
+
+            const rawImg = book.cover_url || book.image_url || '';
+            const bImg = rawImg.startsWith('http')
+                ? rawImg
+                : 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=100';
+
+            return `
+            <a href="/book-details.html?id=${encodeURIComponent(bId)}"
+                class="flex items-center gap-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-700 last:border-0 cursor-pointer">
+                <img src="${bImg}" class="w-10 h-14 object-cover rounded shadow-sm flex-shrink-0">
+                <div class="overflow-hidden">
+                    <p class="font-bold text-sm text-gray-900 dark:text-white truncate">${escapeHTML(bTitle)}</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 truncate">${escapeHTML(bAuthor)}</p>
+                </div>
+            </a>`;
+        }).join('');
+    } else {
+        dropdown.classList.remove('hidden');
+        dropdown.innerHTML = `<p class="p-4 text-center text-sm text-gray-500 dark:text-gray-400">কোনো বই পাওয়া যায়নি।</p>`;
+    }
+};
+
+/* ব্লগ লোড */
+async function loadBlogs() {
+    const blogList = document.getElementById('blogList');
+    if (!blogList) return;
+
+    const { data: blogs, error } = await supabaseClient
+        .from('blogs')
+        .select('*')
+        .eq('status', 'approved')
+        .order('created_at', { ascending: false });
+
+    if (error || !blogs || blogs.length === 0) {
+        blogList.innerHTML = `
+            <div class="col-span-full text-center py-10 bg-white dark:bg-gray-800 rounded-xl shadow-sm">
+                <p class="text-gray-500">এখনো কোনো পোস্ট প্রকাশিত হয়নি।</p>
+            </div>`;
+        return;
+    }
+
+    const authorIds = [...new Set(blogs.map(b => b.author_id))];
+
+    const { data: profiles } = await supabaseClient
+        .from('profiles')
+        .select('id, full_name, profile_image')
+        .in('id', authorIds);
+
+    const profileMap = {};
+
+    if (profiles) {
+        profiles.forEach(p => profileMap[p.id] = p);
+    }
+
+    const blogHTML = await Promise.all(blogs.map(async blog => {
+        const author = profileMap[blog.author_id] || {
+            full_name: 'নামহীন লেখক',
+            profile_image: ''
+        };
+
+        const authorImg = author.profile_image ||
+            `https://ui-avatars.com/api/?name=${encodeURIComponent(author.full_name)}&background=random`;
+
+        const { count: likeCount } = await supabaseClient
+            .from('blog_likes')
+            .select('*', { count: 'exact', head: true })
+            .eq('blog_id', blog.id);
+
+        return `
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col h-full overflow-hidden hover:shadow-md transition">
+            <div>
+                <div class="p-4 flex items-center gap-3 border-b dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition"
+                    onclick="window.location.href='/profile.html?id=${blog.author_id}'">
+
+                    <img src="${authorImg}" class="w-10 h-10 rounded-full object-cover border">
+
+                    <div>
+                        <h4 class="font-bold text-sm text-gray-900 dark:text-white hover:text-blue-600 transition">${escapeHTML(author.full_name)}</h4>
+                        <p class="text-xs text-gray-400">${new Date(blog.created_at).toLocaleDateString('bn-BD')}</p>
+                    </div>
+                </div>
+
+                ${blog.image_url ? `
+                    <div class="max-h-60 overflow-hidden bg-gray-100 cursor-pointer" onclick="openPostDetails('${blog.id}')">
+                        <img src="${blog.image_url}" class="w-full h-full object-cover hover:scale-105 transition duration-300">
+                    </div>
+                ` : ''}
+
+                <div class="p-4 space-y-2">
+                    <h3 class="text-lg font-bold text-gray-900 dark:text-white cursor-pointer hover:text-blue-600 transition line-clamp-2"
+                        onclick="openPostDetails('${blog.id}')">${escapeHTML(blog.title)}</h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-300 line-clamp-3">${escapeHTML(blog.content)}</p>
+                </div>
+            </div>
+
+            <div class="p-4 mt-auto border-t border-gray-100 dark:border-gray-700 flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <button onclick="likeBlog('${blog.id}')" class="flex items-center gap-1 text-gray-500 hover:text-red-500 transition text-sm">
+                        🌹 <span id="like-count-${blog.id}">${likeCount || 0}</span>
+                    </button>
+
+                    <button onclick="openPostDetails('${blog.id}')" class="flex items-center gap-1 text-gray-500 hover:text-blue-500 transition text-sm">
+                        💬 কমেন্ট
+                    </button>
+
+                    <span class="flex items-center gap-1 text-gray-400 text-xs">👁️ ${blog.views || 0}</span>
+                </div>
+
+                <button onclick="openPostDetails('${blog.id}')" class="text-xs font-bold text-blue-600 hover:underline">বিস্তারিত</button>
+            </div>
+        </div>`;
+    }));
+
+    blogList.innerHTML = blogHTML.join('');
+}
+
+window.likeBlog = async (blogId) => {
+    if (!currentUser) {
+        showToast('গোলাপ দিতে লগইন করুন!', true);
+        return;
+    }
+
+    const { data: existing } = await supabaseClient
+        .from('blog_likes')
+        .select('id')
+        .eq('blog_id', blogId)
+        .eq('user_id', currentUser.id)
+        .maybeSingle();
+
+    if (existing) {
+        await supabaseClient.from('blog_likes').delete().eq('id', existing.id);
+    } else {
+        await supabaseClient.from('blog_likes').insert([
+            { blog_id: blogId, user_id: currentUser.id }
+        ]);
+
+        const { data: blogData } = await supabaseClient
+            .from('blogs')
+            .select('author_id')
+            .eq('id', blogId)
+            .single();
+
+        if (blogData && blogData.author_id !== currentUser.id) {
+            await supabaseClient.from('notifications').insert([{
+                user_id: blogData.author_id,
+                message: `🌹 আপনার একটি পোস্টে নতুন গোলাপ (লাইক) এসেছে!`,
+                link: `/index.html?post=${blogId}`,
+                is_read: false
+            }]);
+        }
+    }
+
+    loadBlogs();
+};
+
+/* অনুপযুক্ত শব্দ পরীক্ষা */
+function containsForbiddenContent(text) {
+    const forbiddenKeywords = [
+        'বাল', 'মাদারচোদ', 'মাগী', 'বেশ্যা', 'শালা', 'শুয়োর', 'কুত্তা',
+        'বট', 'bastard', 'shit', 'fuck', 'bitch', 'asshole',
+        'বটম', 'যৌন', 'সেক্স', 'sex', 'porn', 'xxx', 'naked', 'nude',
+        'chod', 'chodai', 'boob', 'vagina', 'penis', 'rape', 'ধর্ষণ',
+        'হ্যারাস', 'লুচ্চা'
+    ];
+
+    const lowerText = text.toLowerCase();
+    return forbiddenKeywords.some(word => lowerText.includes(word));
+}
+
+/* পোস্টের বিস্তারিত */
+window.openPostDetails = async (blogId) => {
+    const modal = document.getElementById('postDetailsModal');
+    const contentDiv = document.getElementById('modalBodyContent');
+
+    modal.classList.remove('hidden');
+    contentDiv.innerHTML = '<p class="text-center py-10 text-gray-500">লোড হচ্ছে...</p>';
+
+    try {
+        const { data: currentBlog } = await supabaseClient
+            .from('blogs')
+            .select('views')
+            .eq('id', blogId)
+            .single();
+
+        const newViews = (currentBlog?.views || 0) + 1;
+
+        await supabaseClient
+            .from('blogs')
+            .update({ views: newViews })
+            .eq('id', blogId);
+    } catch (e) {
+        console.log('View count update error:', e);
+    }
+
+    const { data: blog } = await supabaseClient
+        .from('blogs')
+        .select('*')
+        .eq('id', blogId)
+        .single();
+
+    if (!blog) {
+        contentDiv.innerHTML = '<p class="text-red-500 text-center">পোস্ট পাওয়া যায়নি।</p>';
+        return;
+    }
+
+    const { data: author } = await supabaseClient
+        .from('profiles')
+        .select('id, full_name, profile_image')
+        .eq('id', blog.author_id)
+        .maybeSingle();
+
+    const authorName = author?.full_name || 'নামহীন লেখক';
+    const authorImg = author?.profile_image ||
+        `https://ui-avatars.com/api/?name=${encodeURIComponent(authorName)}&background=random`;
+
+    const { data: likes } = await supabaseClient
+        .from('blog_likes')
+        .select('user_id')
+        .eq('blog_id', blogId);
+
+    const totalLikes = likes ? likes.length : 0;
+    const hasLiked = currentUser ? likes?.some(l => l.user_id === currentUser.id) : false;
+
+    let likerNamesText = '';
+
+    if (totalLikes > 0 && likes) {
+        const likerIds = likes.slice(0, 3).map(l => l.user_id);
+
+        const { data: likerProfiles } = await supabaseClient
+            .from('profiles')
+            .select('full_name')
+            .in('id', likerIds);
+
+        if (likerProfiles && likerProfiles.length > 0) {
+            const names = likerProfiles.map(p => p.full_name);
+
+            if (totalLikes === 1) {
+                likerNamesText = `${names[0]} এটিতে গোলাপ দিয়েছেন`;
+            } else if (totalLikes === 2) {
+                likerNamesText = `${names[0]} এবং ${names[1]} এটিতে গোলাপ দিয়েছেন`;
             } else {
-                showToast('এডিট করতে সমস্যা হয়েছে: ' + error.message, true);
+                likerNamesText = `${names[0]}, ${names[1]} এবং আরও ${totalLikes - 2} জন এটিতে গোলাপ দিয়েছেন`;
             }
         }
+    }
 
-        window.deleteComment = async (commentId, blogId) => {
-            if(!confirm('আপনি কি নিশ্চিতভাবে এই কমেন্টটি ডিলিট করতে চান?')) return;
+    const { data: comments } = await supabaseClient
+        .from('blog_comments')
+        .select('*')
+        .eq('blog_id', blogId)
+        .order('created_at', { ascending: true });
 
-            const { error } = await supabaseClient.from('blog_comments').delete().eq('id', commentId);
-            if(!error) {
-                showToast('🗑️ কমেন্ট সফলভাবে ডিলিট করা হয়েছে!');
-                openPostDetails(blogId);
-            } else {
-                showToast('ডিলিট করতে সমস্যা হয়েছে: ' + error.message, true);
+    let commentProfiles = {};
+
+    if (comments && comments.length > 0) {
+        const cUserIds = [...new Set(comments.map(c => c.user_id))];
+
+        const { data: cProfiles } = await supabaseClient
+            .from('profiles')
+            .select('id, full_name, profile_image')
+            .in('id', cUserIds);
+
+        if (cProfiles) {
+            cProfiles.forEach(p => commentProfiles[p.id] = p);
+        }
+    }
+
+    const mainComments = comments ? comments.filter(c => !c.parent_id) : [];
+    const replies = comments ? comments.filter(c => c.parent_id) : [];
+
+    contentDiv.innerHTML = `
+        <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-3 cursor-pointer hover:opacity-80 transition"
+                onclick="window.location.href='/profile.html?id=${blog.author_id}'">
+
+                <img src="${authorImg}" class="w-12 h-12 rounded-full object-cover border">
+
+                <div>
+                    <h3 class="font-bold text-base text-gray-900 dark:text-white hover:text-blue-600">${escapeHTML(authorName)}</h3>
+                    <p class="text-xs text-gray-400">${new Date(blog.created_at).toLocaleString('bn-BD')}</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-1 text-xs font-bold bg-blue-50 dark:bg-gray-700 text-blue-600 dark:text-blue-300 px-3 py-1 rounded-full border border-blue-100 dark:border-gray-600">
+                👁️ <span>${blog.views || 1} ভিউ</span>
+            </div>
+        </div>
+
+        <h2 class="text-2xl font-extrabold text-gray-900 dark:text-white mb-2">${escapeHTML(blog.title)}</h2>
+
+        ${blog.image_url ? `<img src="${blog.image_url}" class="w-full max-h-96 object-cover rounded-xl mb-4 shadow-sm">` : ''}
+
+        <div class="text-gray-700 dark:text-gray-200 text-base leading-relaxed whitespace-pre-line mb-4">${escapeHTML(blog.content)}</div>
+
+        <div class="flex items-center justify-between text-xs sm:text-sm text-gray-500 dark:text-gray-400 border-y dark:border-gray-700 py-2.5 my-3">
+            <div class="flex items-center gap-1.5">
+                <span class="p-1 rounded-full text-sm">🌹</span>
+                <span>${totalLikes} জন গোলাপ দিয়েছেন</span>
+            </div>
+            <div>${totalLikes > 0 ? `<span class="italic text-xs">${escapeHTML(likerNamesText)}</span>` : 'প্রথমে গোলাপ দিন'}</div>
+        </div>
+
+        <div class="flex items-center justify-around border-b dark:border-gray-700 pb-2 mb-4">
+            <button onclick="toggleModalLike('${blog.id}')"
+                class="flex items-center justify-center gap-2 flex-1 py-1.5 rounded-lg font-bold text-sm transition ${hasLiked ? 'text-pink-600 bg-pink-50 dark:bg-gray-700' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'}">
+                <span>${hasLiked ? '🌹 গোলাপ দেওয়া হয়েছে' : '🌹 গোলাপ দিন'}</span>
+            </button>
+
+            <button onclick="document.getElementById('commentInput_${blog.id}').focus()"
+                class="flex items-center justify-center gap-2 flex-1 py-1.5 rounded-lg font-bold text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition">
+                <span>💬 কমেন্ট করুন</span>
+            </button>
+        </div>
+
+        <h4 class="font-bold text-lg mb-3 text-gray-900 dark:text-white">💬 কমেন্টসমূহ (${comments ? comments.length : 0})</h4>
+
+        <div class="space-y-4 max-h-72 overflow-y-auto mb-4 pr-2">
+            ${mainComments.length === 0
+                ? '<p class="text-sm text-gray-400 text-center py-4">এখনো কোনো কমেন্ট নেই। প্রথম কমেন্ট করুন!</p>'
+                : mainComments.map(c => {
+                    const commenter = commentProfiles[c.user_id] || {
+                        full_name: 'ব্যবহারকারী',
+                        profile_image: ''
+                    };
+
+                    const cImg = commenter.profile_image ||
+                        `https://ui-avatars.com/api/?name=${encodeURIComponent(commenter.full_name)}&background=random`;
+
+                    const childReplies = replies.filter(r => r.parent_id === c.id);
+                    const isMyComment = currentUser && currentUser.id === c.user_id;
+
+                    return `
+                    <div class="space-y-2">
+                        <div class="flex items-start gap-2.5 bg-gray-50 dark:bg-gray-700 p-3 rounded-xl relative group">
+                            <img src="${cImg}" class="w-8 h-8 rounded-full object-cover mt-0.5">
+
+                            <div class="flex-1">
+                                <div class="flex justify-between items-center">
+                                    <span class="font-bold text-xs text-gray-900 dark:text-white">${escapeHTML(commenter.full_name)}</span>
+                                    <span class="text-[10px] text-gray-400">${new Date(c.created_at).toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-digit' })}</span>
+                                </div>
+
+                                <p id="commentText_${c.id}" class="text-sm text-gray-700 dark:text-gray-200 mt-1">${escapeHTML(c.comment)}</p>
+
+                                <div id="editBox_${c.id}" class="hidden mt-2">
+                                    <input type="text" id="editInput_${c.id}" value="${escapeHTML(c.comment)}" class="w-full px-2 py-1 text-xs border rounded dark:bg-gray-800 dark:border-gray-600 mb-1">
+                                    <div class="flex gap-2">
+                                        <button onclick="saveEditedComment('${c.id}', '${blog.id}')" class="bg-green-600 text-white px-2 py-0.5 rounded text-[10px] font-bold">সেভ</button>
+                                        <button onclick="toggleEditBox('${c.id}')" class="bg-gray-400 text-white px-2 py-0.5 rounded text-[10px]">বাতিল</button>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center gap-3 mt-1">
+                                    <button onclick="toggleReplyBox('${c.id}')" class="text-xs text-blue-600 font-bold hover:underline">রিপ্লাই দিন</button>
+                                    ${isMyComment ? `
+                                        <button onclick="toggleEditBox('${c.id}')" class="text-xs text-amber-600 font-semibold hover:underline">এডিট</button>
+                                        <button onclick="deleteComment('${c.id}', '${blog.id}')" class="text-xs text-red-500 font-semibold hover:underline">ডিলিট</button>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        </div>
+
+                        ${childReplies.length > 0 ? `
+                            <div class="pl-8 space-y-2 border-l-2 border-gray-200 dark:border-gray-600 ml-4">
+                                ${childReplies.map(r => {
+                                    const replier = commentProfiles[r.user_id] || {
+                                        full_name: 'ব্যবহারকারী',
+                                        profile_image: ''
+                                    };
+
+                                    const rImg = replier.profile_image ||
+                                        `https://ui-avatars.com/api/?name=${encodeURIComponent(replier.full_name)}&background=random`;
+
+                                    const isMyReply = currentUser && currentUser.id === r.user_id;
+
+                                    return `
+                                    <div class="flex items-start gap-2 bg-gray-100 dark:bg-gray-800 p-2.5 rounded-xl text-xs">
+                                        <img src="${rImg}" class="w-6 h-6 rounded-full object-cover mt-0.5">
+
+                                        <div class="flex-1">
+                                            <div class="flex justify-between items-center">
+                                                <span class="font-bold text-gray-900 dark:text-white">${escapeHTML(replier.full_name)}</span>
+                                                <span class="text-[9px] text-gray-400">${new Date(r.created_at).toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-digit' })}</span>
+                                            </div>
+
+                                            <p id="commentText_${r.id}" class="text-gray-700 dark:text-gray-200 mt-0.5">${escapeHTML(r.comment)}</p>
+
+                                            <div id="editBox_${r.id}" class="hidden mt-1">
+                                                <input type="text" id="editInput_${r.id}" value="${escapeHTML(r.comment)}" class="w-full px-2 py-1 text-[10px] border rounded dark:bg-gray-700 mb-1">
+                                                <div class="flex gap-2">
+                                                    <button onclick="saveEditedComment('${r.id}', '${blog.id}')" class="bg-green-600 text-white px-2 py-0.5 rounded text-[9px] font-bold">সেভ</button>
+                                                    <button onclick="toggleEditBox('${r.id}')" class="bg-gray-400 text-white px-2 py-0.5 rounded text-[9px]">বাতিল</button>
+                                                </div>
+                                            </div>
+
+                                            ${isMyReply ? `
+                                                <div class="flex gap-2 mt-1">
+                                                    <button onclick="toggleEditBox('${r.id}')" class="text-[10px] text-amber-600 font-semibold hover:underline">এডিট</button>
+                                                    <button onclick="deleteComment('${r.id}', '${blog.id}')" class="text-[10px] text-red-500 font-semibold hover:underline">ডিলিট</button>
+                                                </div>
+                                            ` : ''}
+                                        </div>
+                                    </div>`;
+                                }).join('')}
+                            </div>
+                        ` : ''}
+
+                        <div id="replyBox_${c.id}" class="hidden pl-8 ml-4">
+                            <form onsubmit="submitComment(event, '${blog.id}', '${c.id}')" class="flex gap-2">
+                                <input type="text" id="replyInput_${c.id}" required
+                                    placeholder="${escapeHTML(commenter.full_name)}-কে রিপ্লাই দিন..."
+                                    class="flex-1 px-3 py-1.5 border rounded-lg dark:bg-gray-800 dark:border-gray-600 text-xs outline-none focus:ring-1 focus:ring-blue-500">
+
+                                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition">রিপ্লাই</button>
+                            </form>
+                        </div>
+                    </div>`;
+                }).join('')
             }
+        </div>
+
+        ${currentUser ? `
+            <form onsubmit="submitComment(event, '${blog.id}', null)" class="flex gap-2">
+                <input type="text" id="commentInput_${blog.id}" required placeholder="একটি সুন্দর কমেন্ট লিখুন..."
+                    class="flex-1 px-4 py-2 border rounded-xl dark:bg-gray-700 dark:border-gray-600 text-sm outline-none focus:ring-2 focus:ring-blue-500">
+
+                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-5 py-2 rounded-xl text-sm transition">পাঠান</button>
+            </form>
+        ` : `
+            <p class="text-center text-sm py-2 bg-gray-50 dark:bg-gray-700 rounded-xl text-gray-500">
+                কমেন্ট করতে অনুগ্রহ করে <a href="/login.html" class="text-blue-600 font-bold underline">লগইন করুন</a>।
+            </p>
+        `}
+    `;
+};
+
+window.toggleReplyBox = (commentId) => {
+    const box = document.getElementById(`replyBox_${commentId}`);
+    if (box) box.classList.toggle('hidden');
+};
+
+window.toggleEditBox = (commentId) => {
+    const box = document.getElementById(`editBox_${commentId}`);
+    if (box) box.classList.toggle('hidden');
+};
+
+window.saveEditedComment = async (commentId, blogId) => {
+    const input = document.getElementById(`editInput_${commentId}`);
+    const newText = input ? input.value.trim() : '';
+
+    if (!newText) {
+        showToast('কমেন্ট খালি রাখা যাবে না!', true);
+        return;
+    }
+
+    if (containsForbiddenContent(newText)) {
+        showToast('⚠️ আপনার কমেন্টে গালি, অ্যাডাল্ট বা অনুপযুক্ত শব্দ থাকায় এটি এডিট করা বাতিল করা হয়েছে!', true);
+        return;
+    }
+
+    const { error } = await supabaseClient
+        .from('blog_comments')
+        .update({ comment: newText })
+        .eq('id', commentId);
+
+    if (!error) {
+        showToast('✅ কমেন্ট সফলভাবে এডিট করা হয়েছে!');
+        openPostDetails(blogId);
+    } else {
+        showToast('এডিট করতে সমস্যা হয়েছে: ' + error.message, true);
+    }
+};
+
+window.deleteComment = async (commentId, blogId) => {
+    if (!confirm('আপনি কি নিশ্চিতভাবে এই কমেন্টটি ডিলিট করতে চান?')) return;
+
+    const { error } = await supabaseClient
+        .from('blog_comments')
+        .delete()
+        .eq('id', commentId);
+
+    if (!error) {
+        showToast('🗑️ কমেন্ট সফলভাবে ডিলিট করা হয়েছে!');
+        openPostDetails(blogId);
+    } else {
+        showToast('ডিলিট করতে সমস্যা হয়েছে: ' + error.message, true);
+    }
+};
+
+window.toggleModalLike = async (blogId) => {
+    await likeBlog(blogId);
+    openPostDetails(blogId);
+};
+
+window.closePostModal = () => {
+    document.getElementById('postDetailsModal').classList.add('hidden');
+};
+
+window.submitComment = async (e, blogId, parentId = null) => {
+    e.preventDefault();
+
+    if (!currentUser) {
+        showToast('লগইন করুন', true);
+        return;
+    }
+
+    let commentText = '';
+
+    if (parentId) {
+        const replyInput = document.getElementById(`replyInput_${parentId}`);
+        commentText = replyInput ? replyInput.value.trim() : '';
+    } else {
+        const mainInput = document.getElementById(`commentInput_${blogId}`);
+        commentText = mainInput ? mainInput.value.trim() : '';
+    }
+
+    if (!commentText) return;
+
+    if (containsForbiddenContent(commentText)) {
+        showToast('🚫 সতর্কতা: আপনার কমেন্টে গালিগালাজ, অ্যাডাল্ট বা হ্যারেসমেন্টমূলক শব্দ শনাক্ত হয়েছে। এই কমেন্টটি ব্লক ও রিজেক্ট করা হলো!', true);
+        return;
+    }
+
+    const insertData = {
+        blog_id: blogId,
+        user_id: currentUser.id,
+        comment: commentText
+    };
+
+    if (parentId) insertData.parent_id = parentId;
+
+    const { error } = await supabaseClient
+        .from('blog_comments')
+        .insert([insertData]);
+
+    if (!error) {
+        showToast('✅ কমেন্ট সফলভাবে পোস্ট হয়েছে!');
+
+        const { data: blogData } = await supabaseClient
+            .from('blogs')
+            .select('author_id')
+            .eq('id', blogId)
+            .single();
+
+        if (blogData && blogData.author_id !== currentUser.id) {
+            await supabaseClient.from('notifications').insert([{
+                user_id: blogData.author_id,
+                message: `💬 আপনার একটি পোস্টে নতুন কমেন্ট এসেছে!`,
+                link: `/index.html?post=${blogId}`,
+                is_read: false
+            }]);
         }
 
-        window.toggleModalLike = async (blogId) => {
-            await likeBlog(blogId);
-            openPostDetails(blogId);
-        }
+        openPostDetails(blogId);
+    } else {
+        showToast('কমেন্ট সাবমিট সমস্যা: ' + error.message, true);
+    }
+};
 
-        window.closePostModal = () => document.getElementById('postDetailsModal').classList.add('hidden');
+window.submitBlog = async () => {
+    if (!currentUser) {
+        showToast('পোস্ট লিখতে প্রথমে লগইন করুন!', true);
+        return;
+    }
 
-        window.submitComment = async (e, blogId, parentId = null) => {
-            e.preventDefault();
-            if(!currentUser) { showToast('লগইন করুন', true); return; }
+    const title = document.getElementById('newBlogTitle').value.trim();
+    const content = document.getElementById('newBlogContent').value.trim();
+    const imageFile = document.getElementById('newBlogImage').files[0];
+    const btn = document.getElementById('submitBlogBtn');
 
-            let text = '';
-            if (parentId) {
-                const replyInput = document.getElementById(`replyInput_${parentId}`);
-                text = replyInput ? replyInput.value.trim() : '';
-            } else {
-                const mainInput = document.getElementById(`commentInput_${blogId}`);
-                text = mainInput ? mainInput.value.trim() : '';
+    if (!title || !content) {
+        showToast('শিরোনাম এবং বিষয়বস্তু লিখুন!', true);
+        return;
+    }
+
+    btn.innerText = 'সাবমিট হচ্ছে...';
+    btn.disabled = true;
+
+    try {
+        let image_url = null;
+
+        if (imageFile) {
+            const fileName = `blog_${Date.now()}.${imageFile.name.split('.').pop()}`;
+
+            const { error: uploadError } = await supabaseClient
+                .storage
+                .from('book-covers')
+                .upload(fileName, imageFile);
+
+            if (uploadError) {
+                throw new Error("ছবি আপলোডে সমস্যা: " + uploadError.message);
             }
 
-            if(!text) return;
+            const { data } = supabaseClient
+                .storage
+                .from('book-covers')
+                .getPublicUrl(fileName);
 
-            if (containsForbiddenContent(text)) {
-                showToast('🚫 সতর্কতা: আপনার কমেন্টে গালিগালাজ, অ্যাডাল্ট বা হ্যারেসমেন্টমূলক শব্দ শনাক্ত হয়েছে। এই কমেন্টটি ব্লক ও রিজেক্ট করা হলো!', true);
-                return;
-            }
-
-            const insertData = {
-                blog_id: blogId,
-                user_id: currentUser.id,
-                comment: text
-            };
-            if(parentId) insertData.parent_id = parentId;
-
-            const { error } = await supabaseClient.from('blog_comments').insert([insertData]);
-
-            if(!error) {
-                showToast('✅ কমেন্ট সফলভাবে পোস্ট হয়েছে!');
-                const { data: blogData } = await supabaseClient.from('blogs').select('author_id').eq('id', blogId).single();
-                if(blogData && blogData.author_id !== currentUser.id) {
-                    await supabaseClient.from('notifications').insert([{
-                        user_id: blogData.author_id,
-                        message: `💬 আপনার একটি পোস্টে নতুন কমেন্ট এসেছে!`,
-                        link: `/index.html?post=${blogId}`,
-                        is_read: false
-                    }]);
-                }
-                openPostDetails(blogId);
-            } else {
-                showToast('কমেন্ট সাবমিট সমস্যা: ' + error.message, true);
-            }
+            image_url = data.publicUrl;
         }
 
-        window.submitBlog = async () => {
-            if(!currentUser) { showToast('পোস্ট লিখতে প্রথমে লগইন করুন!', true); return; }
-            
-            const title = document.getElementById('newBlogTitle').value.trim();
-            const content = document.getElementById('newBlogContent').value.trim();
-            const imageFile = document.getElementById('newBlogImage').files[0];
-            const btn = document.getElementById('submitBlogBtn');
-            
-            if(!title || !content) { showToast('শিরোনাম এবং বিষয়বস্তু লিখুন!', true); return; }
-            btn.innerText = 'সাবমিট হচ্ছে...'; btn.disabled = true;
+        const { error } = await supabaseClient
+            .from('blogs')
+            .insert([{
+                author_id: currentUser.id,
+                title: title,
+                content: content,
+                image_url: image_url,
+                status: 'pending',
+                views: 0
+            }]);
 
-            try {
-                let image_url = null;
-                if (imageFile) {
-                    const fileName = `blog_${Date.now()}.${imageFile.name.split('.').pop()}`;
-                    const { error: uploadError } = await supabaseClient.storage.from('book-covers').upload(fileName, imageFile);
-                    if (uploadError) throw new Error("ছবি আপলোডে সমস্যা: " + uploadError.message);
-                    const { data } = supabaseClient.storage.from('book-covers').getPublicUrl(fileName);
-                    image_url = data.publicUrl;
-                }
+        if (error) throw new Error(error.message);
 
-                const { error } = await supabaseClient.from('blogs').insert([{ 
-                    author_id: currentUser.id, title: title, content: content, image_url: image_url, status: 'pending', views: 0 
-                }]);
-                
-                if (error) throw new Error(error.message);
+        showToast('✅ আপনার পোস্টটি সফলভাবে জমা হয়েছে। অ্যাডমিন অ্যাপ্রুভ করার পর ফিডে দেখাবে।', false);
 
-                showToast('✅ আপনার পোস্টটি সফলভাবে জমা হয়েছে। অ্যাডমিন অ্যাপ্রুভ করার পর ফিডে দেখাবে।', false);
-                document.getElementById('newBlogTitle').value = '';
-                document.getElementById('newBlogContent').value = '';
-                document.getElementById('newBlogImage').value = '';
-                document.getElementById('writeBlogForm').classList.add('hidden');
-                loadBlogs();
-            } catch (err) {
-                showToast('সমস্যা: ' + err.message, true);
-            } finally {
-                btn.innerText = 'সাবমিট করুন'; btn.disabled = false;
-            }
-        }
+        document.getElementById('newBlogTitle').value = '';
+        document.getElementById('newBlogContent').value = '';
+        document.getElementById('newBlogImage').value = '';
+        document.getElementById('writeBlogForm').classList.add('hidden');
 
-        async function checkUrlForPost() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const postId = urlParams.get('post');
-            if (postId) {
-                await openPostDetails(postId);
-            }
-        }
+        loadBlogs();
 
-        async function init() {
-            await loadAdminSettings(); 
-            await checkAuth();
-            await loadBooks();
-            await loadBlogs(); 
-            updateCartCount();
-            updateWishlistCount();
-            await checkUrlForPost();
-        }
+    } catch (err) {
+        showToast('সমস্যা: ' + err.message, true);
+    } finally {
+        btn.innerText = 'সাবমিট করুন';
+        btn.disabled = false;
+    }
+};
 
-        init();
-    </script>
+async function checkUrlForPost() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const postId = urlParams.get('post');
+
+    if (postId) {
+        await openPostDetails(postId);
+    }
+}
+
+async function init() {
+    await loadAdminSettings();
+    await checkAuth();
+    await loadBooks();
+    await loadBlogs();
+
+    updateCartCount();
+    updateWishlistCount();
+
+    await checkUrlForPost();
+}
+
+init();
+</script>
+
 </body>
 </html>
