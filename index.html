@@ -257,8 +257,7 @@ function escapeHTML(str){
     return String(str).replace(/[&<>'"]/g,tag=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[tag]||tag));
 }
 function sanitizeSearchQuery(query){return query.replace(/[<>]/g,'').trim()}
-
-if(localStorage.getItem('theme')==='dark')document.documentElement.classList.add('dark');
+    if(localStorage.getItem('theme')==='dark')document.documentElement.classList.add('dark');
 
 window.toggleDarkMode=()=>{
     document.documentElement.classList.toggle('dark');
@@ -315,28 +314,59 @@ window.toggleWishlist=(bookId,event)=>{
 async function loadAdminSettings(){
     try{
         const {data:settings,error}=await supabaseClient.from('site_settings').select('*').limit(1).maybeSingle();
+
         if(settings&&!error){
-            const companyName=settings.company_name||'Boi Chokro';
-            document.getElementById('pageTitle').innerText=companyName+' - অনলাইন বইঘর';
-            document.getElementById('web_header_name').innerText=companyName;
+            const companyName=String(settings.company_name||'Boi Chokro').trim()||'Boi Chokro';
+            const siteTitle=companyName+' - অনলাইন বইঘর';
+
+            // Browser tab title এবং HTML title—দুটিই Admin Settings-এর নাম অনুসরণ করবে।
+            document.title=siteTitle;
+            const pageTitle=document.getElementById('pageTitle');
+            if(pageTitle)pageTitle.textContent=siteTitle;
+
+            const headerName=document.getElementById('web_header_name');
+            if(headerName)headerName.textContent=companyName;
+
             const logoUrl=settings.logo_url||settings.logo||'';
             if(logoUrl){
                 const logo=document.getElementById('web_header_logo');
-                logo.src=logoUrl;logo.classList.remove('hidden');
+                if(logo){logo.src=logoUrl;logo.classList.remove('hidden')}
             }
+
             const tagline=settings.banner_text||settings.tagline||'';
-            if(tagline)document.getElementById('web_tagline').innerText=tagline;
-            if(settings.sub_tagline)document.getElementById('web_sub_tagline').innerText=settings.sub_tagline;
-            if(settings.banner_url)document.getElementById('heroBannerImage').style.backgroundImage=`url('${settings.banner_url}')`;
+            if(tagline){
+                const el=document.getElementById('web_tagline');
+                if(el)el.textContent=tagline;
+            }
+
+            if(settings.sub_tagline){
+                const el=document.getElementById('web_sub_tagline');
+                if(el)el.textContent=settings.sub_tagline;
+            }
+
+            if(settings.banner_url){
+                const banner=document.getElementById('heroBannerImage');
+                if(banner)banner.style.backgroundImage=`url('${settings.banner_url}')`;
+            }
+
             let contact='';
             if(settings.phone)contact+='📞 ফোন: '+escapeHTML(settings.phone)+' ';
             if(settings.address)contact+=' | 📍 ঠিকানা: '+escapeHTML(settings.address);
-            document.getElementById('web_footer_contact').innerHTML=contact;
-            if(settings.footer_text)document.getElementById('web_footer_text').innerHTML=settings.footer_text;
+
+            const footerContact=document.getElementById('web_footer_contact');
+            if(footerContact)footerContact.innerHTML=contact;
+
+            if(settings.footer_text){
+                const footerText=document.getElementById('web_footer_text');
+                if(footerText)footerText.innerHTML=settings.footer_text;
+            }
         }
-    }catch(e){console.log('Settings error:',e)}
+    }catch(e){
+        console.log('Settings error:',e);
+    }
 }
-    /* AUTH */
+
+/* AUTH */
 async function checkAuth(){
     const {data:{session},error}=await supabaseClient.auth.getSession();
     if(error)console.error('Session error:',error);
@@ -518,7 +548,7 @@ function clearNotificationUI(){
 }
 function closeNotificationDropdowns(){
     ['notifDropdown','notifDropdownMobile'].forEach(id=>document.getElementById(id)?.classList.add('hidden'));
-}
+    }
 function notificationHTML(n){
     const safeId=encodeURIComponent(String(n.id||''));
     const safeLink=encodeURIComponent(String(n.link||''));
