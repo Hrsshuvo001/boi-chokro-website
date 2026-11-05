@@ -1,149 +1,852 @@
+
 <!doctype html>
 <html lang="bn">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#123c35">
+  <meta name="theme-color" content="#ffffff" id="themeColor">
   <title>Boi Chokro AI — বই খুঁজুন ও অর্ডার সহায়তা</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
-    :root{--green:#123c35;--green2:#1b6656;--cream:#f6f4ed;--ink:#17231f;--muted:#718078;--line:#e5e9e4;--white:#fff}
-    *{box-sizing:border-box}
-    body{margin:0;background:var(--cream);color:var(--ink);font-family:system-ui,-apple-system,"Noto Sans Bengali",sans-serif}
-    .app{max-width:820px;height:100dvh;margin:0 auto;background:#fff;display:flex;flex-direction:column;box-shadow:0 0 30px #152b2010}
-    header{background:var(--green);color:#fff;padding:14px 16px;display:flex;align-items:center;gap:12px}
-    .logo{width:42px;height:42px;border-radius:13px;background:#ffffff20;display:grid;place-items:center;font-size:23px}
-    .brand{flex:1;min-width:0}.brand h1{font-size:17px;margin:0;font-weight:750}.brand p{font-size:12px;margin:3px 0 0;color:#d6e7df}
-    .back{color:#fff;text-decoration:none;border:1px solid #ffffff55;border-radius:10px;padding:8px 10px;font-size:12px;white-space:nowrap}
-    .status{padding:9px 16px;background:#edf6f1;color:#315f4d;font-size:12px;border-bottom:1px solid #e1eee6}
-    #messages{flex:1;overflow:auto;padding:18px 14px 12px;scroll-behavior:smooth}
-    .msg{display:flex;margin:0 0 14px;gap:8px;align-items:flex-end}
-    .msg.user{justify-content:flex-end}
-    .avatar{width:28px;height:28px;flex:0 0 28px;border-radius:50%;background:#e4f0e9;display:grid;place-items:center;font-size:14px}
-    .bubble{max-width:min(84%,610px);padding:11px 13px;border-radius:15px;background:#f0f3f0;line-height:1.65;font-size:14px;overflow-wrap:anywhere;white-space:pre-wrap}
-    .user .bubble{background:var(--green2);color:#fff;border-bottom-right-radius:5px}
-    .bot .bubble{border-bottom-left-radius:5px}
-    .typing{color:var(--muted);font-size:13px}
-    .quick{display:flex;gap:8px;overflow-x:auto;padding:8px 14px 12px;scrollbar-width:none}
-    .quick button{white-space:nowrap;border:1px solid #dce5df;background:#fff;color:#31594c;border-radius:20px;padding:8px 12px;font-size:12px}
-    .composer{padding:10px 12px calc(10px + env(safe-area-inset-bottom));border-top:1px solid var(--line);display:flex;gap:8px;background:#fff}
-    #message{flex:1;min-width:0;resize:none;max-height:110px;border:1px solid #dce3dd;border-radius:13px;padding:12px;font:inherit;font-size:14px;outline:none}
-    #message:focus{border-color:#438a70}
-    #send{border:0;background:var(--green);color:#fff;border-radius:13px;padding:0 17px;font-weight:700}
-    #send:disabled{opacity:.55}
-    .foot{text-align:center;color:#89938d;font-size:10px;padding:0 10px 8px}
-    a{color:inherit}
-    @media(min-width:700px){.app{height:calc(100dvh - 30px);margin:15px auto;border-radius:18px;overflow:hidden}}
+    :root {
+      --blue:#2563eb;
+      --blue-light:#eff6ff;
+      --page:#f9fafb;
+      --surface:#ffffff;
+      --text:#1f2937;
+      --muted:#6b7280;
+      --line:#e5e7eb;
+      --bot:#f3f4f6;
+      --user:#2563eb;
+      --footer:#111827;
+    }
+
+    html.dark {
+      --page:#111827;
+      --surface:#1f2937;
+      --text:#f3f4f6;
+      --muted:#9ca3af;
+      --line:#374151;
+      --bot:#374151;
+      --user:#1d4ed8;
+      --footer:#030712;
+    }
+
+    * { box-sizing:border-box; }
+
+    body {
+      margin:0;
+      background:var(--page);
+      color:var(--text);
+      font-family:'Hind Siliguri',system-ui,-apple-system,
+        "Noto Sans Bengali",sans-serif;
+      min-height:100vh;
+      display:flex;
+      flex-direction:column;
+      transition:background .25s,color .25s;
+    }
+
+    .topbar {
+      background:var(--surface);
+      border-bottom:1px solid var(--line);
+      box-shadow:0 2px 8px rgba(0,0,0,.04);
+      position:sticky;
+      top:0;
+      z-index:20;
+    }
+
+    .topbar-inner {
+      max-width:1100px;
+      margin:auto;
+      padding:12px 16px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+
+    .brand {
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width:0;
+      text-decoration:none;
+    }
+
+    .brand-logo {
+      width:42px;
+      height:42px;
+      object-fit:contain;
+      border-radius:9px;
+      display:none;
+    }
+
+    .brand-name {
+      font-size:21px;
+      font-weight:800;
+      color:var(--blue);
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+    }
+
+    .top-actions {
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+
+    .top-btn {
+      border:1px solid var(--line);
+      background:var(--surface);
+      color:var(--text);
+      text-decoration:none;
+      border-radius:9px;
+      padding:8px 11px;
+      font-size:13px;
+      cursor:pointer;
+      white-space:nowrap;
+    }
+
+    .top-btn:hover {
+      border-color:var(--blue);
+      color:var(--blue);
+    }
+
+    .page {
+      width:100%;
+      max-width:900px;
+      margin:20px auto;
+      padding:0 12px;
+      flex:1;
+      display:flex;
+      flex-direction:column;
+    }
+
+    .chat-card {
+      background:var(--surface);
+      border:1px solid var(--line);
+      border-radius:16px;
+      overflow:hidden;
+      box-shadow:0 4px 20px rgba(0,0,0,.05);
+      display:flex;
+      flex-direction:column;
+      flex:1;
+      min-height:500px;
+      max-height:calc(100vh - 190px);
+    }
+
+    .chat-heading {
+      padding:14px 16px;
+      background:var(--surface);
+      border-bottom:1px solid var(--line);
+    }
+
+    .chat-heading h1 {
+      margin:0;
+      font-size:19px;
+      font-weight:800;
+    }
+
+    .chat-heading p {
+      margin:4px 0 0;
+      font-size:12px;
+      color:var(--muted);
+    }
+
+    .status {
+      padding:9px 16px;
+      background:var(--blue-light);
+      color:#1d4ed8;
+      font-size:12px;
+      border-bottom:1px solid #dbeafe;
+    }
+
+    html.dark .status {
+      background:#1e3a5f;
+      color:#bfdbfe;
+      border-color:#1e40af;
+    }
+
+    #messages {
+      flex:1;
+      overflow:auto;
+      padding:18px 14px 12px;
+      scroll-behavior:smooth;
+    }
+
+    .msg {
+      display:flex;
+      margin:0 0 14px;
+      gap:8px;
+      align-items:flex-end;
+    }
+
+    .msg.user { justify-content:flex-end; }
+
+    .avatar {
+      width:30px;
+      height:30px;
+      flex:0 0 30px;
+      border-radius:50%;
+      background:var(--blue-light);
+      display:grid;
+      place-items:center;
+      font-size:15px;
+    }
+
+    .bubble {
+      max-width:min(84%,650px);
+      padding:11px 13px;
+      border-radius:15px;
+      background:var(--bot);
+      color:var(--text);
+      line-height:1.7;
+      font-size:14px;
+      overflow-wrap:anywhere;
+      white-space:pre-wrap;
+    }
+
+    .user .bubble {
+      background:var(--user);
+      color:#fff;
+      border-bottom-right-radius:5px;
+    }
+
+    .bot .bubble { border-bottom-left-radius:5px; }
+
+    .typing {
+      color:var(--muted);
+      font-size:13px;
+    }
+
+    .quick {
+      display:flex;
+      gap:8px;
+      overflow-x:auto;
+      padding:8px 14px 12px;
+      scrollbar-width:none;
+      border-top:1px solid var(--line);
+    }
+
+    .quick button {
+      white-space:nowrap;
+      border:1px solid var(--line);
+      background:var(--surface);
+      color:var(--text);
+      border-radius:20px;
+      padding:8px 12px;
+      font-size:12px;
+      cursor:pointer;
+    }
+
+    .quick button:hover {
+      border-color:var(--blue);
+      color:var(--blue);
+    }
+
+    .composer {
+      padding:10px 12px;
+      border-top:1px solid var(--line);
+      display:flex;
+      gap:8px;
+      background:var(--surface);
+    }
+
+    #message {
+      flex:1;
+      min-width:0;
+      resize:none;
+      max-height:110px;
+      border:1px solid var(--line);
+      border-radius:13px;
+      padding:12px;
+      font:inherit;
+      font-size:14px;
+      outline:none;
+      background:var(--page);
+      color:var(--text);
+    }
+
+    #message:focus { border-color:var(--blue); }
+
+    #send {
+      border:0;
+      background:var(--blue);
+      color:#fff;
+      border-radius:13px;
+      padding:0 17px;
+      font-weight:700;
+      cursor:pointer;
+    }
+
+    #send:disabled { opacity:.55; }
+
+    .footer {
+      background:var(--footer);
+      color:#9ca3af;
+      text-align:center;
+      padding:20px 12px;
+      font-size:12px;
+      border-top:4px solid var(--blue);
+      margin-top:auto;
+    }
+
+    .footer p { margin:5px 0; }
+
+    @media(max-width:600px) {
+      .page {
+        margin:10px auto;
+        padding:0 8px;
+      }
+
+      .chat-card {
+        min-height:450px;
+        max-height:calc(100dvh - 175px);
+        border-radius:12px;
+      }
+
+      .brand-name { font-size:17px; }
+      .brand-logo { width:35px;height:35px; }
+      .topbar-inner { padding:10px; }
+      .top-btn { padding:7px 9px;font-size:11px; }
+      .bubble { max-width:88%; }
+    }
   </style>
 </head>
+
 <body>
-  <main class="app">
-    <header>
-      <div class="logo">📚</div>
-      <div class="brand"><h1>Boi Chokro AI</h1><p>বই খুঁজুন • দাম জানুন • অর্ডার সহায়তা</p></div>
-      <a class="back" href="/">ওয়েবসাইটে ফিরুন</a>
-    </header>
-    <div class="status">● অনলাইন সহকারী · Boi Chokro-এর বই ও ওয়েবসাইট বিষয়ে সাহায্য করবে</div>
-    <section id="messages" aria-live="polite">
-      <div class="msg bot"><div class="avatar">📚</div><div class="bubble">স্বাগতম! 😊 আমি Boi Chokro-এর AI সহকারী। কোন বই খুঁজছেন? বইয়ের নাম, লেখক বা বিষয় লিখুন। বইয়ের বর্তমান দাম ও স্টক ডেটাবেস থেকে দেখে জানাব।</div></div>
-    </section>
-    <div class="quick">
-      <button data-text="সব বইয়ের তালিকা দেখাও">📚 সব বই</button>
-      <button data-text="একটি জনপ্রিয় বই সাজেস্ট করো">বই সাজেস্ট</button>
-      <button data-text="কীভাবে বই অর্ডার করব?">🛒 অর্ডার কীভাবে করব?</button>
-      <button data-text="ডেলিভারি সম্পর্কে কী তথ্য আছে?">🚚 ডেলিভারি তথ্য</button>
+
+  <!-- WEBSITE HEADER -->
+  <header class="topbar">
+    <div class="topbar-inner">
+
+      <a href="/" class="brand">
+        <img id="siteLogo" class="brand-logo" alt="Website Logo">
+        <span id="companyName" class="brand-name">Boi Chokro</span>
+      </a>
+
+      <div class="top-actions">
+        <button class="top-btn" id="themeToggle" type="button">
+          🌙 ডার্ক মোড
+        </button>
+
+        <a class="top-btn" href="/">
+          ← ওয়েবসাইটে ফিরুন
+        </a>
+      </div>
+
     </div>
-    <form class="composer" id="chatForm">
-      <textarea id="message" rows="1" maxlength="1200" placeholder="বইয়ের নাম বা আপনার প্রশ্ন লিখুন..." required></textarea>
-      <button id="send" type="submit">পাঠান</button>
-    </form>
-    <div class="foot">Boi Chokro AI · বইয়ের তথ্য ডেটাবেস থেকে যাচাই করা হয়</div>
+  </header>
+
+  <!-- CHAT AREA -->
+  <main class="page">
+
+    <section class="chat-card">
+
+      <div class="chat-heading">
+        <h1 id="chatTitle">AI বই সহকারী</h1>
+        <p>বই খুঁজুন • দাম জানুন • অর্ডার সহায়তা</p>
+      </div>
+
+      <div class="status">
+        ● অনলাইন সহকারী · Boi Chokro-এর বই ও ওয়েবসাইট বিষয়ে সাহায্য করবে
+      </div>
+
+      <section id="messages" aria-live="polite">
+        <div class="msg bot">
+          <div class="avatar">📚</div>
+          <div class="bubble">
+            স্বাগতম! 😊 আমি Boi Chokro-এর AI সহকারী।
+
+            কোন বই খুঁজছেন? বইয়ের নাম, লেখক বা বিষয় লিখুন।
+            বইয়ের বর্তমান দাম ও স্টক ডেটাবেস থেকে দেখে জানাব।
+          </div>
+        </div>
+      </section>
+
+      <div class="quick">
+        <button data-text="সব বইয়ের তালিকা দেখাও">📚 সব বই</button>
+        <button data-text="একটি জনপ্রিয় বই সাজেস্ট করো">বই সাজেস্ট</button>
+        <button data-text="কীভাবে বই অর্ডার করব?">🛒 অর্ডার কীভাবে করব?</button>
+        <button data-text="ডেলিভারি সম্পর্কে কী তথ্য আছে?">🚚 ডেলিভারি তথ্য</button>
+      </div>
+
+      <form class="composer" id="chatForm">
+        <textarea
+          id="message"
+          rows="1"
+          maxlength="1200"
+          placeholder="বইয়ের নাম বা আপনার প্রশ্ন লিখুন..."
+          required
+        ></textarea>
+
+        <button id="send" type="submit">পাঠান</button>
+      </form>
+
+    </section>
+
   </main>
+
+  <!-- WEBSITE FOOTER -->
+  <footer class="footer">
+    <p id="footerText">
+      © 2026 Boi Chokro. All rights reserved.
+    </p>
+
+    <p id="footerContact"></p>
+  </footer>
+
 
 <script>
 (() => {
-  const API_URL = "https://boi-chokro-ai-api.sifu944.workers.dev/";
+
+  /* =====================================
+     SUPABASE CONFIGURATION
+  ===================================== */
+
+  const SUPABASE_URL =
+    "https://jhbpaezbpkfwjfmazdcn.supabase.co";
+
+  const SUPABASE_ANON_KEY =
+    "sb_publishable_oBzutzPKvIvujmSG7icXug_SwwveL5g";
+
+  const supabaseClient = supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_ANON_KEY
+  );
+
+
+  /* =====================================
+     AI WORKER CONFIGURATION
+  ===================================== */
+
+  const API_URL =
+    "https://boi-chokro-ai-api.sifu944.workers.dev/";
+
+
+  /* =====================================
+     ELEMENTS
+  ===================================== */
+
   const form = document.getElementById("chatForm");
   const input = document.getElementById("message");
   const send = document.getElementById("send");
   const messages = document.getElementById("messages");
+
   const history = [];
 
+
+  /* =====================================
+     THEME SYSTEM
+     Same localStorage key as index.html
+  ===================================== */
+
+  function applyTheme(theme) {
+
+    const isDark = theme === "dark";
+
+    document.documentElement.classList.toggle(
+      "dark",
+      isDark
+    );
+
+    localStorage.setItem(
+      "theme",
+      isDark ? "dark" : "light"
+    );
+
+    document.getElementById("themeColor").content =
+      isDark ? "#111827" : "#ffffff";
+
+    document.getElementById("themeToggle").innerText =
+      isDark ? "☀️ লাইট মোড" : "🌙 ডার্ক মোড";
+  }
+
+
+  function loadTheme() {
+
+    const savedTheme = localStorage.getItem("theme");
+
+    applyTheme(savedTheme === "dark" ? "dark" : "light");
+  }
+
+
+  document.getElementById("themeToggle").addEventListener(
+    "click",
+    () => {
+      const current =
+        document.documentElement.classList.contains("dark");
+
+      applyTheme(current ? "light" : "dark");
+    }
+  );
+
+
+  // অন্য ট্যাবে মূল ওয়েবসাইটের থিম পরিবর্তন হলে
+  // এই পেজেও পরিবর্তন হবে।
+  window.addEventListener("storage", event => {
+
+    if (event.key === "theme") {
+      applyTheme(event.newValue === "dark" ? "dark" : "light");
+    }
+
+  });
+
+
+  /* =====================================
+     ADMIN SITE SETTINGS
+  ===================================== */
+
+  async function loadSiteSettings() {
+
+    const companyName =
+      document.getElementById("companyName");
+
+    const siteLogo =
+      document.getElementById("siteLogo");
+
+    const footerText =
+      document.getElementById("footerText");
+
+    const footerContact =
+      document.getElementById("footerContact");
+
+    const chatTitle =
+      document.getElementById("chatTitle");
+
+
+    try {
+
+      const { data: settings, error } =
+        await supabaseClient
+          .from("site_settings")
+          .select("*")
+          .limit(1)
+          .maybeSingle();
+
+
+      if (error) {
+        console.error("Site settings error:", error);
+        return;
+      }
+
+      if (!settings) return;
+
+
+      // Company name
+      const name =
+        settings.company_name || "Boi Chokro";
+
+      companyName.textContent = name;
+
+      chatTitle.textContent = name + " AI সহকারী";
+
+      document.title =
+        name + " AI — বই খুঁজুন ও অর্ডার সহায়তা";
+
+
+      // Logo
+      const logoUrl =
+        settings.logo_url || settings.logo || "";
+
+      if (logoUrl) {
+        siteLogo.src = logoUrl;
+        siteLogo.style.display = "block";
+      } else {
+        siteLogo.style.display = "none";
+      }
+
+
+      // Footer text
+      if (settings.footer_text) {
+        footerText.textContent = settings.footer_text;
+      }
+
+
+      // Phone and address
+      const contactParts = [];
+
+      if (settings.phone) {
+        contactParts.push("📞 ফোন: " + settings.phone);
+      }
+
+      if (settings.address) {
+        contactParts.push("📍 ঠিকানা: " + settings.address);
+      }
+
+      footerContact.textContent =
+        contactParts.join(" | ");
+
+
+    } catch (error) {
+
+      console.error("Settings loading failed:", error);
+
+    }
+
+  }
+
+
+  /* =====================================
+     LIVE ADMIN SETTINGS UPDATE
+  ===================================== */
+
+  function listenForSettingsChanges() {
+
+    const channel = supabaseClient
+      .channel("ai-chat-site-settings")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "site_settings"
+        },
+        () => {
+          loadSiteSettings();
+        }
+      )
+      .subscribe();
+
+    window.addEventListener("beforeunload", () => {
+      supabaseClient.removeChannel(channel);
+    });
+
+  }
+
+
+  /* =====================================
+     CHAT MESSAGE DISPLAY
+  ===================================== */
+
   function addMessage(text, who) {
+
     const row = document.createElement("div");
-    row.className = "msg " + (who === "user" ? "user" : "bot");
+
+    row.className =
+      "msg " + (who === "user" ? "user" : "bot");
+
+
     if (who !== "user") {
+
       const avatar = document.createElement("div");
+
       avatar.className = "avatar";
       avatar.textContent = "📚";
+
       row.appendChild(avatar);
+
     }
+
+
     const bubble = document.createElement("div");
+
     bubble.className = "bubble";
     bubble.textContent = text;
+
     row.appendChild(bubble);
+
     messages.appendChild(row);
+
     messages.scrollTop = messages.scrollHeight;
+
     return row;
   }
 
+
+  /* =====================================
+     SEND MESSAGE TO AI WORKER
+  ===================================== */
+
   async function sendMessage(text) {
+
     const message = text.trim();
+
     if (!message || send.disabled) return;
+
+
     addMessage(message, "user");
-    history.push({ role: "user", text: message });
+
+    history.push({
+      role: "user",
+      text: message
+    });
+
+
     input.value = "";
     input.style.height = "auto";
+
     send.disabled = true;
-    const loading = addMessage("একটু অপেক্ষা করুন, বইয়ের তথ্য খুঁজছি…", "bot");
-    loading.querySelector(".bubble").classList.add("typing");
+
+
+    const loading = addMessage(
+      "একটু অপেক্ষা করুন, বইয়ের তথ্য খুঁজছি…",
+      "bot"
+    );
+
+    loading.querySelector(".bubble")
+      .classList.add("typing");
+
 
     try {
+
       const response = await fetch(API_URL, {
+
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message, history: history.slice(-10, -1) })
+
+        headers: {
+          "Content-Type": "application/json"
+        },
+
+        body: JSON.stringify({
+
+          message,
+
+          history: history.slice(-10, -1)
+
+        })
+
       });
+
+
       const data = await response.json();
+
       loading.remove();
+
+
       if (!response.ok || !data.success) {
-        addMessage(data.error || "দুঃখিত, উত্তর পাওয়া যায়নি। আবার চেষ্টা করুন।", "bot");
+
+        addMessage(
+          data.error ||
+          "দুঃখিত, উত্তর পাওয়া যায়নি। আবার চেষ্টা করুন।",
+          "bot"
+        );
+
         history.pop();
+
         return;
       }
-      addMessage(data.reply, "bot");
-      history.push({ role: "model", text: data.reply });
-      if (history.length > 10) history.splice(0, history.length - 10);
+
+
+      const reply =
+        data.reply ||
+        data.answer ||
+        "দুঃখিত, কোনো উত্তর পাওয়া যায়নি।";
+
+
+      addMessage(reply, "bot");
+
+
+      history.push({
+        role: "model",
+        text: reply
+      });
+
+
+      if (history.length > 10) {
+        history.splice(0, history.length - 10);
+      }
+
+
     } catch (error) {
+
+      console.error("AI request error:", error);
+
       loading.remove();
-      addMessage("সার্ভারের সঙ্গে সংযোগ করা যাচ্ছে না। ইন্টারনেট পরীক্ষা করে আবার চেষ্টা করুন।", "bot");
+
+      addMessage(
+        "সার্ভারের সঙ্গে সংযোগ করা যাচ্ছে না। ইন্টারনেট পরীক্ষা করে আবার চেষ্টা করুন।",
+        "bot"
+      );
+
       history.pop();
+
     } finally {
+
       send.disabled = false;
       input.focus();
+
     }
+
   }
 
+
+  /* =====================================
+     FORM EVENTS
+  ===================================== */
+
   form.addEventListener("submit", event => {
+
     event.preventDefault();
+
     sendMessage(input.value);
+
   });
+
 
   input.addEventListener("input", () => {
+
     input.style.height = "auto";
-    input.style.height = Math.min(input.scrollHeight, 110) + "px";
+
+    input.style.height =
+      Math.min(input.scrollHeight, 110) + "px";
+
   });
+
 
   input.addEventListener("keydown", event => {
-    if (event.key === "Enter" && !event.shiftKey) {
+
+    if (
+      event.key === "Enter" &&
+      !event.shiftKey
+    ) {
+
       event.preventDefault();
+
       form.requestSubmit();
+
     }
+
   });
 
-  document.querySelectorAll(".quick button").forEach(button => {
-    button.addEventListener("click", () => sendMessage(button.dataset.text));
-  });
+
+  /* =====================================
+     QUICK QUESTION BUTTONS
+  ===================================== */
+
+  document.querySelectorAll(".quick button")
+    .forEach(button => {
+
+      button.addEventListener("click", () => {
+
+        sendMessage(button.dataset.text);
+
+      });
+
+    });
+
+
+  /* =====================================
+     INITIALIZE
+  ===================================== */
+
+  async function init() {
+
+    loadTheme();
+
+    await loadSiteSettings();
+
+    listenForSettingsChanges();
+
+  }
+
+  init();
+
 })();
 </script>
+
 </body>
 </html>
