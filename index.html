@@ -336,8 +336,7 @@ async function loadAdminSettings(){
         }
     }catch(e){console.log('Settings error:',e)}
 }
-
-/* AUTH */
+    /* AUTH */
 async function checkAuth(){
     const {data:{session},error}=await supabaseClient.auth.getSession();
     if(error)console.error('Session error:',error);
@@ -396,22 +395,49 @@ function formatInboxTime(value){
     if(isNaN(date.getTime()))return '';
     return date.toLocaleString('bn-BD',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
 }
+
+let inboxPreviewRequestId=0;
 async function loadInboxPreview(){
-    if(!currentUser){clearInboxUI();return}
-    const {data:messages,count,error}=await supabaseClient.from('messages')
-        .select('id,sender_id,receiver_id,message,is_read,created_at',{count:'exact'})
-        .eq('receiver_id',currentUser.id).eq('is_read',false)
+    const requestId=++inboxPreviewRequestId;
+    const userId=currentUser?.id;
+    if(!userId){updateMessageBadges(0);clearInboxUI();return}
+
+    // Fetch the exact unread count separately from the limited preview.
+    const {count:unreadCount,error:countError}=await supabaseClient
+        .from('messages')
+        .select('id',{count:'exact',head:true})
+        .eq('receiver_id',userId)
+        .eq('is_read',false);
+
+    if(requestId!==inboxPreviewRequestId||currentUser?.id!==userId)return;
+    if(countError){
+        console.error('Unread message count error:',countError);
+        return;
+    }
+    updateMessageBadges(Number(unreadCount)||0);
+
+    if(!unreadCount){
+        ['msgList','msgListMobile'].forEach(id=>{
+            const el=document.getElementById(id);
+            if(el)el.innerHTML='<div class="p-6 text-center text-sm text-gray-500">🎉 নতুন মেসেজ নেই</div>';
+        });
+        return;
+    }
+
+    const {data:messages,error}=await supabaseClient.from('messages')
+        .select('id,sender_id,receiver_id,message,is_read,created_at')
+        .eq('receiver_id',userId).eq('is_read',false)
         .order('created_at',{ascending:false}).limit(8);
 
+    if(requestId!==inboxPreviewRequestId||currentUser?.id!==userId)return;
     if(error){
-        console.error('Inbox error:',error);
+        console.error('Inbox preview error:',error);
         ['msgList','msgListMobile'].forEach(id=>{
             const el=document.getElementById(id);
             if(el)el.innerHTML='<div class="p-5 text-center text-sm text-red-500">মেসেজ লোড করা যায়নি।</div>';
         });
         return;
     }
-    updateMessageBadges(count??(messages||[]).length);
     if(!messages?.length){
         ['msgList','msgListMobile'].forEach(id=>{
             const el=document.getElementById(id);
@@ -419,10 +445,13 @@ async function loadInboxPreview(){
         });
         return;
     }
+
     const senderIds=[...new Set(messages.map(m=>m.sender_id).filter(Boolean))];
     let profileMap={};
     if(senderIds.length){
-        const {data:profiles}=await supabaseClient.from('profiles').select('id,full_name,profile_image').in('id',senderIds);
+        const {data:profiles}=await supabaseClient.from('profiles')
+            .select('id,full_name,profile_image').in('id',senderIds);
+        if(requestId!==inboxPreviewRequestId||currentUser?.id!==userId)return;
         profiles?.forEach(p=>profileMap[p.id]=p);
     }
     const html=messages.map(m=>{
@@ -654,7 +683,7 @@ window.handleSearch=source=>{
         const author=(book.author||'').toLowerCase();
         const publisher=(book.publisher||'').toLowerCase();
         return title.includes(query)||author.includes(query)||publisher.includes(query);
-    });
+        });
     renderBooks(filteredBooksData);
     dropdown.classList.remove('hidden');
     if(filteredBooksData.length){
@@ -959,6 +988,14 @@ async function checkUrlForPost(){
     const postId=new URLSearchParams(window.location.search).get('post');
     if(postId)await openPostDetails(postId);
 }
+
+// Refresh the unread badge when the visitor returns to the page.
+document.addEventListener('visibilitychange',()=>{
+    if(document.visibilityState==='visible'&&currentUser)loadInboxPreview();
+});
+window.addEventListener('focus',()=>{
+    if(currentUser)loadInboxPreview();
+});
 
 /* INITIALIZE */
 async function init(){
