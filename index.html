@@ -63,7 +63,7 @@ body{font-family:'Hind Siliguri',sans-serif}
         <div class="relative">
             <button type="button" onclick="toggleNotifications()" aria-label="নোটিফিকেশন" class="relative p-2 text-gray-600 dark:text-gray-300 hover:text-blue-600 transition">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0H9"/>
                 </svg>
                 <span id="notifBadge" class="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold rounded-full h-4 min-w-4 px-1 flex items-center justify-center hidden">0</span>
             </button>
@@ -246,8 +246,8 @@ let notificationRealtimeChannel=null;
 window.showToast=(message,isError=false)=>{
     const container=document.getElementById('toast-container');
     const toast=document.createElement('div');
-    toast.className=\`toast-animate px-5 py-4 rounded-lg shadow-2xl text-white font-bold flex items-center gap-3 \${isError?'bg-red-600 border-l-4 border-red-800':'bg-green-600 border-l-4 border-green-800'}\`;
-    toast.innerHTML=\`<span class="text-2xl">\${isError?'⚠️':'✅'}</span><span class="text-sm md:text-base pr-2">\${escapeHTML(message)}</span>\`;
+    toast.className=`toast-animate px-5 py-4 rounded-lg shadow-2xl text-white font-bold flex items-center gap-3 ${isError?'bg-red-600 border-l-4 border-red-800':'bg-green-600 border-l-4 border-green-800'}`;
+    toast.innerHTML=`<span class="text-2xl">${isError?'⚠️':'✅'}</span><span class="text-sm md:text-base pr-2">${escapeHTML(message)}</span>`;
     container.appendChild(toast);
     setTimeout(()=>{toast.style.opacity='0';toast.style.transform='translateX(100%)';toast.style.transition='all .3s ease';setTimeout(()=>toast.remove(),300)},4000);
 };
@@ -268,15 +268,7 @@ window.toggleDarkMode=()=>{
 window.toggleMainMenu=()=>{
     const menu=document.getElementById('mainMenuDropdown');
     const button=document.getElementById('mainMenuButton');
-    menu.classList.toggle('hidden');
-    button.setAttribute('aria-expanded',String(!menu.classList.contains('hidden')));
-};
-window.closeMainMenu=()=>{
-    document.getElementById('mainMenuDropdown')?.classList.add('hidden');
-    document.getElementById('mainMenuButton')?.setAttribute('aria-expanded','false');
-};
-</script>
-if(!menu)return;
+    if(!menu)return;
     menu.classList.toggle('hidden');
     button?.setAttribute('aria-expanded',String(!menu.classList.contains('hidden')));
 };
@@ -318,173 +310,84 @@ window.toggleWishlist=(bookId,event)=>{
     renderBooks(filteredBooksData);
 };
 
-/* ADMIN SETTINGS — SUPABASE */
-window.BOI_CHOKRO_SITE_SETTINGS = {};
-
-function safeHttpUrl(value) {
-    try {
-        const url = new URL(String(value || ''), window.location.origin);
-        return ['http:', 'https:'].includes(url.protocol) ? url.href : '';
-    } catch (_) {
-        return '';
-    }
+/* ADMIN SETTINGS */
+const SITE_SETTINGS_ID='0008f91c-f3e6-4d52-bc68-d5e027cca1c9';
+function safeSettingsUrl(value){
+    if(!value)return '';
+    try{const url=new URL(String(value).trim(),window.location.origin);return ['https:','http:'].includes(url.protocol)?url.href:''}
+    catch(e){return ''}
 }
-
-async function loadAdminSettings() {
-    const defaults = {
-        company_name: 'Boi Chokro',
-        tagline: 'আপনার পছন্দের বই, এক জায়গায়',
-        sub_tagline: 'পছন্দের সব লেখকের বইয়ের বিশাল সংগ্রহশালা',
-        phone: '',
-        address: '',
-        footer_text: '© 2026 Boi Chokro. All rights reserved.',
-        logo_url: '',
-        banner_image: '',
-        banner_text: '',
-        banner_url: '',
-        delivery_dhaka: 0,
-        delivery_outside: 0,
-        free_delivery_amount: 0
+function applySiteSettings(settings){
+    if(!settings)return;
+    const companyName=String(settings.company_name||'বই চক্র | boichokro').trim();
+    const siteTitle=companyName+' - অনলাইন বইঘর';
+    document.title=siteTitle;
+    const pageTitle=document.getElementById('pageTitle');
+    if(pageTitle)pageTitle.textContent=siteTitle;
+    const headerName=document.getElementById('web_header_name');
+    if(headerName)headerName.textContent=companyName;
+    const logo=document.getElementById('web_header_logo');
+    const logoUrl=safeSettingsUrl(settings.logo_url||settings.logo);
+    if(logo&&logoUrl){logo.src=logoUrl;logo.alt=companyName;logo.classList.remove('hidden')}
+    const tagline=document.getElementById('web_tagline');
+    if(tagline)tagline.textContent=String(settings.banner_text||settings.tagline||'আপনার পছন্দের বই, এক জায়গায়');
+    const subTagline=document.getElementById('web_sub_tagline');
+    if(subTagline)subTagline.textContent=String(settings.sub_tagline||'সেরা লেখকদের বইয়ের বিশাল সংগ্রহ। আজই আপনার প্রিয় বইটি খুঁজে নিন।');
+    const banner=document.getElementById('heroBannerImage');
+    const bannerImage=safeSettingsUrl(settings.banner_image);
+    if(banner&&bannerImage)banner.style.backgroundImage='url('+JSON.stringify(bannerImage)+')';
+    const bannerLink=safeSettingsUrl(settings.banner_url);
+    const hero=document.getElementById('heroSection');
+    if(hero){
+        hero.dataset.bannerUrl=bannerLink;
+        hero.style.cursor=bannerLink?'pointer':'';
+        if(!hero.dataset.bannerClickBound){
+            hero.addEventListener('click',event=>{
+                if(event.target.closest('input,button,a,textarea,select,label'))return;
+                const destination=hero.dataset.bannerUrl;
+                if(destination)window.open(destination,'_blank','noopener,noreferrer');
+            });
+            hero.dataset.bannerClickBound='1';
+        }
+    }
+    const phone=String(settings.phone||'').trim();
+    const address=String(settings.address||'').trim();
+    const contactParts=[];
+    if(phone)contactParts.push('📞 ফোন: '+phone);
+    if(address)contactParts.push('📍 ঠিকানা: '+address);
+    const footerContact=document.getElementById('web_footer_contact');
+    if(footerContact)footerContact.textContent=contactParts.join(' | ');
+    const footerText=document.getElementById('web_footer_text');
+    if(footerText)footerText.textContent=String(settings.footer_text||'© 2026 Boi Chokro. All rights reserved.');
+    const deliveryDhaka=Number(settings.delivery_dhaka??60);
+    const deliveryOutside=Number(settings.delivery_outside??120);
+    const freeDeliveryAmount=Number(settings.free_delivery_amount??1000);
+    document.body.dataset.deliveryDhaka=String(Number.isFinite(deliveryDhaka)?deliveryDhaka:60);
+    document.body.dataset.deliveryOutside=String(Number.isFinite(deliveryOutside)?deliveryOutside:120);
+    document.body.dataset.freeDeliveryAmount=String(Number.isFinite(freeDeliveryAmount)?freeDeliveryAmount:1000);
+    window.BOI_CHOKRO_SITE_SETTINGS={
+        company_name:companyName,logo_url:logoUrl,phone,address,
+        footer_text:String(settings.footer_text||'© 2026 Boi Chokro. All rights reserved.'),
+        tagline:String(settings.tagline||''),banner_text:String(settings.banner_text||''),
+        sub_tagline:String(settings.sub_tagline||''),banner_image:bannerImage,banner_url:bannerLink,
+        delivery_dhaka:Number(document.body.dataset.deliveryDhaka),
+        delivery_outside:Number(document.body.dataset.deliveryOutside),
+        free_delivery_amount:Number(document.body.dataset.freeDeliveryAmount)
     };
-
-    try {
-        const { data, error } = await supabaseClient
-            .from('site_settings')
-            .select('id,company_name,logo_url,phone,address,footer_text,tagline,banner_image,banner_text,delivery_dhaka,delivery_outside,free_delivery_amount,banner_url,sub_tagline')
-            .eq('id', '0008f91c-f3e6-4d52-bc68-d5e027cca1c9')
-            .maybeSingle();
-
-        if (error) throw error;
-
-        const settings = { ...defaults, ...(data || {}) };
-
-        settings.delivery_dhaka = Number(settings.delivery_dhaka) || 0;
-        settings.delivery_outside = Number(settings.delivery_outside) || 0;
-        settings.free_delivery_amount = Number(settings.free_delivery_amount) || 0;
-
-        window.BOI_CHOKRO_SITE_SETTINGS = settings;
-
-        window.dispatchEvent(new CustomEvent(
-            'boichokro:settings-loaded',
-            { detail: settings }
-        ));
-
-        const companyName = String(settings.company_name || 'Boi Chokro').trim();
-
-        document.title = companyName + ' - অনলাইন বইঘর';
-
-        const pageTitle = document.getElementById('pageTitle');
-        if (pageTitle) pageTitle.textContent = document.title;
-
-        const headerName = document.getElementById('web_header_name');
-        if (headerName) headerName.textContent = companyName;
-
-        const logo = document.getElementById('web_header_logo');
-        const logoUrl = safeHttpUrl(settings.logo_url);
-
-        if (logo) {
-            if (logoUrl) {
-                logo.src = logoUrl;
-                logo.alt = companyName + ' লোগো';
-                logo.classList.remove('hidden');
-            } else {
-                logo.removeAttribute('src');
-                logo.classList.add('hidden');
-            }
-        }
-
-        const tagline = document.getElementById('web_tagline');
-        if (tagline) {
-            tagline.textContent =
-                settings.banner_text || settings.tagline || defaults.tagline;
-        }
-
-        const subTagline = document.getElementById('web_sub_tagline');
-        if (subTagline) {
-            subTagline.textContent =
-                settings.sub_tagline || defaults.sub_tagline;
-        }
-
-        // banner_image হলো ছবির URL
-        const banner = document.getElementById('heroBannerImage');
-        const bannerImageUrl = safeHttpUrl(settings.banner_image);
-
-        if (banner) {
-            banner.style.backgroundImage = bannerImageUrl
-                ? 'url("' + bannerImageUrl.replace(/"/g, '%22') + '")'
-                : '';
-            banner.style.backgroundSize = 'cover';
-            banner.style.backgroundPosition = 'center';
-        }
-
-        // banner_url হলো ক্লিক করলে যাওয়ার URL
-        const hero = document.getElementById('heroSection');
-        const bannerLink = safeHttpUrl(settings.banner_url);
-
-        if (hero) {
-            hero.dataset.bannerUrl = bannerLink;
-            hero.style.cursor = bannerLink ? 'pointer' : '';
-
-            hero.onclick = bannerLink ? (event) => {
-                if (event.target.closest('a,button,input')) return;
-                window.location.href = bannerLink;
-            } : null;
-        }
-
-        // ফুটারের ফোন ও ঠিকানা
-        const footerContact = document.getElementById('web_footer_contact');
-
-        if (footerContact) {
-            const contactParts = [];
-
-            if (settings.phone) {
-                contactParts.push('📞 ফোন: ' + settings.phone);
-            }
-
-            if (settings.address) {
-                contactParts.push('📍 ঠিকানা: ' + settings.address);
-            }
-
-            footerContact.textContent = contactParts.join(' | ');
-        }
-
-        // ফুটারের কপিরাইট
-        const footerText = document.getElementById('web_footer_text');
-
-        if (footerText) {
-            footerText.textContent =
-                settings.footer_text || defaults.footer_text;
-        }
-
-        // ডেলিভারি চার্জ অন্য স্ক্রিপ্ট থেকেও পাওয়া যাবে
-        document.body.dataset.deliveryDhaka =
-            String(settings.delivery_dhaka);
-
-        document.body.dataset.deliveryOutside =
-            String(settings.delivery_outside);
-
-        document.body.dataset.freeDeliveryAmount =
-            String(settings.free_delivery_amount);
-
-        console.log('Boi Chokro site settings loaded:', settings);
-
-        return settings;
-
-    } catch (error) {
-        console.error('Site settings load error:', error);
-
-        window.BOI_CHOKRO_SITE_SETTINGS = { ...defaults };
-
-        window.dispatchEvent(new CustomEvent(
-            'boichokro:settings-error',
-            { detail: error }
-        ));
-
-        return window.BOI_CHOKRO_SITE_SETTINGS;
-    }
+    window.dispatchEvent(new CustomEvent('boichokro:settings-loaded',{detail:window.BOI_CHOKRO_SITE_SETTINGS}));
 }
-
+async function loadAdminSettings(){
+    try{
+        const {data:settings,error}=await supabaseClient.from('site_settings')
+            .select('id,company_name,logo_url,phone,address,footer_text,tagline,banner_image,banner_text,delivery_dhaka,delivery_outside,free_delivery_amount,banner_url,sub_tagline')
+            .eq('id',SITE_SETTINGS_ID).maybeSingle();
+        if(error)throw error;
+        if(settings)applySiteSettings(settings);
+        else console.warn('Site settings row was not found:',SITE_SETTINGS_ID);
+    }catch(error){console.error('Settings load error:',error)}
+}
 /* AUTH */
+
 async function checkAuth(){
     const {data:{session},error}=await supabaseClient.auth.getSession();
     if(error)console.error('Session error:',error);
@@ -605,19 +508,19 @@ async function loadInboxPreview(){
     const html=messages.map(m=>{
         const p=profileMap[m.sender_id]||{};
         const name=p.full_name||'ব্যবহারকারী';
-        const avatar=p.profile_image||\`https://ui-avatars.com/api/?name=\${encodeURIComponent(name)}&background=random\`;
-        const msg=String(m.message||'').replace(/\\s+/g,' ').trim();
-        return \`<a href="/inbox.html?user=\${encodeURIComponent(m.sender_id)}" class="inbox-item border-b border-gray-100 dark:border-gray-700 last:border-0">
-            <img src="\${escapeHTML(avatar)}" onerror="this.src='https://ui-avatars.com/api/?name=User'">
+        const avatar=p.profile_image||`https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random`;
+        const msg=String(m.message||'').replace(/\s+/g,' ').trim();
+        return `<a href="/inbox.html?user=${encodeURIComponent(m.sender_id)}" class="inbox-item border-b border-gray-100 dark:border-gray-700 last:border-0">
+            <img src="${escapeHTML(avatar)}" onerror="this.src='https://ui-avatars.com/api/?name=User'">
             <div class="min-w-0 flex-1">
                 <div class="flex justify-between items-center gap-2">
-                    <p class="font-bold text-sm text-gray-900 dark:text-white truncate">\${escapeHTML(name)}</p>
-                    <span class="text-[10px] text-gray-400 whitespace-nowrap">\${escapeHTML(formatInboxTime(m.created_at))}</span>
+                    <p class="font-bold text-sm text-gray-900 dark:text-white truncate">${escapeHTML(name)}</p>
+                    <span class="text-[10px] text-gray-400 whitespace-nowrap">${escapeHTML(formatInboxTime(m.created_at))}</span>
                 </div>
-                <p class="text-xs text-gray-600 dark:text-gray-300 mt-1 line-clamp-2">\${escapeHTML(msg.slice(0,65))}\${msg.length>65?'…':''}</p>
+                <p class="text-xs text-gray-600 dark:text-gray-300 mt-1 line-clamp-2">${escapeHTML(msg.slice(0,65))}${msg.length>65?'…':''}</p>
                 <span class="inline-block mt-1 text-[10px] text-blue-600 font-bold">নতুন মেসেজ</span>
             </div>
-        </a>\`;
+        </a>`;
     }).join('');
     ['msgList','msgListMobile'].forEach(id=>{
         const el=document.getElementById(id);if(el)el.innerHTML=html;
@@ -637,14 +540,26 @@ document.addEventListener('click',e=>{
         ['msgDropdown','msgDropdownMobile'].forEach(id=>document.getElementById(id)?.classList.add('hidden'));
     }
 });
-            function stopMessageRealtime(){
+function stopMessageRealtime(){
     if(messageRealtimeChannel){supabaseClient.removeChannel(messageRealtimeChannel);messageRealtimeChannel=null}
 }
 function setupMessageRealtime(){
     if(!currentUser)return;
     stopMessageRealtime();
     messageRealtimeChannel=supabaseClient.channel('inbox-realtime-'+currentUser.id)
-        .on('postgres_changes',{event:'*',schema:'public',table:'messages',filter:\`receiver_id=eq.\${currentUser.id}\`},()=>loadInboxPreview())
+        .on('postgres_changes',{event:'*',schema:'public',table:'messages',filter:`receiver_id=eq.${currentUser.id}`},()=>loadInboxPreview())
+        .subscribe(status=>console.log('Inbox realtime:',status));
+        }
+    }
+});
+function stopMessageRealtime(){
+    if(messageRealtimeChannel){supabaseClient.removeChannel(messageRealtimeChannel);messageRealtimeChannel=null}
+}
+function setupMessageRealtime(){
+    if(!currentUser)return;
+    stopMessageRealtime();
+    messageRealtimeChannel=supabaseClient.channel('inbox-realtime-'+currentUser.id)
+        .on('postgres_changes',{event:'*',schema:'public',table:'messages',filter:`receiver_id=eq.${currentUser.id}`},()=>loadInboxPreview())
         .subscribe(status=>console.log('Inbox realtime:',status));
 }
 
@@ -666,17 +581,17 @@ function clearNotificationUI(){
 }
 function closeNotificationDropdowns(){
     ['notifDropdown','notifDropdownMobile'].forEach(id=>document.getElementById(id)?.classList.add('hidden'));
-}
+    }
 function notificationHTML(n){
     const safeId=encodeURIComponent(String(n.id||''));
     const safeLink=encodeURIComponent(String(n.link||''));
     const time=n.created_at?new Date(n.created_at).toLocaleString('bn-BD'):'';
-    return \`<div onclick="handleNotificationClick('\${safeId}','\${safeLink}')"
-        class="p-3 text-sm border-b dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition \${!n.is_read?'bg-blue-50 dark:bg-gray-700 font-semibold':'text-gray-600 dark:text-gray-300'}">
-        <div>\${escapeHTML(n.message||'নতুন নোটিফিকেশন')}</div>
-        <p class="text-[10px] text-gray-400 mt-1">\${escapeHTML(time)}</p>
-        \${!n.is_read?'<span class="text-[10px] text-blue-600">নতুন</span>':''}
-    </div>\`;
+    return `<div onclick="handleNotificationClick('${safeId}','${safeLink}')"
+        class="p-3 text-sm border-b dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition ${!n.is_read?'bg-blue-50 dark:bg-gray-700 font-semibold':'text-gray-600 dark:text-gray-300'}">
+        <div>${escapeHTML(n.message||'নতুন নোটিফিকেশন')}</div>
+        <p class="text-[10px] text-gray-400 mt-1">${escapeHTML(time)}</p>
+        ${!n.is_read?'<span class="text-[10px] text-blue-600">নতুন</span>':''}
+    </div>`;
 }
 async function loadNotificationsAndUnreadMessages(){
     if(!currentUser){clearNotificationUI();clearInboxUI();return}
@@ -736,7 +651,7 @@ function setupNotificationRealtime(){
     if(!currentUser)return;
     stopNotificationRealtime();
     notificationRealtimeChannel=supabaseClient.channel('notifications-realtime-'+currentUser.id)
-        .on('postgres_changes',{event:'*',schema:'public',table:'notifications',filter:\`user_id=eq.\${currentUser.id}\`},
+        .on('postgres_changes',{event:'*',schema:'public',table:'notifications',filter:`user_id=eq.${currentUser.id}`},
             payload=>{console.log('Notification realtime:',payload.eventType);loadNotificationsAndUnreadMessages()})
         .subscribe(status=>console.log('Notification realtime status:',status));
 }
@@ -781,24 +696,24 @@ function createBookCard(book){
     const wished=wishlist.some(x=>String(x)===String(id));
     const stock=book.stock_quantity!==undefined&&book.stock_quantity!==null?Number(book.stock_quantity):1;
     const out=stock<=0;
-    return \`<div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col overflow-hidden relative group">
-        <button type="button" onclick="toggleWishlist('\${escapeHTML(id)}',event)" class="absolute top-2 right-2 z-20 bg-white/90 dark:bg-gray-800/90 p-2 rounded-full shadow hover:scale-110 transition wishlist-btn \${wished?'wishlist-active':''}" aria-label="উইশলিস্ট">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="\${wished?'#dc2626':'none'}" stroke="\${wished?'#dc2626':'#6b7280'}" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+    return `<div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col overflow-hidden relative group">
+        <button type="button" onclick="toggleWishlist('${escapeHTML(id)}',event)" class="absolute top-2 right-2 z-20 bg-white/90 dark:bg-gray-800/90 p-2 rounded-full shadow hover:scale-110 transition wishlist-btn ${wished?'wishlist-active':''}" aria-label="উইশলিস্ট">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="${wished?'#dc2626':'none'}" stroke="${wished?'#dc2626':'#6b7280'}" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
         </button>
-        <a href="/book-details.html?id=\${encodeURIComponent(id)}" class="block w-full aspect-[3/4] bg-gray-100 dark:bg-gray-700 overflow-hidden relative">
-            \${discount?\`<div class="absolute top-2 left-2 bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded-md z-10">\${percent}% ছাড়</div>\`:''}
-            \${out?'<div class="absolute inset-0 bg-black/60 flex items-center justify-center z-10"><span class="bg-red-600 text-white font-bold text-xs px-3 py-1 rounded-md">স্টক আউট</span></div>':''}
-            <img src="\${escapeHTML(img)}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" onerror="this.src='https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=300'">
+        <a href="/book-details.html?id=${encodeURIComponent(id)}" class="block w-full aspect-[3/4] bg-gray-100 dark:bg-gray-700 overflow-hidden relative">
+            ${discount?`<div class="absolute top-2 left-2 bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded-md z-10">${percent}% ছাড়</div>`:''}
+            ${out?'<div class="absolute inset-0 bg-black/60 flex items-center justify-center z-10"><span class="bg-red-600 text-white font-bold text-xs px-3 py-1 rounded-md">স্টক আউট</span></div>':''}
+            <img src="${escapeHTML(img)}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" onerror="this.src='https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=300'">
         </a>
         <div class="p-3 flex flex-col flex-grow justify-between">
             <div>
-                <a href="/book-details.html?id=\${encodeURIComponent(id)}"><h3 class="font-bold text-sm text-gray-900 dark:text-white leading-snug line-clamp-2 mb-1 hover:text-blue-600">\${escapeHTML(title)}</h3></a>
-                <p class="text-xs text-gray-500 mb-2">\${escapeHTML(author)}</p>
-                <div class="mb-2">\${out?'<span class="text-[11px] font-bold text-red-500">আউট অফ স্টক</span>':'<span class="text-[11px] font-bold text-green-600">স্টকে বইটি আছে</span>'}</div>
+                <a href="/book-details.html?id=${encodeURIComponent(id)}"><h3 class="font-bold text-sm text-gray-900 dark:text-white leading-snug line-clamp-2 mb-1 hover:text-blue-600">${escapeHTML(title)}</h3></a>
+                <p class="text-xs text-gray-500 mb-2">${escapeHTML(author)}</p>
+                <div class="mb-2">${out?'<span class="text-[11px] font-bold text-red-500">আউট অফ স্টক</span>':'<span class="text-[11px] font-bold text-green-600">স্টকে বইটি আছে</span>'}</div>
             </div>
-            <div class="flex items-center gap-2"><span class="text-lg font-bold text-blue-600 dark:text-blue-400">৳ \${escapeHTML(price)}</span>\${discount?\`<span class="text-gray-400 line-through text-xs">৳ \${escapeHTML(original)}</span>\`:''}</div>
+            <div class="flex items-center gap-2"><span class="text-lg font-bold text-blue-600 dark:text-blue-400">৳ ${escapeHTML(price)}</span>${discount?`<span class="text-gray-400 line-through text-xs">৳ ${escapeHTML(original)}</span>`:''}</div>
         </div>
-    </div>\`;
+    </div>`;
 }
 function renderBooks(books){
     const grid=document.getElementById('bookGrid');
@@ -831,7 +746,7 @@ window.handleSearch=source=>{
         const author=(book.author||'').toLowerCase();
         const publisher=(book.publisher||'').toLowerCase();
         return title.includes(query)||author.includes(query)||publisher.includes(query);
-    });
+        });
     renderBooks(filteredBooksData);
     dropdown.classList.remove('hidden');
     if(filteredBooksData.length){
@@ -841,10 +756,10 @@ window.handleSearch=source=>{
             const author=book.author||'';
             const raw=book.cover_url||book.image_url||'';
             const img=raw.startsWith('http')?raw:'https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=100';
-            return \`<a href="/book-details.html?id=\${encodeURIComponent(id)}" class="flex items-center gap-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-700 border-b dark:border-gray-700">
-                <img src="\${escapeHTML(img)}" class="w-10 h-14 object-cover rounded shadow-sm">
-                <div class="overflow-hidden"><p class="font-bold text-sm text-gray-900 dark:text-white truncate">\${escapeHTML(title)}</p><p class="text-xs text-gray-500 truncate">\${escapeHTML(author)}</p></div>
-            </a>\`;
+            return `<a href="/book-details.html?id=${encodeURIComponent(id)}" class="flex items-center gap-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-700 border-b dark:border-gray-700">
+                <img src="${escapeHTML(img)}" class="w-10 h-14 object-cover rounded shadow-sm">
+                <div class="overflow-hidden"><p class="font-bold text-sm text-gray-900 dark:text-white truncate">${escapeHTML(title)}</p><p class="text-xs text-gray-500 truncate">${escapeHTML(author)}</p></div>
+            </a>`;
         }).join('');
     }else dropdown.innerHTML='<p class="p-4 text-center text-sm text-gray-500">কোনো বই পাওয়া যায়নি।</p>';
 };
@@ -862,29 +777,29 @@ async function loadBlogs(){
     const profileMap={};profiles?.forEach(p=>profileMap[p.id]=p);
     const html=await Promise.all(blogs.map(async blog=>{
         const author=profileMap[blog.author_id]||{full_name:'নামহীন লেখক',profile_image:''};
-        const avatar=author.profile_image||\`https://ui-avatars.com/api/?name=\${encodeURIComponent(author.full_name)}&background=random\`;
+        const avatar=author.profile_image||`https://ui-avatars.com/api/?name=${encodeURIComponent(author.full_name)}&background=random`;
         const {count}=await supabaseClient.from('blog_likes').select('*',{count:'exact',head:true}).eq('blog_id',blog.id);
-        return \`<div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col h-full overflow-hidden hover:shadow-md transition">
+        return `<div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col h-full overflow-hidden hover:shadow-md transition">
             <div>
-                <div class="p-4 flex items-center gap-3 border-b dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700" onclick="window.location.href='/profile.html?id=\${encodeURIComponent(blog.author_id)}'">
-                    <img src="\${escapeHTML(avatar)}" class="w-10 h-10 rounded-full object-cover border">
-                    <div><h4 class="font-bold text-sm text-gray-900 dark:text-white">\${escapeHTML(author.full_name)}</h4><p class="text-xs text-gray-400">\${new Date(blog.created_at).toLocaleDateString('bn-BD')}</p></div>
+                <div class="p-4 flex items-center gap-3 border-b dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700" onclick="window.location.href='/profile.html?id=${encodeURIComponent(blog.author_id)}'">
+                    <img src="${escapeHTML(avatar)}" class="w-10 h-10 rounded-full object-cover border">
+                    <div><h4 class="font-bold text-sm text-gray-900 dark:text-white">${escapeHTML(author.full_name)}</h4><p class="text-xs text-gray-400">${new Date(blog.created_at).toLocaleDateString('bn-BD')}</p></div>
                 </div>
-                \${blog.image_url?\`<div class="max-h-60 overflow-hidden bg-gray-100 cursor-pointer" onclick="openPostDetails('\${escapeHTML(blog.id)}')"><img src="\${escapeHTML(blog.image_url)}" class="w-full h-full object-cover hover:scale-105 transition duration-300"></div>\`:''}
+                ${blog.image_url?`<div class="max-h-60 overflow-hidden bg-gray-100 cursor-pointer" onclick="openPostDetails('${escapeHTML(blog.id)}')"><img src="${escapeHTML(blog.image_url)}" class="w-full h-full object-cover hover:scale-105 transition duration-300"></div>`:''}
                 <div class="p-4 space-y-2">
-                    <h3 class="text-lg font-bold text-gray-900 dark:text-white cursor-pointer hover:text-blue-600 line-clamp-2" onclick="openPostDetails('\${escapeHTML(blog.id)}')">\${escapeHTML(blog.title)}</h3>
-                    <p class="text-sm text-gray-600 dark:text-gray-300 line-clamp-3">\${escapeHTML(blog.content)}</p>
+                    <h3 class="text-lg font-bold text-gray-900 dark:text-white cursor-pointer hover:text-blue-600 line-clamp-2" onclick="openPostDetails('${escapeHTML(blog.id)}')">${escapeHTML(blog.title)}</h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-300 line-clamp-3">${escapeHTML(blog.content)}</p>
                 </div>
             </div>
             <div class="p-4 mt-auto border-t border-gray-100 dark:border-gray-700 flex items-center justify-between">
                 <div class="flex items-center gap-4">
-                    <button onclick="likeBlog('\${escapeHTML(blog.id)}')" class="flex items-center gap-1 text-gray-500 hover:text-red-500 text-sm">🌹 <span id="like-count-\${escapeHTML(blog.id)}">\${count||0}</span></button>
-                    <button onclick="openPostDetails('\${escapeHTML(blog.id)}')" class="flex items-center gap-1 text-gray-500 hover:text-blue-500 text-sm">💬 কমেন্ট</button>
-                    <span class="text-gray-400 text-xs">👁️ \${blog.views||0}</span>
+                    <button onclick="likeBlog('${escapeHTML(blog.id)}')" class="flex items-center gap-1 text-gray-500 hover:text-red-500 text-sm">🌹 <span id="like-count-${escapeHTML(blog.id)}">${count||0}</span></button>
+                    <button onclick="openPostDetails('${escapeHTML(blog.id)}')" class="flex items-center gap-1 text-gray-500 hover:text-blue-500 text-sm">💬 কমেন্ট</button>
+                    <span class="text-gray-400 text-xs">👁️ ${blog.views||0}</span>
                 </div>
-                <button onclick="openPostDetails('\${escapeHTML(blog.id)}')" class="text-xs font-bold text-blue-600 hover:underline">বিস্তারিত</button>
+                <button onclick="openPostDetails('${escapeHTML(blog.id)}')" class="text-xs font-bold text-blue-600 hover:underline">বিস্তারিত</button>
             </div>
-        </div>\`;
+        </div>`;
     }));
     list.innerHTML=html.join('');
 }
@@ -903,18 +818,24 @@ window.likeBlog=async blogId=>{
             const name=await getCurrentUserDisplayName();
             const {error}=await supabaseClient.from('notifications').insert([{
                 user_id:blog.author_id,
-                message:\`🌹 \${name} আপনার পোস্টে লাইক দিয়েছেন।\`,
-                link:\`/index.html?post=\${encodeURIComponent(blogId)}\`,
+                message:`🌹 ${name} আপনার পোস্টে লাইক দিয়েছেন।`,
+                link:`/index.html?post=${encodeURIComponent(blogId)}`,
                 is_read:false
             }]);
             if(error)console.error('Like notification error:',error);
         }
     }
-    const {count}=await supabaseClient.from('blog_likes').select('*',{count:'exact',head:true}).eq('blog_id',blogId);
-    const el=document.getElementById('like-count-'+blogId);
-    if(el)el.innerText=count||0;
+    await loadBlogs();
 };
-        }]);
+
+/* CONTENT FILTER */
+function containsForbiddenContent(text){
+    const words=['বাল','মাদারচোদ','মাগী','বেশ্যা','শালা','শুয়োর','কুত্তা','bastard','shit','fuck','bitch','asshole','বটম','যৌন','সেক্স','sex','porn','xxx','naked','nude','chod','chodai','boob','vagina','penis','rape','ধর্ষণ','হ্যারাস','লুচ্চা'];
+    const lower=text.toLowerCase();
+    return words.some(word=>lower.includes(word));
+}
+    is_read:false
+            }]);
             if(error)console.error('Like notification error:',error);
         }
     }
@@ -1166,4 +1087,4 @@ async function init(){
 init();
 </script>
 </body>
-    </html>
+</html>
