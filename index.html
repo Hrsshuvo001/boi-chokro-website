@@ -63,7 +63,7 @@ body{font-family:'Hind Siliguri',sans-serif}
         <div class="relative">
             <button type="button" onclick="toggleNotifications()" aria-label="নোটিফিকেশন" class="relative p-2 text-gray-600 dark:text-gray-300 hover:text-blue-600 transition">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0H9"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
                 </svg>
                 <span id="notifBadge" class="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold rounded-full h-4 min-w-4 px-1 flex items-center justify-center hidden">0</span>
             </button>
@@ -312,103 +312,61 @@ window.toggleWishlist=(bookId,event)=>{
 
 /* ADMIN SETTINGS */
 async function loadAdminSettings(){
-    const timeout = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Settings request timeout')), 12000)
-    );
+    try{
+        const {data:settings,error}=await supabaseClient.from('site_settings').select('*').limit(1).maybeSingle();
 
-    try {
-        const request = supabaseClient
-            .from('site_settings')
-            .select('*')
-            .eq('id', '0008f91c-f3e6-4d52-bc68-d5e027cca1c9')
-            .maybeSingle();
+        if(settings&&!error){
+            const companyName=String(settings.company_name||'Boi Chokro').trim()||'Boi Chokro';
+            const siteTitle=companyName+' - অনলাইন বইঘর';
 
-        const { data: settings, error } = await Promise.race([request, timeout]);
+            // Browser tab title এবং HTML title—দুটিই Admin Settings-এর নাম অনুসরণ করবে।
+            document.title=siteTitle;
+            const pageTitle=document.getElementById('pageTitle');
+            if(pageTitle)pageTitle.textContent=siteTitle;
 
-        if (error) throw error;
-        if (!settings) return;
+            const headerName=document.getElementById('web_header_name');
+            if(headerName)headerName.textContent=companyName;
 
-        window.BOI_CHOKRO_SITE_SETTINGS = settings;
+            const logoUrl=settings.logo_url||settings.logo||'';
+            if(logoUrl){
+                const logo=document.getElementById('web_header_logo');
+                if(logo){logo.src=logoUrl;logo.classList.remove('hidden')}
+            }
 
-        const companyName = String(settings.company_name || 'Boi Chokro').trim();
-        document.title = companyName + ' - অনলাইন বইঘর';
+            const tagline=settings.banner_text||settings.tagline||'';
+            if(tagline){
+                const el=document.getElementById('web_tagline');
+                if(el)el.textContent=tagline;
+            }
 
-        const pageTitle = document.getElementById('pageTitle');
-        if (pageTitle) pageTitle.textContent = document.title;
+            if(settings.sub_tagline){
+                const el=document.getElementById('web_sub_tagline');
+                if(el)el.textContent=settings.sub_tagline;
+            }
 
-        const headerName = document.getElementById('web_header_name');
-        if (headerName) headerName.textContent = companyName;
+            if(settings.banner_url){
+                const banner=document.getElementById('heroBannerImage');
+                if(banner)banner.style.backgroundImage=`url('${settings.banner_url}')`;
+            }
 
-        const logo = document.getElementById('web_header_logo');
-        const logoUrl = settings.logo_url || settings.logo || '';
+            let contact='';
+            if(settings.phone)contact+='📞 ফোন: '+escapeHTML(settings.phone)+' ';
+            if(settings.address)contact+=' | 📍 ঠিকানা: '+escapeHTML(settings.address);
 
-        if (logo && logoUrl) {
-            logo.src = logoUrl;
-            logo.classList.remove('hidden');
-        }
+            const footerContact=document.getElementById('web_footer_contact');
+            if(footerContact)footerContact.innerHTML=contact;
 
-        const tagline = document.getElementById('web_tagline');
-        if (tagline) {
-            tagline.textContent =
-                settings.banner_text ||
-                settings.tagline ||
-                'আপনার পছন্দের বই, এক জায়গায়';
-        }
-
-        const subTagline = document.getElementById('web_sub_tagline');
-        if (subTagline && settings.sub_tagline) {
-            subTagline.textContent = settings.sub_tagline;
-        }
-
-        // banner_image = ব্যানারের ছবি
-        // banner_url = ব্যানারে ক্লিক করলে যাওয়ার লিংক
-        const banner = document.getElementById('heroBannerImage');
-        const bannerImage = settings.banner_image || '';
-
-        if (banner && bannerImage) {
-            try {
-                const url = new URL(bannerImage);
-                if (url.protocol === 'https:' || url.protocol === 'http:') {
-                    banner.style.backgroundImage =
-                        `linear-gradient(rgba(0,0,0,.25),rgba(0,0,0,.25)),url("${url.href}")`;
-                }
-            } catch (e) {
-                console.warn('Invalid banner image URL');
+            if(settings.footer_text){
+                const footerText=document.getElementById('web_footer_text');
+                if(footerText)footerText.innerHTML=settings.footer_text;
             }
         }
-
-        // Delivery settings অন্য পেজেও ব্যবহারের জন্য সংরক্ষণ
-        document.body.dataset.deliveryDhaka =
-            String(settings.delivery_dhaka ?? '60');
-
-        document.body.dataset.deliveryOutside =
-            String(settings.delivery_outside ?? '120');
-
-        document.body.dataset.freeDeliveryAmount =
-            String(settings.free_delivery_amount ?? '1000');
-
-        let contact = '';
-        if (settings.phone) {
-            contact += '📞 ফোন: ' + escapeHTML(settings.phone);
-        }
-        if (settings.address) {
-            contact += ' | 📍 ঠিকানা: ' + escapeHTML(settings.address);
-        }
-
-        const footerContact = document.getElementById('web_footer_contact');
-        if (footerContact) footerContact.innerHTML = contact;
-
-        const footerText = document.getElementById('web_footer_text');
-        if (footerText && settings.footer_text) {
-            footerText.textContent = settings.footer_text;
-        }
-
-    } catch (error) {
-        console.error('Admin settings load error:', error);
+    }catch(e){
+        console.log('Settings error:',e);
     }
-    }
+}
+
 /* AUTH */
-
 async function checkAuth(){
     const {data:{session},error}=await supabaseClient.auth.getSession();
     if(error)console.error('Session error:',error);
@@ -570,18 +528,6 @@ function setupMessageRealtime(){
     messageRealtimeChannel=supabaseClient.channel('inbox-realtime-'+currentUser.id)
         .on('postgres_changes',{event:'*',schema:'public',table:'messages',filter:`receiver_id=eq.${currentUser.id}`},()=>loadInboxPreview())
         .subscribe(status=>console.log('Inbox realtime:',status));
-        }
-    }
-});
-function stopMessageRealtime(){
-    if(messageRealtimeChannel){supabaseClient.removeChannel(messageRealtimeChannel);messageRealtimeChannel=null}
-}
-function setupMessageRealtime(){
-    if(!currentUser)return;
-    stopMessageRealtime();
-    messageRealtimeChannel=supabaseClient.channel('inbox-realtime-'+currentUser.id)
-        .on('postgres_changes',{event:'*',schema:'public',table:'messages',filter:`receiver_id=eq.${currentUser.id}`},()=>loadInboxPreview())
-        .subscribe(status=>console.log('Inbox realtime:',status));
 }
 
 /* NOTIFICATIONS */
@@ -719,7 +665,7 @@ function createBookCard(book){
     const out=stock<=0;
     return `<div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col overflow-hidden relative group">
         <button type="button" onclick="toggleWishlist('${escapeHTML(id)}',event)" class="absolute top-2 right-2 z-20 bg-white/90 dark:bg-gray-800/90 p-2 rounded-full shadow hover:scale-110 transition wishlist-btn ${wished?'wishlist-active':''}" aria-label="উইশলিস্ট">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="${wished?'#dc2626':'none'}" stroke="${wished?'#dc2626':'#6b7280'}" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="${wished?'#dc2626':'none'}" stroke="${wished?'#dc2626':'#6b7280'}" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
         </button>
         <a href="/book-details.html?id=${encodeURIComponent(id)}" class="block w-full aspect-[3/4] bg-gray-100 dark:bg-gray-700 overflow-hidden relative">
             ${discount?`<div class="absolute top-2 left-2 bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded-md z-10">${percent}% ছাড়</div>`:''}
@@ -842,20 +788,6 @@ window.likeBlog=async blogId=>{
                 message:`🌹 ${name} আপনার পোস্টে লাইক দিয়েছেন।`,
                 link:`/index.html?post=${encodeURIComponent(blogId)}`,
                 is_read:false
-            }]);
-            if(error)console.error('Like notification error:',error);
-        }
-    }
-    await loadBlogs();
-};
-
-/* CONTENT FILTER */
-function containsForbiddenContent(text){
-    const words=['বাল','মাদারচোদ','মাগী','বেশ্যা','শালা','শুয়োর','কুত্তা','bastard','shit','fuck','bitch','asshole','বটম','যৌন','সেক্স','sex','porn','xxx','naked','nude','chod','chodai','boob','vagina','penis','rape','ধর্ষণ','হ্যারাস','লুচ্চা'];
-    const lower=text.toLowerCase();
-    return words.some(word=>lower.includes(word));
-}
-    is_read:false
             }]);
             if(error)console.error('Like notification error:',error);
         }
@@ -1108,4 +1040,4 @@ async function init(){
 init();
 </script>
 </body>
-</html>
+    </html>
