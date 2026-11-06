@@ -311,81 +311,102 @@ window.toggleWishlist=(bookId,event)=>{
 };
 
 /* ADMIN SETTINGS */
-const SITE_SETTINGS_ID='0008f91c-f3e6-4d52-bc68-d5e027cca1c9';
-function safeSettingsUrl(value){
-    if(!value)return '';
-    try{const url=new URL(String(value).trim(),window.location.origin);return ['https:','http:'].includes(url.protocol)?url.href:''}
-    catch(e){return ''}
-}
-function applySiteSettings(settings){
-    if(!settings)return;
-    const companyName=String(settings.company_name||'বই চক্র | boichokro').trim();
-    const siteTitle=companyName+' - অনলাইন বইঘর';
-    document.title=siteTitle;
-    const pageTitle=document.getElementById('pageTitle');
-    if(pageTitle)pageTitle.textContent=siteTitle;
-    const headerName=document.getElementById('web_header_name');
-    if(headerName)headerName.textContent=companyName;
-    const logo=document.getElementById('web_header_logo');
-    const logoUrl=safeSettingsUrl(settings.logo_url||settings.logo);
-    if(logo&&logoUrl){logo.src=logoUrl;logo.alt=companyName;logo.classList.remove('hidden')}
-    const tagline=document.getElementById('web_tagline');
-    if(tagline)tagline.textContent=String(settings.banner_text||settings.tagline||'আপনার পছন্দের বই, এক জায়গায়');
-    const subTagline=document.getElementById('web_sub_tagline');
-    if(subTagline)subTagline.textContent=String(settings.sub_tagline||'সেরা লেখকদের বইয়ের বিশাল সংগ্রহ। আজই আপনার প্রিয় বইটি খুঁজে নিন।');
-    const banner=document.getElementById('heroBannerImage');
-    const bannerImage=safeSettingsUrl(settings.banner_image);
-    if(banner&&bannerImage)banner.style.backgroundImage='url('+JSON.stringify(bannerImage)+')';
-    const bannerLink=safeSettingsUrl(settings.banner_url);
-    const hero=document.getElementById('heroSection');
-    if(hero){
-        hero.dataset.bannerUrl=bannerLink;
-        hero.style.cursor=bannerLink?'pointer':'';
-        if(!hero.dataset.bannerClickBound){
-            hero.addEventListener('click',event=>{
-                if(event.target.closest('input,button,a,textarea,select,label'))return;
-                const destination=hero.dataset.bannerUrl;
-                if(destination)window.open(destination,'_blank','noopener,noreferrer');
-            });
-            hero.dataset.bannerClickBound='1';
-        }
-    }
-    const phone=String(settings.phone||'').trim();
-    const address=String(settings.address||'').trim();
-    const contactParts=[];
-    if(phone)contactParts.push('📞 ফোন: '+phone);
-    if(address)contactParts.push('📍 ঠিকানা: '+address);
-    const footerContact=document.getElementById('web_footer_contact');
-    if(footerContact)footerContact.textContent=contactParts.join(' | ');
-    const footerText=document.getElementById('web_footer_text');
-    if(footerText)footerText.textContent=String(settings.footer_text||'© 2026 Boi Chokro. All rights reserved.');
-    const deliveryDhaka=Number(settings.delivery_dhaka??60);
-    const deliveryOutside=Number(settings.delivery_outside??120);
-    const freeDeliveryAmount=Number(settings.free_delivery_amount??1000);
-    document.body.dataset.deliveryDhaka=String(Number.isFinite(deliveryDhaka)?deliveryDhaka:60);
-    document.body.dataset.deliveryOutside=String(Number.isFinite(deliveryOutside)?deliveryOutside:120);
-    document.body.dataset.freeDeliveryAmount=String(Number.isFinite(freeDeliveryAmount)?freeDeliveryAmount:1000);
-    window.BOI_CHOKRO_SITE_SETTINGS={
-        company_name:companyName,logo_url:logoUrl,phone,address,
-        footer_text:String(settings.footer_text||'© 2026 Boi Chokro. All rights reserved.'),
-        tagline:String(settings.tagline||''),banner_text:String(settings.banner_text||''),
-        sub_tagline:String(settings.sub_tagline||''),banner_image:bannerImage,banner_url:bannerLink,
-        delivery_dhaka:Number(document.body.dataset.deliveryDhaka),
-        delivery_outside:Number(document.body.dataset.deliveryOutside),
-        free_delivery_amount:Number(document.body.dataset.freeDeliveryAmount)
-    };
-    window.dispatchEvent(new CustomEvent('boichokro:settings-loaded',{detail:window.BOI_CHOKRO_SITE_SETTINGS}));
-}
 async function loadAdminSettings(){
-    try{
-        const {data:settings,error}=await supabaseClient.from('site_settings')
-            .select('id,company_name,logo_url,phone,address,footer_text,tagline,banner_image,banner_text,delivery_dhaka,delivery_outside,free_delivery_amount,banner_url,sub_tagline')
-            .eq('id',SITE_SETTINGS_ID).maybeSingle();
-        if(error)throw error;
-        if(settings)applySiteSettings(settings);
-        else console.warn('Site settings row was not found:',SITE_SETTINGS_ID);
-    }catch(error){console.error('Settings load error:',error)}
-}
+    const timeout = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Settings request timeout')), 12000)
+    );
+
+    try {
+        const request = supabaseClient
+            .from('site_settings')
+            .select('*')
+            .eq('id', '0008f91c-f3e6-4d52-bc68-d5e027cca1c9')
+            .maybeSingle();
+
+        const { data: settings, error } = await Promise.race([request, timeout]);
+
+        if (error) throw error;
+        if (!settings) return;
+
+        window.BOI_CHOKRO_SITE_SETTINGS = settings;
+
+        const companyName = String(settings.company_name || 'Boi Chokro').trim();
+        document.title = companyName + ' - অনলাইন বইঘর';
+
+        const pageTitle = document.getElementById('pageTitle');
+        if (pageTitle) pageTitle.textContent = document.title;
+
+        const headerName = document.getElementById('web_header_name');
+        if (headerName) headerName.textContent = companyName;
+
+        const logo = document.getElementById('web_header_logo');
+        const logoUrl = settings.logo_url || settings.logo || '';
+
+        if (logo && logoUrl) {
+            logo.src = logoUrl;
+            logo.classList.remove('hidden');
+        }
+
+        const tagline = document.getElementById('web_tagline');
+        if (tagline) {
+            tagline.textContent =
+                settings.banner_text ||
+                settings.tagline ||
+                'আপনার পছন্দের বই, এক জায়গায়';
+        }
+
+        const subTagline = document.getElementById('web_sub_tagline');
+        if (subTagline && settings.sub_tagline) {
+            subTagline.textContent = settings.sub_tagline;
+        }
+
+        // banner_image = ব্যানারের ছবি
+        // banner_url = ব্যানারে ক্লিক করলে যাওয়ার লিংক
+        const banner = document.getElementById('heroBannerImage');
+        const bannerImage = settings.banner_image || '';
+
+        if (banner && bannerImage) {
+            try {
+                const url = new URL(bannerImage);
+                if (url.protocol === 'https:' || url.protocol === 'http:') {
+                    banner.style.backgroundImage =
+                        `linear-gradient(rgba(0,0,0,.25),rgba(0,0,0,.25)),url("${url.href}")`;
+                }
+            } catch (e) {
+                console.warn('Invalid banner image URL');
+            }
+        }
+
+        // Delivery settings অন্য পেজেও ব্যবহারের জন্য সংরক্ষণ
+        document.body.dataset.deliveryDhaka =
+            String(settings.delivery_dhaka ?? '60');
+
+        document.body.dataset.deliveryOutside =
+            String(settings.delivery_outside ?? '120');
+
+        document.body.dataset.freeDeliveryAmount =
+            String(settings.free_delivery_amount ?? '1000');
+
+        let contact = '';
+        if (settings.phone) {
+            contact += '📞 ফোন: ' + escapeHTML(settings.phone);
+        }
+        if (settings.address) {
+            contact += ' | 📍 ঠিকানা: ' + escapeHTML(settings.address);
+        }
+
+        const footerContact = document.getElementById('web_footer_contact');
+        if (footerContact) footerContact.innerHTML = contact;
+
+        const footerText = document.getElementById('web_footer_text');
+        if (footerText && settings.footer_text) {
+            footerText.textContent = settings.footer_text;
+        }
+
+    } catch (error) {
+        console.error('Admin settings load error:', error);
+    }
+    }
 /* AUTH */
 
 async function checkAuth(){
