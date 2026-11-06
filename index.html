@@ -312,59 +312,178 @@ window.toggleWishlist=(bookId,event)=>{
 
 /* ADMIN SETTINGS */
 async function loadAdminSettings(){
+    const SETTINGS_ID='0008f91c-f3e6-4d52-bc68-d5e027cca1c9';
+
+    const defaults={
+        company_name:'Boi Chokro',
+        tagline:'আপনার পছন্দের বই, এক জায়গায়',
+        sub_tagline:'পছন্দের সব লেখকের বইয়ের বিশাল সংগ্রহশালা',
+        banner_text:'',
+        logo_url:'',
+        banner_image:'',
+        banner_url:'',
+        phone:'',
+        address:'',
+        footer_text:'© 2026 Boi Chokro. All rights reserved.',
+        delivery_dhaka:60,
+        delivery_outside:120,
+        free_delivery_amount:1000
+    };
+
+    const safeUrl=(value)=>{
+        if(!value)return '';
+        try{
+            const url=new URL(String(value),window.location.origin);
+            return ['https:','http:'].includes(url.protocol)
+                ?url.href:'';
+        }catch(_){
+            return '';
+        }
+    };
+
     try{
-        const {data:settings,error}=await supabaseClient.from('site_settings').select('*').limit(1).maybeSingle();
+        const {data:settings,error}=await supabaseClient
+            .from('site_settings')
+            .select('*')
+            .eq('id',SETTINGS_ID)
+            .maybeSingle();
 
-        if(settings&&!error){
-            const companyName=String(settings.company_name||'Boi Chokro').trim()||'Boi Chokro';
-            const siteTitle=companyName+' - অনলাইন বইঘর';
+        if(error)throw error;
 
-            // Browser tab title এবং HTML title—দুটিই Admin Settings-এর নাম অনুসরণ করবে।
-            document.title=siteTitle;
-            const pageTitle=document.getElementById('pageTitle');
-            if(pageTitle)pageTitle.textContent=siteTitle;
+        const config={...defaults,...(settings||{})};
 
-            const headerName=document.getElementById('web_header_name');
-            if(headerName)headerName.textContent=companyName;
+        // সব পেজের জন্য সাইট সেটিংস সংরক্ষণ
+        window.BOI_CHOKRO_SITE_SETTINGS={
+            ...config,
+            delivery_dhaka:Number(config.delivery_dhaka)||0,
+            delivery_outside:Number(config.delivery_outside)||0,
+            free_delivery_amount:Number(config.free_delivery_amount)||0
+        };
 
-            const logoUrl=settings.logo_url||settings.logo||'';
+        document.body.dataset.deliveryDhaka=
+            String(window.BOI_CHOKRO_SITE_SETTINGS.delivery_dhaka);
+
+        document.body.dataset.deliveryOutside=
+            String(window.BOI_CHOKRO_SITE_SETTINGS.delivery_outside);
+
+        document.body.dataset.freeDeliveryAmount=
+            String(window.BOI_CHOKRO_SITE_SETTINGS.free_delivery_amount);
+
+        // ওয়েবসাইটের নাম
+        const companyName=String(
+            config.company_name||defaults.company_name
+        ).trim();
+
+        const siteTitle=companyName+' - অনলাইন বইঘর';
+        document.title=siteTitle;
+
+        const pageTitle=document.getElementById('pageTitle');
+        if(pageTitle)pageTitle.textContent=siteTitle;
+
+        const headerName=document.getElementById('web_header_name');
+        if(headerName)headerName.textContent=companyName;
+
+        // লোগো
+        const logo=document.getElementById('web_header_logo');
+        const logoUrl=safeUrl(config.logo_url||config.logo);
+
+        if(logo){
             if(logoUrl){
-                const logo=document.getElementById('web_header_logo');
-                if(logo){logo.src=logoUrl;logo.classList.remove('hidden')}
-            }
-
-            const tagline=settings.banner_text||settings.tagline||'';
-            if(tagline){
-                const el=document.getElementById('web_tagline');
-                if(el)el.textContent=tagline;
-            }
-
-            if(settings.sub_tagline){
-                const el=document.getElementById('web_sub_tagline');
-                if(el)el.textContent=settings.sub_tagline;
-            }
-
-            if(settings.banner_url){
-                const banner=document.getElementById('heroBannerImage');
-                if(banner)banner.style.backgroundImage=`url('${settings.banner_url}')`;
-            }
-
-            let contact='';
-            if(settings.phone)contact+='📞 ফোন: '+escapeHTML(settings.phone)+' ';
-            if(settings.address)contact+=' | 📍 ঠিকানা: '+escapeHTML(settings.address);
-
-            const footerContact=document.getElementById('web_footer_contact');
-            if(footerContact)footerContact.innerHTML=contact;
-
-            if(settings.footer_text){
-                const footerText=document.getElementById('web_footer_text');
-                if(footerText)footerText.innerHTML=settings.footer_text;
+                logo.src=logoUrl;
+                logo.classList.remove('hidden');
+            }else{
+                logo.removeAttribute('src');
+                logo.classList.add('hidden');
             }
         }
-    }catch(e){
-        console.log('Settings error:',e);
+
+        // ট্যাগলাইন
+        const tagline=document.getElementById('web_tagline');
+        if(tagline){
+            tagline.textContent=String(
+                config.tagline||config.banner_text||defaults.tagline
+            );
+        }
+
+        const subTagline=document.getElementById('web_sub_tagline');
+        if(subTagline){
+            subTagline.textContent=String(config.sub_tagline||'');
+        }
+
+        // ব্যানারের ছবি: banner_image
+        const hero=document.getElementById('heroBannerImage');
+        const bannerImage=safeUrl(config.banner_image);
+
+        if(hero){
+            hero.style.backgroundImage=bannerImage
+                ?'url('+JSON.stringify(bannerImage)+')'
+                :'';
+        }
+
+        // ব্যানারে ক্লিক করলে যাওয়ার লিংক: banner_url
+        const heroSection=document.getElementById('heroSection');
+        const bannerLink=safeUrl(config.banner_url);
+
+        if(heroSection){
+            heroSection.dataset.bannerUrl=bannerLink;
+            heroSection.style.cursor=bannerLink?'pointer':'';
+
+            if(!heroSection.dataset.bannerClickReady){
+                heroSection.addEventListener('click',(event)=>{
+                    if(event.target.closest(
+                        'a,button,input,select,textarea'
+                    ))return;
+
+                    const url=heroSection.dataset.bannerUrl;
+                    if(url){
+                        window.open(url,'_blank','noopener,noreferrer');
+                    }
+                });
+
+                heroSection.dataset.bannerClickReady='true';
+            }
+        }
+
+        // ফুটারের যোগাযোগ
+        const footerContact=document.getElementById('web_footer_contact');
+
+        if(footerContact){
+            const parts=[];
+
+            if(config.phone){
+                parts.push('📞 ফোন: '+String(config.phone));
+            }
+
+            if(config.address){
+                parts.push('📍 ঠিকানা: '+String(config.address));
+            }
+
+            footerContact.textContent=parts.join(' | ');
+        }
+
+        // ফুটারের লেখা
+        const footerText=document.getElementById('web_footer_text');
+
+        if(footerText){
+            footerText.textContent=String(
+                config.footer_text||defaults.footer_text
+            );
+        }
+
+        return window.BOI_CHOKRO_SITE_SETTINGS;
+
+    }catch(error){
+        console.error('Settings load error:',error);
+
+        window.BOI_CHOKRO_SITE_SETTINGS={...defaults};
+
+        document.body.dataset.deliveryDhaka='60';
+        document.body.dataset.deliveryOutside='120';
+        document.body.dataset.freeDeliveryAmount='1000';
+
+        return window.BOI_CHOKRO_SITE_SETTINGS;
     }
-}
+            }
 
 /* AUTH */
 async function checkAuth(){
